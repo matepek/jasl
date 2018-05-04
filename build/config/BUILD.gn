@@ -1,0 +1,132 @@
+config("default") {
+  cflags = []
+  configs = []
+  defines = [] + define_macros
+
+  configs += [ ":compiler_$compiler_type" ]
+
+  if (is_debug) {
+    configs += [
+      ":debug",
+      ":no_optimization",
+    ]
+  } else {
+    configs += [ ":optimization" ]
+  }
+}
+
+config("compiler_clang") {
+  common_flags = [ "-std=" + std_version ]
+
+  if (host_os == "linux") {
+    #common_flags += [ "-stdlib=libc++" ]
+  }
+
+  cflags = common_flags + [
+             "-fcolor-diagnostics",
+             "-ferror-limit=100",
+             "-Wall",
+             "-Weverything",
+             "-Wno-c++98-compat",
+             "-Wno-c++98-compat-pedantic",
+             "-Wno-missing-prototypes",
+             "-Wno-padded",
+           ]
+  ldflags = common_flags + []
+
+  #https://github.com/google/sanitizers
+
+  #https://clang.llvm.org/docs/AddressSanitizer.html
+  if (is_asan) {
+    cflags += [
+      "-fsanitize=address",
+      "-fno-omit-frame-pointer",
+    ]
+    ldflags += [ "-fsanitize=address" ]
+  }
+
+  #https://clang.llvm.org/docs/LeakSanitizer.html
+  if (is_lsan) {
+    ldflags += [ "-fsanitize=leak" ]
+  }
+
+  #https://clang.llvm.org/docs/MemorySanitizer.html
+  if (is_msan) {
+    cflags += [
+      "-fsanitize-memory-track-origins=1",
+      "-fno-omit-frame-pointer",
+
+      #"-fsanitize-memory-use-after-dtor", #experimental
+    ]
+    ldflags += [ "-fsanitize=memory" ]
+  }
+
+  #https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+  if (is_usan) {
+    common_flags_usan = [
+      "-fsanitize=undefined",
+      "-fsanitize=integer",
+      "-fsanitize=nullability",
+    ]
+    cflags += common_flags_usan
+    ldflags += common_flags_usan
+  }
+  if (is_generate_test_coverage) {
+    cflags += [
+      "-fprofile-instr-generate",
+      "-fcoverage-mapping",
+    ]
+    ldflags += [ "-fprofile-instr-generate" ]
+  }
+}
+
+config("compiler_gcc") {
+  common_flags = [
+    "-std=" + std_version,
+    "-Wall",
+    "-Werror",
+    "-Wextra",
+    "-Wpedantic",
+  ]
+  cflags = common_flags + []
+  ldflags = common_flags
+}
+
+config("compiler_msvc") {
+  common_flags = []
+  cflags = common_flags + [
+             "/std:" + std_version,
+             "/TP",  # https://msdn.microsoft.com/en-us/library/032xwy55.aspx
+             "/EHsc",
+           ]
+  ldflags = common_flags
+}
+
+config("debug") {
+  defines = [ "JASL_DEBUG" ]
+  if (compiler_type == "clang" || compiler_type == "gcc") {
+    cflags = [ "-g" ]
+    ldflags = [ "-g" ]
+  } else if (compiler_type == "msvc") {
+    cflags = [ "/Zi" ]
+    ldflags = [ "/DEBUG" ]
+  }
+}
+
+# https://msdn.microsoft.com/en-us/library/k1ack8f1.aspx
+
+config("optimization") {
+  if (compiler_type == "clang" || compiler_type == "gcc") {
+    cflags = [ "-O3" ]
+  } else if (compiler_type == "msvc") {
+    #cflags = [ "/Ox" ]
+  }
+}
+
+config("no_optimization") {
+  if (compiler_type == "clang" || compiler_type == "gcc") {
+    cflags = [ "-O0" ]
+  } else {
+    cflags = [ "/Od" ]
+  }
+}

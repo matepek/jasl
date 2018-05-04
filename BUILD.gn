@@ -1,0 +1,32 @@
+group("all") {
+  deps = [
+    ":version-consistency.check",
+    "//performance",
+    "//test",
+  ]
+}
+
+action("version-consistency.check") {
+  script = "//build/check.py"
+
+  args = [
+    "version-consistency",
+    "--changelog",
+    rebase_path("//CHANGELOG.md"),
+    "--jasl_common",
+    rebase_path("//include/jasl_common.hpp"),
+    "--output",
+    target_name,
+  ]
+
+  deps = [
+    "//include",
+  ]
+  sources = [
+    "//CHANGELOG.md",
+    "//include/jasl_common.hpp",
+  ]
+  outputs = [
+    "$root_out_dir/$target_name",
+  ]
+}

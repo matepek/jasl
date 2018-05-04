@@ -1,0 +1,144 @@
+template("test") {
+  forward_variables_from(invoker, "*")
+
+  test_name = target_name + ".test"
+
+  if (is_generate_test_coverage) {
+    profraw_name = target_name + ".profraw"
+  }
+
+  executable(test_name) {
+    sources = [
+      test_name + ".cpp",
+    ]
+
+    public_deps = [
+      "//include",
+    ]
+  }
+
+  if (is_run_tests) {
+    tested_name = target_name + ".tested"
+
+    action(tested_name) {
+      script = "//build/call.py"
+
+      args = []
+
+      if (is_generate_test_coverage) {
+        args += [
+          "-e",
+          "LLVM_PROFILE_FILE=" + profraw_name,
+        ]
+      }
+
+      args += [
+        "-c",
+        "./$test_name",
+        "-o",
+        target_name,
+      ]
+
+      outputs = [
+        "$root_out_dir/$target_name",
+      ]
+      if (is_generate_test_coverage) {
+        outputs += [ "$root_out_dir/$profraw_name" ]
+      }
+
+      deps = [
+        ":$test_name",
+      ]
+    }
+
+    if (is_generate_test_coverage) {
+      assert(is_clang)
+
+      profdata_name = target_name + ".profdata"
+      html_name = target_name + ".coverage"
+
+      if (host_os == "mac") {
+        llvm_profdata_platfrom_dependent_args_prefix = [
+          "-c",
+          "xcrun",
+          "--",
+          "llvm-profdata",
+        ]
+        llvm_cov_platform_dependent_args_prefix = [
+          "-c",
+          "xcrun",
+          "--",
+          "llvm-cov",
+        ]
+      } else {
+        llvm_profdata_platfrom_dependent_args_prefix = [
+          "-c",
+          "llvm-profdata",
+          "--",
+        ]
+        llvm_cov_platform_dependent_args_prefix = [
+          "-c",
+          "llvm-cov",
+          "--",
+        ]
+      }
+
+      action(profdata_name) {
+        script = "//build/call.py"
+
+        args = llvm_profdata_platfrom_dependent_args_prefix + [
+                 "merge",
+                 "-sparse",
+                 "$profraw_name",
+                 "-o",
+                 target_name,
+               ]
+        outputs = [
+          "$root_out_dir/$target_name",
+        ]
+        deps = [
+          ":$tested_name",
+        ]
+      }
+
+      action(html_name) {
+        script = "//build/call.py"
+
+        args = llvm_cov_platform_dependent_args_prefix + [
+                 "show",
+                 "-format=html",
+                 "-instr-profile",
+                 profdata_name,
+                 test_name,
+                 "-o",
+                 target_name,
+               ]
+
+        outputs = [
+          "$root_out_dir/$target_name",
+        ]
+        deps = [
+          ":$profdata_name",
+          ":$test_name",
+        ]
+      }
+    }
+  }
+}
+
+template("test_build_err") {
+  forward_variables_from(invoker, [ "dummy_var" ])
+
+  source_name = target_name + ".test_build_err.cpp.c"
+  tested_name = target_name + ".tested"
+
+  source_set(tested_name) {
+    sources = [
+      source_name,
+    ]
+
+    public_deps = [
+      "//include",
+    ]
+  }
+}

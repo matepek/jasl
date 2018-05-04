@@ -1,0 +1,107 @@
+if (target_os == "") {
+  target_os = host_os
+}
+
+if (target_cpu == "") {
+  target_cpu = host_cpu
+}
+
+if (current_cpu == "") {
+  current_cpu = target_cpu
+}
+if (current_os == "") {
+  current_os = target_os
+}
+
+declare_args() {
+  if (host_os == "mac") {
+    # Set this to override the platform-specific default value.
+    compiler_type = "clang"
+  } else if (host_os == "linux") {
+    # Set this to override the platform-specific default value.
+    compiler_type = "gcc"
+  } else if (host_os == "win") {
+    # Set this to override the platform-specific default value.
+    compiler_type = "msvc"
+  } else {
+    assert(false)
+  }
+
+  # Debug build.
+  is_debug = false
+
+  # Compile for Address Sanitizer to find memory bugs.
+  is_asan = false
+
+  # Compile for Leak Sanitizer to find leaks.
+  #   Currently something wrong with it.
+  is_lsan = false
+
+  # Compile for Memory Sanitizer to find uninitialized reads.
+  #   Currently something wrong with it.
+  is_msan = false
+
+  # Compile for Undefined Behavior Sanitizer to find bugs.
+  is_usan = false
+
+  # Build will run tests.
+  is_run_tests = true
+
+  # Build will generate perforormance report.
+  #   Don't use this. The generated reports would be useless, because it measures during the buildig process when the resources under a heavy use.
+  is_run_performance_tests = false
+
+  # Build will generate coverage report.
+  is_generate_test_coverage = false
+
+  # These macros will be defined too.
+  define_macros = []
+}
+
+declare_args() {
+  if (host_os == "win") {
+    # Windows only.
+    # We are looking for the "$visual_studio_path\VC\Auxiliary\Build\vcvarsall.bat".
+    # It really depends on the VS version.
+    visual_studio_path =
+        "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community"
+
+    # C++ version. :std=<std_version> for compiler.
+    std_version = "c++latest"
+  } else {
+    # C++ version. -std=<std_version> for compiler.
+    std_version = "c++17"
+  }
+}
+
+is_clang = compiler_type == "clang"
+
+if (is_asan || is_lsan || is_msan) {
+  assert(is_clang, "These features requires clang!")
+}
+
+if (is_generate_test_coverage) {
+  assert(is_clang, "This features requires clang!")
+  assert(is_run_tests)
+}
+
+set_default_toolchain("//build/toolchain/$target_os:$target_cpu$compiler_type")
+
+set_defaults("source_set") {
+  configs = [ "//build/config:default" ]
+}
+
+set_defaults("static_library") {
+  configs = [ "//build/config:default" ]
+}
+
+set_defaults("shared_library") {
+  configs = [ "//build/config:default" ]
+}
+
+set_defaults("executable") {
+  configs = [ "//build/config:default" ]
+}
+
+import("//build/test.gni")
+import("//build/performance.gni")

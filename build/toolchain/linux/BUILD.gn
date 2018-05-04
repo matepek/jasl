@@ -1,0 +1,51 @@
+template("clang_gcc_toolchain") {
+  forward_variables_from(invoker, [ "compiler_exec" ])
+
+  toolchain(target_name) {
+    output_subdir = "{{target_out_dir}}/{{label_name}}"
+
+    tool("stamp") {
+      command = "touch {{output}}"
+      description = "STAMP {{output}}"
+    }
+
+    tool("link") {
+      outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
+      rspfile = "$outfile.rsp"
+      rspfile_content = "{{inputs}} {{solibs}} {{libs}}"
+      command = "$compiler_exec {{ldflags}} -o \"$outfile\" @\"$rspfile\""
+      description = "LINK $outfile"
+      outputs = [
+        outfile,
+      ]
+    }
+
+    tool("cxx") {
+      precompiled_header_type = "gcc"
+      depfile = "{{output}}.d"
+      command = "$compiler_exec -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+      depsformat = "gcc"
+      description = "CXX {{output}}"
+      outputs = [
+        "$output_subdir/{{source_name_part}}.o",
+      ]
+    }
+
+    # It is a hack to test compile errors. The project has no C file.
+    tool("cc") {
+      command = "($compiler_exec {{defines}} {{include_dirs}} {{cflags}} -c {{source}} -o {{output}}" + " > /dev/null 2>&1); if test \$? -eq 0;" + "then rm {{output}}; echo Error: Compilation error was expected, but not occured: {{source}}!;" + "else touch {{output}}; fi;"
+      description = "COMPILE_AND_EXPECT_ERROR {{output}}"
+      outputs = [
+        "$output_subdir/{{source_name_part}}.err_ok",
+      ]
+    }
+  }
+}
+
+clang_gcc_toolchain("x64gcc") {
+  compiler_exec = "g++"
+}
+
+clang_gcc_toolchain("x64clang") {
+  compiler_exec = "clang++"
+}

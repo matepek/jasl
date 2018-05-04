@@ -1,0 +1,14 @@
+source_set("include") {
+  sources = [
+    "jasl_common.hpp",
+    "jasl_static_string.hpp",
+    "jasl_string.hpp",
+    "jasl_string_view.hpp",
+  ]
+
+  public_configs = [ ":public_config" ]
+}
+
+config("public_config") {
+  include_dirs = [ "//include" ]
+}

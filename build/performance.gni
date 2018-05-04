@@ -1,0 +1,37 @@
+template("performance") {
+  forward_variables_from(invoker, "*")
+  exec_name = target_name + ".performance"
+
+  executable(exec_name) {
+    sources = [
+      exec_name + ".cpp",
+    ]
+
+    public_deps = [
+      "//include",
+    ]
+  }
+
+  if (is_run_performance_tests) {
+    result_name = target_name + ".performance-result"
+
+    action(result_name) {
+      script = "//build/call.py"
+
+      args = [
+        "-c",
+        "./$exec_name",
+        "-o",
+        target_name,
+      ]
+
+      outputs = [
+        "$root_out_dir/$target_name",
+      ]
+
+      deps = [
+        ":$exec_name",
+      ]
+    }
+  }
+}
