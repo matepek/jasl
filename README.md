@@ -3,9 +3,9 @@ JASL (Just Another String Library)
 
 [std::string_view]: http://en.cppreference.com/w/cpp/string/basic_string_view
 [std::string]: http://en.cppreference.com/w/cpp/string/basic_string
-[jasl::string]: inlcude/jasl_string.hpp
-[jasl::string_view]: inlcude/jasl_string_view.hpp
-[jasl::static_string]: inlcude/static_string.hpp
+[jasl::string]: include/jasl_string.hpp
+[jasl::string_view]: include/jasl_string_view.hpp
+[jasl::static_string]: include/jasl_static_string.hpp
 [ninja]: https://github.com/ninja-build/ninja
 [gn]: https://chromium.googlesource.com/chromium/src/+/master/tools/gn/README.md
 
@@ -48,7 +48,7 @@ s.assign(exception_message_ptr); // ok: Memory is allocated and the message is c
 
 This is a header-only library. Add the ```include``` directory to your include directories.
 
-Note: For building and running tests see [Tests and Coverage](#tests-and-coverage)
+Note: For building and running tests see [Tests, Test Coverage and Performance Tests](#tests-test-coverage-and-performance-tests)
 
 # Documentation
 
@@ -127,7 +127,7 @@ This macro is recommended to be defined during development and testing. It helps
 >Evaluating a string-literal results in a string literal object with static storage duration, initialized from the given characters as specified above.
 [Source](https://stackoverflow.com/questions/32872465/const-char-value-lifetime)
 
-(http://en.cppreference.com/w/cpp/concept/LiteralType)
+Note: [cppreference - literal types](http://en.cppreference.com/w/cpp/concept/LiteralType)
 
 # Tests, Test Coverage and Performance Tests
 
