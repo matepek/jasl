@@ -1,0 +1,39 @@
+matrix:
+  include:
+    - os: linux
+      env: 
+        - GN_HASH=ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874
+        - NINJA_LINK=https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip
+      script:
+        - python ./test/build_helper.py --travis-ci --filter-compiler_type clang
+    - os: linux
+      env: 
+        - GN_HASH=ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874
+        - NINJA_LINK=https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip
+      script:
+        - python ./test/build_helper.py --travis-ci --filter-compiler_type gcc
+    - os: osx
+      env: 
+        - GN_HASH=a14b089cbae9c29ecbc781686ada8babac8550af
+        - NINJA_LINK=https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-mac.zip
+      script:
+        - python ./test/build_helper.py --travis-ci --filter-compiler_type clang
+
+before_install:
+  - mkdir bin
+  - cd bin
+  - wget -O gn https://storage.googleapis.com/chromium-gn/$GN_HASH
+  - chmod +x gn
+  - wget -O ninja.zip $NINJA_LINK
+  - unzip ninja.zip
+  - chmod +x ninja
+  - PATH=$PATH:`pwd`
+  - cd ..
+  - gn --version
+  - ninja --version
+  - g++ --version
+  - python --version
+  - echo $PATH
+
+script:
+  - python ./test/build_helper.py --travis-ci --filter-compiler_type $COMPILER_TYPE

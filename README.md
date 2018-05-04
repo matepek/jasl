@@ -1,6 +1,8 @@
 JASL (Just Another String Library)
 ==================================
 
+[![Build Status](https://travis-ci.org/matepek/jasl.svg?branch=master)](https://travis-ci.org/matepek/jasl)
+
 [std::string_view]: http://en.cppreference.com/w/cpp/string/basic_string_view
 [std::string]: http://en.cppreference.com/w/cpp/string/basic_string
 [jasl::string]: include/jasl_string.hpp

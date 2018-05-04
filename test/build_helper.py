@@ -80,10 +80,11 @@ if __name__ == '__main__':
   parser.add_argument('--clean', '-c', action='store_true')
   parser.add_argument('--gen', '--gn', '-g', action='store_true')
   parser.add_argument('--ninja', '-n', action='store_true')
-  parser.add_argument('--gitlab-ci', action='store_true')
+  parser.add_argument('--travis-ci', action='store_true')
+  parser.add_argument('--filter-compiler_type', choices=['msvc', 'clang', 'gcc'])
   args = parser.parse_args()
 
-  if args.gitlab_ci:
+  if args.travis_ci:
     args.gen = True
     args.ninja = True
 
@@ -141,6 +142,15 @@ if __name__ == '__main__':
   gn.add_filter_not(lambda x: x['define_macros'] in (
       abort_on, assert_and_abort_on) and x['is_run_tests'] == true_v)
 
+  if args.filter_compiler_type:
+    if args.filter_compiler_type == 'clang':
+      filter_this = clang_v
+    elif args.filter_compiler_type == 'gcc':
+      filter_this = gcc_v
+    elif args.filter_compiler_type =='msvc':
+      filter_this = msvc_v
+    gn.add_filter(lambda x: x['compiler_type'] == filter_this)
+
   variants = gn.get()
 
   ###
@@ -170,10 +180,10 @@ if __name__ == '__main__':
       raise Exception()
 
   # filter more, build less
-  gn.add_filter_not(lambda x: x['is_run_performance_tests'] == true_v)
-  if args.gitlab_ci:
-    gn.add_filter_not(lambda x: x['compiler_type'] != gcc_v)
-
+  gn.add_filter(lambda x: x['is_run_performance_tests'] == false_v)
+  if args.travis_ci:
+    gn.add_filter(lambda x: x['is_asan'] == false_v)
+    gn.add_filter(lambda x: x['is_generate_test_coverage'] == false_v)
   variants = gn.get()
 
   ###
@@ -183,8 +193,9 @@ if __name__ == '__main__':
     fail_count = 0
     for v in variants:
       out_dir = os.path.join('out', v[1])
+      print('# ____________________________')
+      print('# '+ v[0])
       command = [ninja_exec, '-C', out_dir]
-      print(' '.join(command))
       sys.stdout.flush()
       return_code = subprocess.call(command)
       if return_code != 0:
