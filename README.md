@@ -220,6 +220,9 @@ Source location: ```performance/*.performance.cpp```
 
 JASL library uses the [MIT](LICENSE) license.
 
+# Thanks and Stuffs I used
+ * https://github.com/Microsoft/vswhere
+
 # TODO
  * lsna, msan
  * better hash for jasl::string_view
@@ -229,5 +232,6 @@ JASL library uses the [MIT](LICENSE) license.
  * document jasl assert and jasl exception macros
  * macro stacking?
  * std_string support (to_std_string, ?)
+ * ngg comments
 
 
