@@ -8,6 +8,17 @@
 
 #include "jasl_common.hpp"
 
+#ifndef JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE
+
+#include <string_view>
+
+namespace jasl {
+template <typename CharT, typename Traits = std::char_traits<CharT>>
+using basic_string_view = std::basic_string_view<CharT, Traits>;
+}  // namespace jasl
+
+#else
+
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
@@ -223,12 +234,6 @@ std::basic_ostream<CharT, Traits>& operator<<(
            static_cast<std::make_signed<std::size_t>::type>(v.size()));
   return os;
 }
-
-typedef basic_string_view<char> string_view;
-typedef basic_string_view<wchar_t> wstring_view;
-typedef basic_string_view<char16_t> u16string_view;
-typedef basic_string_view<char32_t> u32string_view;
-
 }  // namespace jasl
 
 #ifdef __cpp_lib_string_view
@@ -255,3 +260,12 @@ struct hash<jasl::basic_string_view<CharT, Traits>> {
 };
 }  // namespace std
 #endif
+
+#endif
+
+namespace jasl {
+typedef basic_string_view<char> string_view;
+typedef basic_string_view<wchar_t> wstring_view;
+typedef basic_string_view<char16_t> u16string_view;
+typedef basic_string_view<char32_t> u32string_view;
+}  // namespace jasl

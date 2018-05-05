@@ -10,21 +10,14 @@
 
 #include <memory>
 #include <string>
-#if defined(JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE)
 #include "jasl_string_view.hpp"
-#define JASL_TEMP_STRING_VIEW_TYPE jasl::basic_string_view
-#else
-#include <string_view>
-#define JASL_TEMP_STRING_VIEW_TYPE std::basic_string_view
-#endif
 
 namespace jasl {
 
 template <typename CharT, class Traits = std::char_traits<CharT>>
-class basic_string : public JASL_TEMP_STRING_VIEW_TYPE<CharT, Traits> {
+class basic_string : public basic_string_view<CharT, Traits> {
  public:
-  typedef JASL_TEMP_STRING_VIEW_TYPE<CharT, Traits> base_type;
-#undef JASL_TEMP_STRING_VIEW_TYPE
+  typedef basic_string_view<CharT, Traits> base_type;
 
  private:
   static const CharT empty_string[1];
