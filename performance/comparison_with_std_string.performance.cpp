@@ -5,6 +5,7 @@
 // This code is licensed under the MIT License (MIT).
 
 #include <chrono>
+#include <functional>
 #include <iostream>
 #include <new>
 #include <string>
