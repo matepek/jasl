@@ -211,10 +211,11 @@ Source location: ```performance/*.performance.cpp```
 
 ### Tested on
 
- * OSX - Apple LLVM version 9.1.0 (clang-902.0.39.1)
- * Ubuntu - g++ (Ubuntu 5.4.0-6ubuntu1~16.04.9) 5.4.0 20160609
- * Ubuntu - clang version 6.0.1-svn329487-1~exp1~20180408093033.68 (branches/release_60)
- * MS Windows - Microsoft (R) C/C++ Optimizing Compiler Version 19.13.26132 for x64
+ * OSX 10.13.4 - Apple LLVM version 9.1.0 (clang-902.0.39.1)
+ * Ubuntu 16.04 - g++ (Ubuntu 4.8.5-4ubuntu2) 4.8.5
+ * Ubuntu 16.04 - g++ (Ubuntu 5.4.0-6ubuntu1~16.04.9) 5.4.0 20160609
+ * Ubuntu 16.04 - clang version 6.0.1-svn329487-1~exp1~20180408093033.68 (branches/release_60)
+ * MS Windows 10 - Microsoft (R) C/C++ Optimizing Compiler Version 19.13.26132 for x64
 
 # Licence
 
