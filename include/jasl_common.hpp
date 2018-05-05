@@ -23,26 +23,54 @@ static_assert(JASL_VERSION_PATCH < 10000, "JASL_VERSION error");
   (JASL_VERSION_PATCH + JASL_VERSION_MINOR * 10000 + \
    JASL_VERSION_MAJOR * 10000 * 1000)
 
-// MSVC has no "feature testing macros" -.-
 // https://msdn.microsoft.com/en-us/library/b0084kay.aspx
 // https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
 // https://docs.microsoft.com/en-us/cpp/visual-cpp-language-conformance
 #ifdef _MSC_VER
+#ifndef __cpp_constexpr
 #define __cpp_constexpr                              \
   (_MSC_VER >= 1911L && _MSVC_LANG >= 201703L        \
-       ? 201606L                                     \
+       ? 201603L                                     \
        : (_MSC_VER >= 1910L && _MSVC_LANG >= 201402L \
               ? 201304L                              \
               : (_MSC_VER >= 1900L ? 200704L : 0L)))
 #if !__cpp_constexpr
 #undef __cpp_constexpr
-#endif
+#endif // !__cpp_constexpr
+#endif // __cpp_constexpr
+#ifndef __cpp_lib_string_view
 #define __cpp_lib_string_view \
-  (_MSC_VER >= 1910L && _MSVC_LANG >= 201703L ? 201606L : 0L)
+  (_MSC_VER >= 1910L && _MSVC_LANG >= 201703L ? 201603L : 0L)
 #if !__cpp_lib_string_view
 #undef __cpp_lib_string_view
-#endif
-#endif
+#endif // !__cpp_lib_string_view
+#endif // __cpp_lib_string_view
+#endif // _MSC_VER
+
+// https://gcc.gnu.org/projects/cxx-status.html
+// http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
+#if defined(__GNUG__) && !defined(__clang__)
+#define JASL_TMP_GNUG_VER (__GNUC__ * 100 + __GNUC_MINOR__)
+#ifndef __cpp_constexpr
+#define __cpp_constexpr                              \
+  (JASL_TMP_GNUG_VER >= 700L         \
+       ? 201603L                                     \
+       : (JASL_TMP_GNUG_VER >= 500L  \
+              ? 201304L                              \
+              : (JASL_TMP_GNUG_VER >= 406L ? 200704L : 0L)))
+#if !__cpp_constexpr
+#undef __cpp_constexpr
+#endif // !__cpp_constexpr
+#endif // __cpp_constexpr
+#ifndef __cpp_lib_string_view
+#define __cpp_lib_string_view \
+  (_MSC_VER >= 1910L && _MSVC_LANG >= 201703L ? 201603L : 0L)
+#if !__cpp_lib_string_view
+#undef __cpp_lib_string_view
+#endif // !__cpp_lib_string_view
+#endif // __cpp_lib_string_view
+#undef JASL_TMP_GNUG_VER
+#endif // defined(__GNUG__) && !defined(__clang__)
 
 // http://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
 
