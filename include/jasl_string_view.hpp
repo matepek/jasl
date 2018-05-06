@@ -64,10 +64,8 @@ class basic_string_view {
 
   constexpr const_iterator begin() const noexcept { return cbegin(); }
   constexpr const_iterator end() const noexcept { return cend(); }
-  constexpr const_iterator cbegin() const noexcept { return this->_ptr; }
-  constexpr const_iterator cend() const noexcept {
-    return this->_ptr + this->_size;
-  }
+  constexpr const_iterator cbegin() const noexcept { return _ptr; }
+  constexpr const_iterator cend() const noexcept { return _ptr + _size; }
   constexpr const_reverse_iterator rbegin() const noexcept {
     return const_reverse_iterator(cend());
   }
@@ -81,66 +79,66 @@ class basic_string_view {
     return const_reverse_iterator(cbegin());
   }
 
-  constexpr bool empty() const noexcept { return this->_size == 0; }
-  constexpr const CharT* data() const noexcept { return this->_ptr; }
-  constexpr size_type size() const noexcept { return this->_size; }
-  constexpr size_type length() const noexcept { return this->_size; }
+  constexpr bool empty() const noexcept { return _size == 0; }
+  constexpr const CharT* data() const noexcept { return _ptr; }
+  constexpr size_type size() const noexcept { return _size; }
+  constexpr size_type length() const noexcept { return _size; }
 
   constexpr const_reference operator[](size_type pos) const {
-    return this->_ptr[pos];
+    return _ptr[pos];
   }
 
   JASL_CONSTEXPR_FROM_14 const_reference at(size_type pos) const {
-    if (pos >= this->size())
+    if (pos >= size())
       JASL_THROW(std::out_of_range("string_view::substr"));
-    return this->_ptr[pos];
+    return _ptr[pos];
   }
 
   constexpr const_reference front() const noexcept {
-    JASL_ASSERT(!this->empty(), "string_view::front(): string is empty");
-    return this->_ptr[0];
+    JASL_ASSERT(!empty(), "string_view::front(): string is empty");
+    return _ptr[0];
   }
 
   constexpr const_reference back() const noexcept {
-    JASL_ASSERT(!this->empty(), "string_view::back(): string is empty");
-    return this->_ptr[this->_size - 1];
+    JASL_ASSERT(!empty(), "string_view::back(): string is empty");
+    return _ptr[_size - 1];
   }
 
   JASL_CONSTEXPR_FROM_14 void swap(basic_string_view& other) noexcept {
-    const value_type* p = this->_ptr;
-    this->_ptr = other._ptr;
+    const value_type* p = _ptr;
+    _ptr = other._ptr;
     other._ptr = p;
 
-    size_type s = this->_size;
-    this->_size = other._size;
+    size_type s = _size;
+    _size = other._size;
     other._size = s;
   }
 
   size_type copy(CharT* s, size_type n, size_type pos = 0) const {
-    if (pos > this->size())
+    if (pos > size())
       JASL_THROW(std::out_of_range("string_view::copy"));
-    size_type rlen = std::min(n, this->size() - pos);
-    Traits::copy(s, this->data() + pos, rlen);
+    size_type rlen = std::min(n, size() - pos);
+    Traits::copy(s, data() + pos, rlen);
     return rlen;
   }
 
   JASL_CONSTEXPR_FROM_14 basic_string_view
   substr(size_type pos, size_type count = npos) const {
-    if (pos > this->size())
+    if (pos > size())
       JASL_THROW(std::out_of_range("basic_string_view::substr"));
-    size_type rlen = std::min(count, this->size() - pos);
+    size_type rlen = std::min(count, size() - pos);
     return basic_string_view(data() + pos, rlen);
   }
 
   JASL_CONSTEXPR_FROM_14 void remove_prefix(size_type n) noexcept {
     JASL_ASSERT(n <= size(), "remove_prefix() can't remove more than size()");
-    this->_ptr += n;
-    this->_size -= n;
+    _ptr += n;
+    _size -= n;
   }
 
   JASL_CONSTEXPR_FROM_14 void remove_suffix(size_type n) noexcept {
     JASL_ASSERT(n <= size(), "remove_suffix() can't remove more than size()");
-    this->_size -= n;
+    _size -= n;
   }
 
   JASL_CONSTEXPR_FROM_14 int compare(const basic_string_view& right) const
@@ -156,21 +154,20 @@ class basic_string_view {
   size_type find(const basic_string_view& s) const noexcept {
     JASL_ASSERT(s.size() == 0 || s.data() != nullptr,
                 "string_view::find(): received nullptr");
-    auto itWhere = this->cbegin();
+    auto itWhere = cbegin();
     auto itWhat = s.cbegin();
-    while (itWhere != this->cend() && itWhat != s.cend()) {
+    while (itWhere != cend() && itWhat != s.cend()) {
       if (*itWhere != *itWhat) {
         ++itWhere;
       } else {
         auto match = itWhere++;
         ++itWhat;
-        while (itWhere != this->cend() && itWhat != s.cend() &&
-               *itWhere == *itWhat) {
+        while (itWhere != cend() && itWhat != s.cend() && *itWhere == *itWhat) {
           ++itWhere;
           ++itWhat;
         }
         if (itWhat == s.cend()) {
-          return static_cast<size_type>(match - this->cbegin());
+          return static_cast<size_type>(match - cbegin());
         }
         itWhat = s.cbegin();
       }

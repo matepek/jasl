@@ -14,18 +14,20 @@
 #define JASL_VERSION_PATCH 0
 #define JASL_VERSION_DATE "2018-04-12"
 
-static_assert(JASL_VERSION_MAJOR < 1000, "JASL_VERSION error");
-static_assert(JASL_VERSION_MINOR < 1000, "JASL_VERSION error");
-static_assert(JASL_VERSION_PATCH < 10000, "JASL_VERSION error");
+static_assert(JASL_VERSION_MAJOR < 100, "JASL_VERSION error");
+static_assert(JASL_VERSION_MINOR < 100, "JASL_VERSION error");
+static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
 
 // for example version 1.2.3 is: 10020003
-#define JASL_VERSION                                 \
-  (JASL_VERSION_PATCH + JASL_VERSION_MINOR * 10000 + \
-   JASL_VERSION_MAJOR * 10000 * 1000)
+#define JASL_VERSION                                \
+  (JASL_VERSION_PATCH + JASL_VERSION_MINOR * 1000 + \
+   JASL_VERSION_MAJOR * 1000 * 100)
 
-// https://msdn.microsoft.com/en-us/library/b0084kay.aspx
-// https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
-// https://docs.microsoft.com/en-us/cpp/visual-cpp-language-conformance
+/*
+ * https://msdn.microsoft.com/en-us/library/b0084kay.aspx
+ * https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+ * https://docs.microsoft.com/en-us/cpp/visual-cpp-language-conformance
+ */
 #ifdef _MSC_VER
 #ifndef __cpp_constexpr
 #define __cpp_constexpr                              \
@@ -47,31 +49,35 @@ static_assert(JASL_VERSION_PATCH < 10000, "JASL_VERSION error");
 #endif  // __cpp_lib_string_view
 #endif  // _MSC_VER
 
-// https://gcc.gnu.org/projects/cxx-status.html
-// https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html
-// http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
+/*
+ * https://gcc.gnu.org/projects/cxx-status.html
+ * https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html
+ * http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
+ */
 #if defined(__GNUG__) && !defined(__clang__)
 #ifndef __cpp_constexpr
-#define __cpp_constexpr \
-  (__GNUC__ >= 7        \
-       ? 201603L        \
-       : (__GNUC__ >= 5 \
-              ? 201304L \
-              : (__GNUC__ == 4 && __GNUC_MINOR__ >= 6 ? 200704L : 0L)))
+#define __cpp_constexpr  \
+  (__GNUC__ >= 7L        \
+       ? 201603L         \
+       : (__GNUC__ >= 5L \
+              ? 201304L  \
+              : (__GNUC__ == 4L && __GNUC_MINOR__ >= 6L ? 200704L : 0L)))
 #if !__cpp_constexpr
 #undef __cpp_constexpr
 #endif  // !__cpp_constexpr
 #endif  // __cpp_constexpr
 #ifndef __cpp_lib_string_view
 #define __cpp_lib_string_view \
-  (__GNUC__ > 7 || (__GNUC__ == 7 && __GNUC_MINOR__ >= 1) ? 201606L : 0L)
+  (__GNUC__ > 7L || (__GNUC__ == 7L && __GNUC_MINOR__ >= 1L) ? 201606L : 0L)
 #if !__cpp_lib_string_view
 #undef __cpp_lib_string_view
 #endif  // !__cpp_lib_string_view
 #endif  // __cpp_lib_string_view
 #endif  // defined(__GNUG__) && !defined(__clang__)
 
-// http://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
+/*
+ *http://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
+ */
 
 // http://en.cppreference.com/w/cpp/language/constexpr
 #ifdef __cpp_constexpr
@@ -94,9 +100,9 @@ static_assert(JASL_VERSION_PATCH < 10000, "JASL_VERSION error");
 #define JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE
 #endif
 
-#ifdef JASL_ABORT_ON_EXCEPTION_ON
-#include <cstdlib>
-#define JASL_THROW(exception) ::std::abort()
+#ifdef JASL_TERMINATE_ON_EXCEPTION_ON
+#include <exception>
+#define JASL_THROW(exception) ::std::terminate()
 #else
 #define JASL_THROW(exception) throw exception
 #endif
@@ -108,7 +114,7 @@ static_assert(JASL_VERSION_PATCH < 10000, "JASL_VERSION error");
   do {                                                                \
     if (!(expr)) {                                                    \
       ::std::cerr << __FILE__ << '(' << __LINE__ << "): " << message; \
-      ::std::abort();                                                 \
+      ::std::terminate();                                             \
     }                                                                 \
   } while (false)
 #else

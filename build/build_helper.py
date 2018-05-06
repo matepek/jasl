@@ -195,10 +195,10 @@ gn = GN(
     define_macros=StringArg('define_macros', 'defs',
                             no_macro=('[]', 'e'),
                             assert_on=('["JASL_ASSERT_ON"]', 'assert'),
-                            abort_on=(
-                                '["JASL_ABORT_ON_EXCEPTION_ON"]', 'exc'),
-                            assert_and_abort_on=(
-                                '["JASL_ASSERT_ON", "JASL_ABORT_ON_EXCEPTION_ON"]', 'assert-exc')
+                            terminate_on=(
+                                '["JASL_TERMINATE_ON_EXCEPTION_ON"]', 'exc'),
+                            assert_and_terminate_on=(
+                                '["JASL_ASSERT_ON", "JASL_TERMINATE_ON_EXCEPTION_ON"]', 'assert-exc')
                             )
 )
 
@@ -209,7 +209,7 @@ gn.add_permanent_filter_not(
 gn.add_permanent_filter_not(lambda x: x[gn.is_generate_test_coverage] ==
                             gn.is_generate_test_coverage.true and x[gn.is_run_tests] == gn.is_run_tests.false)
 gn.add_permanent_filter_not(lambda x: x[gn.define_macros] in [
-                            gn.define_macros.abort_on, gn.define_macros.assert_and_abort_on] and x[gn.is_run_tests] == gn.is_run_tests.true)
+                            gn.define_macros.terminate_on, gn.define_macros.assert_and_terminate_on] and x[gn.is_run_tests] == gn.is_run_tests.true)
 gn.add_permanent_filter_not(
     lambda x: x[gn.compiler_type] == gn.compiler_type.msvc and x[gn.std_version] == gn.std_version.cpp11)
 gn.add_permanent_filter_not(
@@ -247,27 +247,29 @@ if __name__ == '__main__':
     parser.add_argument('--appveyor', action='store_true')
     parser.add_argument('--compiler-type',
                         choices=['msvc', 'clang', 'gcc'])
+    parser.add_argument('--msvc-vcvarsall-path')
     args = parser.parse_args()
 
     if args.travis_ci or args.appveyor:
         args.gen = True
         args.ninja = True
 
-    if is_win:
-        if not args.appveyor:
-            assert(local_compiler['msvc'])
-            vs_vers = {}
-            for vs in local_compiler['msvc']:
-                instanceId = 'id' + vs['instanceId']
-                vs_vers[instanceId] = ('"' + vs['vcvarsall'] + '"', instanceId)
-            gn.add_args(visual_studio_path=StringArg(
-                'visual_studio_path', 'vs', **vs_vers))
-        else:
-            # vswhere.exe somehow not working on appveyor
-            assert('visual_studio_path' not in gn.args)
-            assert('JASL_VS' in os.environ)
-            gn.add_args(visual_studio_path=StringArg('visual_studio_path', 'vs',
-                                                     env=('"' + os.environ['JASL_VS'] + '"', 'env')))
+    # remark: vswhere.exe somehow not working on appveyor
+    if args.msvc_vcvarsall_path:
+        assert(is_win)
+        assert(not args.compiler_type or args.compiler_type == 'msvc')
+        assert(os.path.exists(args.msvc_vcvarsall_path))
+        gn.add_args(visual_studio_path=StringArg(
+                'visual_studio_path', 'vs', param=('"' + args.msvc_vcvarsall_path + '"', 'param')))
+    elif is_win:
+        # vswhere.exe should have found the compilers
+        assert(local_compiler['msvc'])
+        vs_vers = {}
+        for vs in local_compiler['msvc']:
+            instanceId = 'id' + vs['instanceId']
+            vs_vers[instanceId] = ('"' + vs['vcvarsall'] + '"', instanceId)
+        gn.add_args(visual_studio_path=StringArg(
+            'visual_studio_path', 'vs', **vs_vers))
 
     ###
     if args.clean:
