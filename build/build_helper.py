@@ -224,14 +224,16 @@ if __name__ == '__main__':
                         choices=['msvc', 'clang', 'gcc'])
     args = parser.parse_args()
 
+    local_compiler = detect_compiler_version()
+
     if args.travis_ci:
         args.gen = True
         args.ninja = True
 
     ###
     if args.clean:
-        shutil.rmtree('out', ignore_errors=True)
-        os.mkdir('out')
+        for item in filter(lambda x: x not in ['.clang-format'], os.listdir('out')):
+            shutil.rmtree(os.path.join('out', item), ignore_errors=True)
 
     variants = gn.descardian()
 
@@ -291,7 +293,6 @@ if __name__ == '__main__':
         variants = variants.filter(
             lambda x: x[gn.compiler_type] == current_platform_default_compiler_type())
 
-    local_compiler = detect_compiler_version()
     if local_compiler['clang']:
         if is_mac and local_compiler['clang']['version'][0] < 9:
             variants = variants.filter_not(
