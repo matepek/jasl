@@ -21,6 +21,55 @@ is_linux = platform.system() == 'Linux'
 assert(is_win or is_mac or is_linux)
 
 
+def detect_compiler_version():
+    compiler = {
+        'clang': None,
+        'gcc': None,
+        'msvc': None
+    }
+    version_re = re.compile(r'[^\n\d]*(\d+)\.(\d+)\.(\d+).*')
+    if is_mac or is_linux:
+        try:
+            output = subprocess.check_output(['clang++', '--version'])
+            m = version_re.match(output.decode())
+            compiler['clang'] = {'version': tuple(int(v) for v in m.groups())}
+        except subprocess.CalledProcessError as e:
+            assert(e.returncode == 2)
+    if is_linux:
+        try:
+            output = subprocess.check_output(['g++', '--version'])
+            m = version_re.match(output.decode())
+            compiler['gcc'] = {'version': tuple(int(v) for v in m.groups())}
+        except subprocess.CalledProcessError as e:
+            assert(e.returncode == 2)
+    if is_win:
+        try:
+            vswhere_path = os.path.join(
+                os.path.dirname(__file__), 'win', 'vswhere.exe')
+            output = subprocess.check_output([vswhere_path, '-format', 'json'])
+            import json
+            vss = json.loads(output)
+            if len(vss):
+                compiler['msvc'] = []
+                for vs in vss:
+                    compiler['msvc'].append(vs)
+                    vcvars = os.path.join(vs['installationPath'], "VC\\Auxiliary\\Build\\vcvars32.bat")
+                    params = [vcvars, '&&', 'cl.exe']
+                    output = subprocess.check_output(params, stderr=subprocess.STDOUT, shell=True)
+                    m = re.search(r'Compiler Version[^\n\d]+(\d+)\.(\d+)\.(\d+)', output)
+                    # for x86 could be parsed
+                    assert(m)
+                    assert('version' not in compiler['msvc'][-1])
+                    compiler['msvc'][-1]['version'] = tuple(int(v) for v in m.groups())
+        except subprocess.CalledProcessError as e:
+            assert(e.returncode == 2)
+    print('Detected compiler', compiler)
+    return compiler
+
+
+local_compiler = detect_compiler_version()
+
+
 class Value:
 
     def __init__(self, arg, value, short):
@@ -58,6 +107,7 @@ class StringArg:
         self.name = name
         self.short = short
         self.values = []
+        assert(len(kwargs))
         assert('values' not in kwargs)
         for key in kwargs:
             self.values.append(Value(self, *kwargs[key]))
@@ -71,9 +121,16 @@ class GN:
 
     def __init__(self, **kwargs):
         assert('args' not in kwargs)
-        self.args = kwargs
-        self.__dict__.update(self.args)
+        self.args = dict()
         self.filters = []
+        self.add_args(**kwargs)
+
+    def add_args(self, **kwargs):
+        assert('args' not in kwargs)
+        for k in kwargs:
+            assert(k not in self.args)
+        self.args.update(kwargs)
+        self.__dict__.update(self.args)
 
     def __repr__(self):
         return repr({k: repr(self.args[k].values) for k in self.args})
@@ -141,6 +198,13 @@ gn = GN(
                                 '["JASL_ASSERT_ON", "JASL_ABORT_ON_EXCEPTION_ON"]', 'assert-exc')
                             )
 )
+if is_win:
+    assert(local_compiler['msvc'])
+    vs_vers = {}
+    for vs in local_compiler['msvc']:
+        instanceId = 'id' + vs['instanceId']
+        vs_vers[instanceId] = ('"' + vs['installationPath'] + '"', instanceId)
+    gn.add_args(visual_studio_path=StringArg('visual_studio_path', 'vs', **vs_vers))
 
 gn.add_permanent_filter_not(
     lambda x: x[gn.compiler_type] != gn.compiler_type.clang and x[gn.is_asan] == gn.is_asan.true)
@@ -173,46 +237,6 @@ def current_platform_default_compiler_type():
     return gn.compiler_type.clang if is_mac else gn.compiler_type.gcc if is_linux else gn.compiler_type.msvc if is_win else None
 
 
-def detect_compiler_version():
-    compiler = {
-        'clang': None,
-        'gcc': None,
-        'msvc': None
-    }
-    version_re = re.compile(r'[^\n\d]*(\d+)\.(\d+)\.(\d+).*')
-    if is_mac or is_linux:
-        try:
-            output = subprocess.check_output(['clang++', '--version'])
-            m = version_re.match(output.decode())
-            compiler['clang'] = {'version': tuple(int(v) for v in m.groups())}
-        except subprocess.CalledProcessError as e:
-            assert(e.returncode == 2)
-            pass
-    if is_linux:
-        try:
-            output = subprocess.check_output(['g++', '--version'])
-            m = version_re.match(output.decode())
-            compiler['gcc'] = {'version': tuple(int(v) for v in m.groups())}
-        except subprocess.CalledProcessError as e:
-            assert(e.returncode == 2)
-            pass
-    if is_win:
-        try:
-            vswhere_path = os.path.join(
-                os.path.dirname(__file__), 'vswhere.exe')
-            output = c
-            import json
-            vs = json.loads(output)
-            print(vs)
-            raise Exception('unfinished code')
-            #compiler['msvc'] = { 'version': tuple(int(v) for v in m.groups()) }
-        except subprocess.CalledProcessError as e:
-            assert(e.returncode == 2)
-            pass
-    print('Detected compiler', compiler)
-    return compiler
-
-
 ########
 ########
 ########
@@ -227,8 +251,6 @@ if __name__ == '__main__':
     parser.add_argument('--compiler-type',
                         choices=['msvc', 'clang', 'gcc'])
     args = parser.parse_args()
-
-    local_compiler = detect_compiler_version()
 
     if args.travis_ci:
         args.gen = True
@@ -252,7 +274,7 @@ if __name__ == '__main__':
         variants = variants.filter(
             lambda x: x[gn.compiler_type] == gn.compiler_type.msvc)
     else:
-        asser(False)
+        assert(False)
 
     if args.compiler_type:
         if args.compiler_type == 'clang':

@@ -234,3 +234,4 @@ JASL library uses the [MIT](LICENSE) license.
  * macro stacking?
  * std_string support (to_std_string, ?)
  * ngg comments
+ * shield.io and releases
