@@ -23,7 +23,6 @@ class basic_string : public basic_string_view<CharT, Traits> {
   static const CharT empty_string[1];
   typedef std::unique_ptr<const CharT[]> dyn_type;
   dyn_type _dyn;
-  bool _is_null_terminated;
 
  private:
   struct ParamterWrapper {
@@ -48,10 +47,9 @@ class basic_string : public basic_string_view<CharT, Traits> {
  public:
   JASL_CONSTEXPR_FROM_14 basic_string() noexcept(
       std::is_nothrow_constructible<base_type, const CharT*, size_t>::value)
-      : base_type(empty_string, 0), _is_null_terminated(true) {}
+      : base_type(empty_string, 0) {}
 
-  JASL_CONSTEXPR_FROM_14 basic_string(const ParamterWrapper& paramW)
-      : _is_null_terminated(true) {
+  JASL_CONSTEXPR_FROM_14 basic_string(const ParamterWrapper& paramW) {
     std::unique_ptr<CharT[]> dyn(new CharT[paramW._size + 1]());
     Traits::copy(dyn.get(), paramW._ptr, paramW._size);
     // base_type(std::string_view) may not null terminated
@@ -64,12 +62,10 @@ class basic_string : public basic_string_view<CharT, Traits> {
   constexpr basic_string(const CharT (&str)[N]) noexcept(
       std::is_nothrow_constructible<base_type, const CharT*, std::size_t>::
           value)
-      : base_type(str, str[N - 1] == 0 ? N - 1 : N),
-        _is_null_terminated(str[N - 1] == 0) {}
+      : base_type(str, str[N - 1] == 0 ? N - 1 : N) {}
 
   JASL_CONSTEXPR_FROM_14 basic_string(const basic_string& other)
-      : base_type(other.data(), other.size()),
-        _is_null_terminated(other._is_null_terminated) {
+      : base_type(other.data(), other.size()) {
     if (other._dyn != nullptr) {
       std::unique_ptr<CharT[]> dyn(new CharT[other.size() + 1]());
       Traits::copy(dyn.get(), other.data(), other.size());
@@ -84,7 +80,6 @@ class basic_string : public basic_string_view<CharT, Traits> {
           std::is_nothrow_move_assignable<dyn_type>::value) {
     _dyn = std::move(other._dyn);
     base_type::operator=(std::move(other));
-    _is_null_terminated = other._is_null_terminated;
   }
 
   template <std::size_t N>
@@ -93,7 +88,6 @@ class basic_string : public basic_string_view<CharT, Traits> {
           std::is_nothrow_destructible<dyn_type>::value) {
     _dyn.reset();
     base_type::operator=(base_type(str, str[N - 1] == 0 ? N - 1 : N));
-    _is_null_terminated = str[N - 1] == 0;
     return *this;
   }
 
@@ -103,7 +97,6 @@ class basic_string : public basic_string_view<CharT, Traits> {
     dyn[paramW._size] = 0;
     _dyn = std::move(dyn);
     base_type::operator=(base_type(_dyn.get(), paramW._size));
-    _is_null_terminated = true;
     return *this;
   }
 
@@ -111,14 +104,12 @@ class basic_string : public basic_string_view<CharT, Traits> {
     if (other._dyn == nullptr) {
       _dyn.reset();
       base_type::operator=(other);
-      _is_null_terminated = other._is_null_terminated;
     } else {
       std::unique_ptr<CharT[]> dyn(new CharT[other.size() + 1]());
       Traits::copy(dyn.get(), other.data(), other.size());
       dyn[other.size()] = 0;
       _dyn = std::move(dyn);
       base_type::operator=(base_type(_dyn.get(), other.size()));
-      _is_null_terminated = true;
     }
     return *this;
   }
@@ -128,7 +119,6 @@ class basic_string : public basic_string_view<CharT, Traits> {
           std::is_nothrow_move_assignable<base_type>::value) {
     _dyn = std::move(other._dyn);
     base_type::operator=(std::move(other));
-    _is_null_terminated = other._is_null_terminated;
     return *this;
   }
 
@@ -148,9 +138,6 @@ class basic_string : public basic_string_view<CharT, Traits> {
   }
 
   constexpr bool is_static() const noexcept { return _dyn == nullptr; }
-  constexpr bool is_null_terminated() const noexcept {
-    return _is_null_terminated;
-  }
 
   JASL_CONSTEXPR_FROM_14 void swap(basic_string& other) noexcept(
 #ifdef __cpp_lib_is_swappable
