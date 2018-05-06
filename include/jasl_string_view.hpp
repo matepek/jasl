@@ -8,7 +8,7 @@
 
 #include "jasl_common.hpp"
 
-#ifndef JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE
+#if !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE)
 
 #include <string_view>
 
@@ -258,7 +258,7 @@ struct hash<jasl::basic_string_view<CharT, Traits>> {
 }  // namespace std
 #endif  // __cpp_lib_string_view
 
-#endif  // !JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE
+#endif  // !JASL_USE_JASL_STRING_VIEW_AS_BASE
 
 namespace jasl {
 typedef basic_string_view<char> string_view;

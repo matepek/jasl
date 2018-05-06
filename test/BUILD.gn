@@ -2,14 +2,14 @@ group("test") {
 }
 
 test("jasl_static_string_with_jasl_string_view") {
-  defines = [ "JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE" ]
+  defines = [ "JASL_USE_JASL_STRING_VIEW_AS_BASE" ]
 }
 test("jasl_static_string_with_std_string_view") {
 }
 test("jasl_string_view") {
 }
 test("jasl_string_with_jasl_string_view") {
-  defines = [ "JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE" ]
+  defines = [ "JASL_USE_JASL_STRING_VIEW_AS_BASE" ]
 }
 test("jasl_string_with_std_string_view") {
 }

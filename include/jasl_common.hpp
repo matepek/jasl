@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "jasl_feature_test_macro.hpp"
+
 /*
  * Same as the first item of the CHANGELOG.md file
  */
@@ -22,58 +24,6 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
 #define JASL_VERSION                                \
   (JASL_VERSION_PATCH + JASL_VERSION_MINOR * 1000 + \
    JASL_VERSION_MAJOR * 1000 * 100)
-
-/*
- * https://msdn.microsoft.com/en-us/library/b0084kay.aspx
- * https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
- * https://docs.microsoft.com/en-us/cpp/visual-cpp-language-conformance
- */
-#ifdef _MSC_VER
-#ifndef __cpp_constexpr
-#define __cpp_constexpr                              \
-  (_MSC_VER >= 1911L && _MSVC_LANG >= 201703L        \
-       ? 201603L                                     \
-       : (_MSC_VER >= 1910L && _MSVC_LANG >= 201402L \
-              ? 201304L                              \
-              : (_MSC_VER >= 1900L ? 200704L : 0L)))
-#if !__cpp_constexpr
-#undef __cpp_constexpr
-#endif  // !__cpp_constexpr
-#endif  // __cpp_constexpr
-#ifndef __cpp_lib_string_view
-#define __cpp_lib_string_view \
-  (_MSC_VER >= 1910L && _MSVC_LANG >= 201703L ? 201606L : 0L)
-#if !__cpp_lib_string_view
-#undef __cpp_lib_string_view
-#endif  // !__cpp_lib_string_view
-#endif  // __cpp_lib_string_view
-#endif  // _MSC_VER
-
-/*
- * https://gcc.gnu.org/projects/cxx-status.html
- * https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html
- * http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
- */
-#if defined(__GNUG__) && !defined(__clang__)
-#ifndef __cpp_constexpr
-#define __cpp_constexpr  \
-  (__GNUC__ >= 7L        \
-       ? 201603L         \
-       : (__GNUC__ >= 5L \
-              ? 201304L  \
-              : (__GNUC__ == 4L && __GNUC_MINOR__ >= 6L ? 200704L : 0L)))
-#if !__cpp_constexpr
-#undef __cpp_constexpr
-#endif  // !__cpp_constexpr
-#endif  // __cpp_constexpr
-#ifndef __cpp_lib_string_view
-#define __cpp_lib_string_view \
-  (__GNUC__ > 7L || (__GNUC__ == 7L && __GNUC_MINOR__ >= 1L) ? 201606L : 0L)
-#if !__cpp_lib_string_view
-#undef __cpp_lib_string_view
-#endif  // !__cpp_lib_string_view
-#endif  // __cpp_lib_string_view
-#endif  // defined(__GNUG__) && !defined(__clang__)
 
 /*
  *http://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
@@ -95,9 +45,15 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
 #error "Unsupported C++ standard!"
 #endif
 
-#if !defined(JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE) && \
+#if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
+    defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
+static_assert(false, "Both defines cannot be used at the same time.")
+#endif
+
+#if !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
+    !defined(JASL_USE_STD_STRING_VIEW_AS_BASE) &&  \
     !defined(__cpp_lib_string_view)
-#define JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE
+#define JASL_USE_JASL_STRING_VIEW_AS_BASE
 #endif
 
 #ifdef JASL_TERMINATE_ON_EXCEPTION_ON
