@@ -43,26 +43,29 @@ def detect_compiler_version():
         except subprocess.CalledProcessError as e:
             assert(e.returncode == 2)
     if is_win:
-        try:
-            vswhere_path = os.path.join(
-                os.path.dirname(__file__), 'win', 'vswhere.exe')
-            output = subprocess.check_output([vswhere_path, '-format', 'json'])
-            import json
-            vss = json.loads(output)
-            if len(vss):
-                compiler['msvc'] = []
-                for vs in vss:
-                    compiler['msvc'].append(vs)
-                    vcvars = os.path.join(vs['installationPath'], "VC\\Auxiliary\\Build\\vcvars32.bat")
-                    params = [vcvars, '&&', 'cl.exe']
-                    output = subprocess.check_output(params, stderr=subprocess.STDOUT, shell=True)
-                    m = re.search(r'Compiler Version[^\n\d]+(\d+)\.(\d+)\.(\d+)', output)
-                    # for x86 could be parsed
-                    assert(m)
-                    assert('version' not in compiler['msvc'][-1])
-                    compiler['msvc'][-1]['version'] = tuple(int(v) for v in m.groups())
-        except subprocess.CalledProcessError as e:
-            assert(e.returncode == 2)
+        vswhere_path = os.path.join(
+            os.path.dirname(__file__), 'win', 'vswhere.exe')
+        output = subprocess.check_output([vswhere_path, '-format', 'json'])
+        import json
+        vss = json.loads(output)
+        if len(vss):
+            compiler['msvc'] = []
+            for vs in vss:
+                compiler['msvc'].append(vs)
+                vcvarsall = os.path.join(
+                    vs['installationPath'], "VC\\Auxiliary\\Build\\vcvarsall.bat")
+                params = [vcvarsall, 'x86', '&&', 'cl.exe']
+                output = subprocess.check_output(
+                    params, stderr=subprocess.STDOUT, shell=True)
+                m = re.search(
+                    r'Compiler Version[^\n\d]+(\d+)\.(\d+)\.(\d+)', output)
+                # for x86 could be parsed
+                assert(m)
+                assert('version' not in compiler['msvc'][-1])
+                compiler[
+                    'msvc'][-1]['version'] = tuple(int(v) for v in m.groups())
+                assert('vcvarsall' not in compiler['msvc'][-1])
+                compiler['msvc'][-1]['vcvarsall'] = vcvarsall
     print('Detected compiler', compiler)
     return compiler
 
@@ -198,13 +201,6 @@ gn = GN(
                                 '["JASL_ASSERT_ON", "JASL_ABORT_ON_EXCEPTION_ON"]', 'assert-exc')
                             )
 )
-if is_win:
-    assert(local_compiler['msvc'])
-    vs_vers = {}
-    for vs in local_compiler['msvc']:
-        instanceId = 'id' + vs['instanceId']
-        vs_vers[instanceId] = ('"' + vs['installationPath'] + '"', instanceId)
-    gn.add_args(visual_studio_path=StringArg('visual_studio_path', 'vs', **vs_vers))
 
 gn.add_permanent_filter_not(
     lambda x: x[gn.compiler_type] != gn.compiler_type.clang and x[gn.is_asan] == gn.is_asan.true)
@@ -248,13 +244,30 @@ if __name__ == '__main__':
     parser.add_argument('--gen', '--gn', '-g', action='store_true')
     parser.add_argument('--ninja', '-n', action='store_true')
     parser.add_argument('--travis-ci', action='store_true')
+    parser.add_argument('--appveyor', action='store_true')
     parser.add_argument('--compiler-type',
                         choices=['msvc', 'clang', 'gcc'])
     args = parser.parse_args()
 
-    if args.travis_ci:
+    if args.travis_ci or args.appveyor:
         args.gen = True
         args.ninja = True
+
+    if is_win:
+        if not args.appveyor:
+            assert(local_compiler['msvc'])
+            vs_vers = {}
+            for vs in local_compiler['msvc']:
+                instanceId = 'id' + vs['instanceId']
+                vs_vers[instanceId] = ('"' + vs['vcvarsall'] + '"', instanceId)
+            gn.add_args(visual_studio_path=StringArg(
+                'visual_studio_path', 'vs', **vs_vers))
+        else:
+            # vswhere.exe somehow not working on appveyor
+            assert('visual_studio_path' not in gn.args)
+            assert('JASL_VS' in os.environ)
+            gn.add_args(visual_studio_path=StringArg('visual_studio_path', 'vs',
+                                                     env=('"' + os.environ['JASL_VS'] + '"', 'env')))
 
     ###
     if args.clean:

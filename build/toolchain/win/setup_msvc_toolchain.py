@@ -31,7 +31,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     output = subprocess.check_output([
-        os.path.join(args.vs_path, "VC\\Auxiliary\\Build\\vcvarsall.bat"),
+        args.vs_path,
         args.arch,
         "&&",
         "SET"
