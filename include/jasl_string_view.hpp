@@ -256,9 +256,9 @@ struct hash<jasl::basic_string_view<CharT, Traits>> {
   }
 };
 }  // namespace std
-#endif
+#endif  // __cpp_lib_string_view
 
-#endif
+#endif  // !JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE
 
 namespace jasl {
 typedef basic_string_view<char> string_view;

@@ -202,6 +202,9 @@ gn = GN(
                             )
 )
 
+# #######################################
+# These filters exlude illegal variations
+
 gn.add_permanent_filter_not(
     lambda x: x[gn.compiler_type] != gn.compiler_type.clang and x[gn.is_asan] == gn.is_asan.true)
 gn.add_permanent_filter_not(
@@ -322,7 +325,9 @@ if __name__ == '__main__':
         if fail_count:
             raise Exception()
 
-    # filter more, build less
+    # #################################
+    # Filter more, build less
+    # These builds are not so importants
     variants = variants.filter(
         lambda x: x[gn.is_run_performance_tests] == gn.is_run_performance_tests.false)
 

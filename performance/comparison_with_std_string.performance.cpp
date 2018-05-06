@@ -64,6 +64,13 @@ int main() {
             << std::endl
             << "the jasl::static_string and the jasl::string to std::string."
             << std::endl
+            << "NOTE: Base type of the jasl::static_string and jasl::string is "
+#ifdef JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE
+            << "*jasl::string_view*."
+#else
+            << "*std::string_view*."
+#endif
+            << std::endl
             << std::endl
             << "ATTENTION: Are you sure you don't run any resourceful "
                "application right now?!"
