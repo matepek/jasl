@@ -68,7 +68,7 @@ C++17 introduced [std::string_view], and this library uses it as a public base c
 
 ## Class [jasl::string_view]
 
-This class is an optinal substitution of the [std::string_view] for those who have no C++17. To use this as the base class, define ```JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE```.
+This class is an optinal substitution of the [std::string_view] for those who have no C++17. To use this as the base class, define ```JASL_USE_JASL_STRING_VIEW_AS_BASE```.
 
 The class only has basic functionality. (Please open an issue or endorse an existing if you would like to add some functionality.)
 
@@ -103,11 +103,11 @@ Cons:
 
 # Configuration
 
-##### ```JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE```
+##### ```JASL_USE_JASL_STRING_VIEW_AS_BASE```
 
-If you have no [std::string_view], ```JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE``` will be defined automatically and [jasl::string_view] will be used.
+If you have no [std::string_view], ```JASL_USE_JASL_STRING_VIEW_AS_BASE``` will be defined automatically and [jasl::string_view] will be used.
 
-If you just want to use [jasl::string_view] (in case of C++17 too), define ```JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE```.
+If you just want to use [jasl::string_view] (in case of C++17 too), define ```JASL_USE_JASL_STRING_VIEW_AS_BASE```.
 About jasl::string_view: [here](#class-jaslstring_view).
 
 ##### ```JASL_TERMINATE_ON_EXCEPTION_ON```

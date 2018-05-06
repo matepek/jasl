@@ -1,6 +1,8 @@
 source_set("include") {
   sources = [
     "jasl_common.hpp",
+    "jasl_diagnostic.hpp",
+    "jasl_feature_test_macro.hpp",
     "jasl_static_string.hpp",
     "jasl_string.hpp",
     "jasl_string_view.hpp",

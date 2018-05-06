@@ -7,8 +7,7 @@
 #include "jasl_static_string.hpp"
 #include "test_helper.hpp"
 
-#if defined(__cpp_lib_string_view) && \
-    defined(JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE)
+#if defined(__cpp_lib_string_view) && defined(JASL_USE_JASL_STRING_VIEW_AS_BASE)
 #error "Should NOT have been defined!"
 #endif
 

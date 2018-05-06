@@ -26,6 +26,7 @@ config("compiler_clang") {
              "-fcolor-diagnostics",
              "-ferror-limit=100",
              "-Wall",
+             "-Werror",
              "-Weverything",
              "-Wno-c++98-compat",
              "-Wno-c++98-compat-pedantic",

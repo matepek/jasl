@@ -6,7 +6,7 @@
 
 #include "jasl_static_string.hpp"
 
-#if !defined(JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE)
+#if !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE)
 #error "Should have been defined!"
 #endif
 
