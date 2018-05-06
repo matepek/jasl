@@ -110,10 +110,10 @@ If you have no [std::string_view], ```JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE``` 
 If you just want to use [jasl::string_view] (in case of C++17 too), define ```JASL_USE_JASL_STRING_VIEW_TYPE_AS_BASE```.
 About jasl::string_view: [here](#class-jaslstring_view).
 
-##### ```JASL_ABORT_ON_EXCEPTION_ON```
+##### ```JASL_TERMINATE_ON_EXCEPTION_ON```
 
 There are a few functions which can throw. (The design reason is the similarity to __std__.)
-The exceptions are easily avoidable. Defining this macro will result of a call of [std::abort](http://en.cppreference.com/w/cpp/utility/program/abort) instead of throwing an exception.
+The exceptions are easily avoidable. Defining this macro will result of a call of [std::abort](http://en.cppreference.com/w/cpp/error/terminate) instead of throwing an exception.
 
 __Note__: If this is defined, the tests will abort when they test the exceptions.
 
@@ -231,9 +231,10 @@ JASL library uses the [MIT](LICENSE) license.
  * jasl::string_view could have more methods like [find_first, etc..](http://en.cppreference.com/w/cpp/header/string_view)
  * smart_string(shared_ptr and appending)
  * support for [literals](http://en.cppreference.com/w/cpp/language/user_literal)
- * document jasl assert and jasl exception macros
- * macro stacking?
  * std_string support (to_std_string, ?)
- * ngg comments
- * shield.io and releases
- * gn x86 toolchain
+ * gn x86 toolchain and testing
+ * string allocator template parameter (ngg)
+ * what about is_null_terminated? (ngg): test_only?
+ * dyn_type maybe std::string?
+ * declaration - definition separation?
+ * impove and write more performance tests

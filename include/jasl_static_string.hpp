@@ -48,14 +48,14 @@ class basic_static_string : public basic_string_view<CharT, Traits> {
   JASL_CONSTEXPR_FROM_14 basic_static_string&
   operator=(const CharT (&str)[N]) noexcept(
       std::is_nothrow_assignable<base_type, base_type>::value) {
-    this->base_type::operator=(base_type(str, str[N - 1] == 0 ? N - 1 : N));
+    base_type::operator=(base_type(str, str[N - 1] == 0 ? N - 1 : N));
     return *this;
   }
 
   JASL_CONSTEXPR_FROM_14 basic_static_string&
   operator=(const basic_static_string& other) noexcept(
       std::is_nothrow_assignable<base_type, const base_type&>::value) {
-    this->base_type::operator=(static_cast<const base_type&>(other));
+    base_type::operator=(static_cast<const base_type&>(other));
     return *this;
   }
 
@@ -74,7 +74,7 @@ class basic_static_string : public basic_string_view<CharT, Traits> {
   constexpr basic_static_string substr(
       typename base_type::size_type pos,
       typename base_type::size_type count = base_type::npos) const {
-    return basic_static_string(this->base_type::substr(pos, count));
+    return basic_static_string(base_type::substr(pos, count));
   }
 };
 

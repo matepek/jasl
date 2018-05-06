@@ -23,4 +23,4 @@ install:
 build: off
 
 test_script:
-  - python .\build\build_helper.py --appveyor
+  - python .\build\build_helper.py --appveyor --msvc-vcvarsall-path "%JASL_VS%"
