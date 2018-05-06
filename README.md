@@ -1,11 +1,13 @@
 JASL (Just Another String Library)
 ==================================
 
+[![Build Status](https://travis-ci.org/matepek/jasl.svg?branch=master)](https://travis-ci.org/matepek/jasl)
+
 [std::string_view]: http://en.cppreference.com/w/cpp/string/basic_string_view
 [std::string]: http://en.cppreference.com/w/cpp/string/basic_string
-[jasl::string]: inlcude/jasl_string.hpp
-[jasl::string_view]: inlcude/jasl_string_view.hpp
-[jasl::static_string]: inlcude/static_string.hpp
+[jasl::string]: include/jasl_string.hpp
+[jasl::string_view]: include/jasl_string_view.hpp
+[jasl::static_string]: include/jasl_static_string.hpp
 [ninja]: https://github.com/ninja-build/ninja
 [gn]: https://chromium.googlesource.com/chromium/src/+/master/tools/gn/README.md
 
@@ -13,7 +15,7 @@ This repository contains **C++** string classes with **static character array/C-
 
 # Motivation
 
-Sometimes we would like to use hardwired text resources. For example throwing an exception where the messge is user specified. Just like in case of [std::runtime_error](http://en.cppreference.com/w/cpp/error/runtime_error) the the message (_const char*_ parameter named *what_arg*) is "typically stored internally", which means the parameter will be copied. But usually users use it like `std::runtime_error("Coyote catched the Roadrunner!")` or `std::runtime_error(__FILE__)` where the *what_arg* is actually a a hardwired text. In this cases the copying seems unnecessary.
+Sometimes we would like to use hardwired text resources. For example throwing an exception where the message is user specified. Just like in case of [std::runtime_error](http://en.cppreference.com/w/cpp/error/runtime_error) the message (_const char*_ parameter named *what_arg*) is "typically stored internally", which means the parameter will be copied. But usually users use it like `std::runtime_error("Coyote catched the Roadrunner!")` or `std::runtime_error(__FILE__)` where the *what_arg* is actually a a hardwired text. In this cases the copying seems unnecessary.
 
 Creating your own exception and using this library's [jasl::static_string] class will eliminate the unnecessary copy in a type-safe way. For example the compiler will generate an error in case of the following situation:
 ```c++
@@ -35,7 +37,7 @@ s.assign(exception_message); // ok: A pointer to the original charater array is 
 
 const char* exception_message_ptr = exception_message;
 jasl::string s(exception_message_ptr); // ok: Memory is allocated and the message is copied.
-s = exception_message_ptr; // compilation error: can't do this, use assign instead
+s = exception_message_ptr; // compilation error: can't do this, use assign instead!
 s.assign(exception_message_ptr); // ok: Memory is allocated and the message is copied.
 ```
 
@@ -48,7 +50,7 @@ s.assign(exception_message_ptr); // ok: Memory is allocated and the message is c
 
 This is a header-only library. Add the ```include``` directory to your include directories.
 
-Note: For building and running tests see [Tests and Coverage](#tests-and-coverage)
+Note: For building and running tests see [Tests, Test Coverage and Performance Tests](#tests-test-coverage-and-performance-tests)
 
 # Documentation
 
@@ -71,16 +73,16 @@ The class only has basic functionality. (Please open an issue or endorse an exis
 
 ## Class [jasl::static_string]
 
-This class derives from [std::string_view] (or optionally from [jasl::string_view]). The special about it that you can only assign (or construct with) character arrays to it but not pointers. This makes it safer comparing to string_view-s. 
+This class derives from [std::string_view] (or optionally from [jasl::string_view]). What is special about it is that you can only assign (or construct with) character arrays to it but not pointers. This makes it safer comparing to string_view-s.
 See [Motivation](#motivation) section for examples.
 See [Configuration](#configuration) section for more details.
 
 Remarks:
-Why it has no c_str method? While ```jasl::static_string("one")``` is null terminated, ```jas::static_string({'t', 'w', 'o'})```. In both cases the size()/length() of them will be 3, so the terminating null character will be here in the first case but it won't be counted. If you want the null terminator as a part of it, write ```jasl::static_string("one\0")``` or ```jasl::static_string({'t', 'w', 'o', '\0', '\0'})```.
+Why is there no c_str method? While ```jasl::static_string("one")``` is null terminated, ```jasl::static_string({'t', 'w', 'o'})``` is not. In both cases the size()/length() of them will be 3, so the terminating null character will be here in the first case but it won't be counted. If you want the null terminator as a part of it, write ```jasl::static_string("one\0")``` or ```jasl::static_string({'t', 'w', 'o', '\0', '\0'})```.
 
 ## Class [jasl::string]
 
-This class derives from [std::string_view] (or optionally from [jasl::string_view]). The special about it that if you assign (or construct with) character array to it, it won't allocate, copy and deallocate. In other cases it will allocate, copy and deallocate.
+This class derives from [std::string_view] (or optionally from [jasl::string_view]). What is special about it is that if you assign (or construct with) character array to it, it won't allocate, copy and deallocate. In other cases it will allocate, copy and deallocate.
 See [Motivation](#motivation) section for examples.
 See [Configuration](#configuration) section for more details.
 
@@ -127,7 +129,7 @@ This macro is recommended to be defined during development and testing. It helps
 >Evaluating a string-literal results in a string literal object with static storage duration, initialized from the given characters as specified above.
 [Source](https://stackoverflow.com/questions/32872465/const-char-value-lifetime)
 
-(http://en.cppreference.com/w/cpp/concept/LiteralType)
+Note: [cppreference - literal types](http://en.cppreference.com/w/cpp/concept/LiteralType)
 
 # Tests, Test Coverage and Performance Tests
 
@@ -137,7 +139,7 @@ This macro is recommended to be defined during development and testing. It helps
  * [ninja]: A pretty fast build tool. [Install it](https://github.com/ninja-build/ninja/wiki/Pre-built-Ninja-packages) or [download](https://github.com/ninja-build/ninja/releases)
  * [python](https://www.python.org/downloads/): It is required by [gn]. Note: Make sure your python directory is contained by the ```PATH``` environment variable.
 
-Once again: One doesn't have to deal with this. It is only for those who would like to see the test results themselfs. (I choosed [gn], because I wanted to understand and learn the technology a bit.)
+Once again: One doesn't have to deal with this. It is only for those who would like to see the test results themselves. (I've chosen [gn] because I wanted to understand and learn the technology a bit.)
 
 ## Building, testing and generating coverage report
 
@@ -176,7 +178,7 @@ gn args out/default --list
 
 ### Tests
 
-Following the previous steps will result in the tests will run too. The test binaries in the out directory (example: out/default) if someone would like to rerun them.
+Following the previous steps will also run the tests. The test binaries are in the out directory (example: out/default) if someone would like to rerun them.
 
 Source location: ```test/*.test.cpp```
 
@@ -191,35 +193,39 @@ __Note__: This files have a _.c_ extension. This is how gn can differentiate bet
 
 ### Coverage
 
-In case of ```is_generate_test_coverate=true``` gn argument the building will generate html code coverage reports. This is a clang-only feature.
+In case of ```is_generate_test_coverage=true``` gn argument the building will generate html code coverage reports. This is a clang-only feature.
 
 Location of the test coverage results: ```out/<outdir>/*.coverage``` directories.
 
 __Note__: The coverage report is not perfect.
 
-For example in case of the [jasl::static_string]'s coverage report the [jasl::string_view] file's coverage is irrelevant. Also because of some function is ```constexpr```  and contains template the coverage report shows them false-negative.
+For example in case of the [jasl::static_string]'s coverage report the [jasl::string_view] file's coverage is irrelevant. Also because of some function is ```constexpr``` and contains template the coverage report shows them false-negative.
 
 ### Performance Tests
 
-Performance tests are compiled by the building process, but it won't run them. Those results would be irrelevant anyway because the buildig uses a lot of resources.
+Performance tests are compiled by the building process, but it won't run them. Those results would be irrelevant anyway because the building uses a lot of resources.
 
-After bulding the performance binaries are in the out directory and they are ready to run.
+After building, the performance binaries are in the out directory and they are ready to run.
 
 Source location: ```performance/*.performance.cpp```
 
 ### Tested on
 
- * OSX - Apple LLVM version 9.1.0 (clang-902.0.39.1)
- * Ubuntu - g++ (Ubuntu 5.4.0-6ubuntu1~16.04.9) 5.4.0 20160609
- * Ubuntu - clang version 6.0.1-svn329487-1~exp1~20180408093033.68 (branches/release_60)
- * MS Windows - Microsoft (R) C/C++ Optimizing Compiler Version 19.13.26132 for x64
+ * OSX 10.13.4 - Apple LLVM version 9.1.0 (clang-902.0.39.1)
+ * Ubuntu 16.04 - g++ (Ubuntu 4.8.5-4ubuntu2) 4.8.5
+ * Ubuntu 16.04 - g++ (Ubuntu 5.4.0-6ubuntu1~16.04.9) 5.4.0 20160609
+ * Ubuntu 16.04 - clang version 6.0.1-svn329487-1~exp1~20180408093033.68 (branches/release_60)
+ * MS Windows 10 - Microsoft (R) C/C++ Optimizing Compiler Version 19.13.26132 for x64
 
 # Licence
 
 JASL library uses the [MIT](LICENSE) license.
 
+# Thanks and Stuffs I used
+ * https://github.com/Microsoft/vswhere
+
 # TODO
- * lsna, msan
+ * lsan, msan
  * better hash for jasl::string_view
  * jasl::string_view could have more methods like [find_first, etc..](http://en.cppreference.com/w/cpp/header/string_view)
  * smart_string(shared_ptr and appending)
@@ -227,5 +233,4 @@ JASL library uses the [MIT](LICENSE) license.
  * document jasl assert and jasl exception macros
  * macro stacking?
  * std_string support (to_std_string, ?)
-
-
+ * ngg comments

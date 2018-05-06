@@ -5,6 +5,7 @@
 // This code is licensed under the MIT License (MIT).
 
 #include <chrono>
+#include <functional>
 #include <iostream>
 #include <new>
 #include <string>
@@ -15,7 +16,7 @@
 #include "jasl_static_string.hpp"
 
 constexpr static size_t ItemCount = 100000;
-constexpr static size_t IterCount = 0;
+constexpr static size_t IterCount = 1;
 
 template <typename ItemType,
           size_t ItemCountT = ItemCount,
