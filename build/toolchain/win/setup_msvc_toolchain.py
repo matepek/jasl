@@ -3,7 +3,6 @@
 
 import os
 import io
-import sys
 import subprocess
 import argparse
 import re
@@ -13,7 +12,10 @@ import re
 path_re = re.compile(r"(path)=(.*)", re.IGNORECASE)
 environment_variables_re = [
     path_re,
-    re.compile(r"(winddir|systemroot|devenvdir|extensionsdkdir|include|lib|libpath|ucrtversion|universalcrtsdkdir|temp|tmp)=(.*)", re.IGNORECASE),
+    re.compile(r"(winddir|systemroot|devenvdir|extensionsdkdir" +
+               r"|include|lib|libpath|ucrtversion"
+               r"|universalcrtsdkdir|temp|tmp)=(.*)",
+               re.IGNORECASE),
     re.compile(r"(framework[^=]*)=(.*)", re.IGNORECASE),
     re.compile(r"(vc[^=]*)=(.*)", re.IGNORECASE),
     re.compile(r"(visualstudio[^=]*)=(.*)", re.IGNORECASE),
@@ -22,43 +24,43 @@ environment_variables_re = [
     re.compile(r"(__[^=]+)=(.*)", re.IGNORECASE)
 ]
 if __name__ == "__main__":
-  parser = argparse.ArgumentParser()
-  # [arch] [platform_type] [winsdk_version] [-vcvars_ver=vc_version]
-  parser.add_argument("--arch", required=True)
-  parser.add_argument("--vs-path", required=True)
-  args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    # [arch] [platform_type] [winsdk_version] [-vcvars_ver=vc_version]
+    parser.add_argument("--arch", required=True)
+    parser.add_argument("--vs-path", required=True)
+    args = parser.parse_args()
 
-  output = subprocess.check_output([
-      os.path.join(args.vs_path, "VC\\Auxiliary\\Build\\vcvarsall.bat"),
-      args.arch,
-      "&&",
-      "SET"
-  ], shell=True, stderr=subprocess.STDOUT)
+    output = subprocess.check_output([
+        os.path.join(args.vs_path, "VC\\Auxiliary\\Build\\vcvarsall.bat"),
+        args.arch,
+        "&&",
+        "SET"
+    ], shell=True, stderr=subprocess.STDOUT)
 
-  envs = {}
-  path = None
-  for line in output.splitlines():
-    for r in environment_variables_re:
-      m = r.match(line)
-      if m:
-        envs[m.group(1)] = m.group(2)
-        if r == path_re:
-          path = m.group(2)
-        break
+    envs = {}
+    path = None
+    for line in output.splitlines():
+        for r in environment_variables_re:
+            m = r.match(line)
+            if m:
+                envs[m.group(1)] = m.group(2)
+                if r == path_re:
+                    path = m.group(2)
+                break
 
-  env_filename = "env." + args.arch + ".txt"
-  with io.open(env_filename, "w") as f:
-    for k, v in envs.iteritems():
-      f.write(k + u"=" + v + "\0")
-    f.write(u"\0")
+    env_filename = "env." + args.arch + ".txt"
+    with io.open(env_filename, "w") as f:
+        for k, v in envs.iteritems():
+            f.write(k + u"=" + v + "\0")
+        f.write(u"\0")
 
-  tool_dir = None
-  for p in path.split(os.pathsep):
-    if os.path.exists(os.path.join(p, "cl.exe")):
-      assert(os.path.exists(os.path.join(p, "link.exe")))
-      tool_dir = p
-      break
-  assert(tool_dir)
+    tool_dir = None
+    for p in path.split(os.pathsep):
+        if os.path.exists(os.path.join(p, "cl.exe")):
+            assert(os.path.exists(os.path.join(p, "link.exe")))
+            tool_dir = p
+            break
+    assert(tool_dir)
 
-  print('env_filename = "' + env_filename + '"')
-  print('tool_dir = "' + tool_dir + '"')
+    print('env_filename = "' + env_filename + '"')
+    print('tool_dir = "' + tool_dir + '"')
