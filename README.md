@@ -2,6 +2,7 @@ JASL (Just Another String Library)
 ==================================
 
 [![Build Status](https://travis-ci.org/matepek/jasl.svg?branch=master)](https://travis-ci.org/matepek/jasl)
+[![Build status](https://ci.appveyor.com/api/projects/status/jmfo82d6oumjpjxf/branch/master?svg=true)](https://ci.appveyor.com/project/matepek/jasl/branch/master)
 
 [std::string_view]: http://en.cppreference.com/w/cpp/string/basic_string_view
 [std::string]: http://en.cppreference.com/w/cpp/string/basic_string
@@ -235,3 +236,4 @@ JASL library uses the [MIT](LICENSE) license.
  * std_string support (to_std_string, ?)
  * ngg comments
  * shield.io and releases
+ * gn x86 toolchain

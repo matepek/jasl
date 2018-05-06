@@ -61,10 +61,10 @@ declare_args() {
 declare_args() {
   if (host_os == "win") {
     # Windows only.
-    # We are looking for the "$visual_studio_path\VC\Auxiliary\Build\vcvarsall.bat".
+    # We are looking for the "vcvarsall.bat" file.
     # It really depends on the VS version.
     visual_studio_path =
-        "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community"
+        "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat"
 
     # C++ version. :std=<std_version> for compiler.
     std_version = "c++latest"
