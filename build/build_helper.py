@@ -8,7 +8,6 @@
 # This code is licensed under the MIT License (MIT).
 
 import os
-import io
 import sys
 import subprocess
 import argparse
@@ -23,6 +22,7 @@ assert(is_win or is_mac or is_linux)
 
 
 class Value:
+
     def __init__(self, arg, value, short):
         self.arg = arg
         self.value = value
@@ -40,6 +40,7 @@ class Value:
 
 
 class BooleanArg:
+
     def __init__(self, name, short):
         self.name = name
         self.short = short
@@ -52,6 +53,7 @@ class BooleanArg:
 
 
 class StringArg:
+
     def __init__(self, name, short, **kwargs):
         self.name = name
         self.short = short
@@ -66,6 +68,7 @@ class StringArg:
 
 
 class GN:
+
     def __init__(self, **kwargs):
         assert('args' not in kwargs)
         self.args = kwargs
@@ -97,6 +100,7 @@ class GN:
             variants = extended_variants
 
         class Descardian:
+
             def __init__(self, variants):
                 self.variants = variants
 
@@ -162,7 +166,7 @@ def as_dir(variant):
 
 
 def as_args(variant):
-    return ' '.join(sorted(arg.name+'='+variant[arg].value for arg in variant))
+    return ' '.join(sorted(arg.name + '=' + variant[arg].value for arg in variant))
 
 
 def current_platform_default_compiler_type():
