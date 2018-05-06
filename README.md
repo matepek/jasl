@@ -234,7 +234,6 @@ JASL library uses the [MIT](LICENSE) license.
  * std_string support (to_std_string, ?)
  * gn x86 toolchain and testing
  * string allocator template parameter (ngg)
- * what about is_null_terminated? (ngg): test_only?
  * dyn_type maybe std::string?
  * declaration - definition separation?
  * impove and write more performance tests

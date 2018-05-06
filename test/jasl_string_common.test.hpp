@@ -15,21 +15,18 @@ int common() {
     ASSERT_TRUE(*x.data() == 0);
     ASSERT_TRUE(x.size() == 0);
     ASSERT_TRUE(x.is_static());
-    ASSERT_TRUE(x.is_null_terminated());
   }
   {
     jasl::string x = "one";
     ASSERT_TRUE(*x.data() == 'o');
     ASSERT_TRUE(x.size() == 3);
     ASSERT_TRUE(x.is_static());
-    ASSERT_TRUE(x.is_null_terminated());
   }
   {
     jasl::string x("");
     ASSERT_TRUE(*x.data() == 0);
     ASSERT_TRUE(x.size() == 0);
     ASSERT_TRUE(x.is_static());
-    ASSERT_TRUE(x.is_null_terminated());
   }
   {
     const char* onePtr = "one";
@@ -39,20 +36,17 @@ int common() {
     ASSERT_TRUE(*x.data() == 'o');
     ASSERT_TRUE(x.size() == 3);
     ASSERT_TRUE(!x.is_static());
-    ASSERT_TRUE(x.is_null_terminated());
     {
       jasl::string y(x);
       ASSERT_TRUE(y.data() != x.data());
       ASSERT_TRUE(y.size() == 3);
       ASSERT_TRUE(!y.is_static());
-      ASSERT_TRUE(y.is_null_terminated());
     }
     {
       jasl::string y = x;
       ASSERT_TRUE(y.data() != x.data());
       ASSERT_TRUE(y.size() == 3);
       ASSERT_TRUE(!y.is_static());
-      ASSERT_TRUE(y.is_null_terminated());
     }
     const char* twoPtr = "twoo";
     {
@@ -62,13 +56,11 @@ int common() {
       ASSERT_TRUE(*y.data() == 't');
       ASSERT_TRUE(y.size() == 4);
       ASSERT_TRUE(!y.is_static());
-      ASSERT_TRUE(y.is_null_terminated());
       {
         y = jasl::string("static again");
         ASSERT_TRUE(*y.data() == 's');
         ASSERT_TRUE(y.size() == 12);
         ASSERT_TRUE(y.is_static());
-        ASSERT_TRUE(y.is_null_terminated());
       }
     }
     {
@@ -78,13 +70,11 @@ int common() {
       ASSERT_TRUE(*y.data() == 't');
       ASSERT_TRUE(y.size() == 4);
       ASSERT_TRUE(!y.is_static());
-      ASSERT_TRUE(y.is_null_terminated());
       {
         y = "static again";
         ASSERT_TRUE(*y.data() == 's');
         ASSERT_TRUE(y.size() == 12);
         ASSERT_TRUE(y.is_static());
-        ASSERT_TRUE(y.is_null_terminated());
       }
     }
   }
@@ -95,13 +85,11 @@ int common() {
     ASSERT_TRUE(*x.data() == 'o');
     ASSERT_TRUE(x.size() == 3);
     ASSERT_TRUE(x.is_static());
-    ASSERT_TRUE(x.is_null_terminated());
     {
       jasl::string y(x);
       ASSERT_TRUE(y.data() == oneStr);
       ASSERT_TRUE(y.size() == 3);
       ASSERT_TRUE(y.is_static());
-      ASSERT_TRUE(y.is_null_terminated());
     }
 
     {
@@ -109,7 +97,6 @@ int common() {
       ASSERT_TRUE(y.data() == oneStr);
       ASSERT_TRUE(y.size() == 3);
       ASSERT_TRUE(y.is_static());
-      ASSERT_TRUE(y.is_null_terminated());
     }
     const char twoStr[] = "twoo";
     {
@@ -118,7 +105,6 @@ int common() {
       ASSERT_TRUE(y.data() == twoStr);
       ASSERT_TRUE(y.size() == 4);
       ASSERT_TRUE(y.is_static());
-      ASSERT_TRUE(y.is_null_terminated());
     }
 
     {
@@ -127,7 +113,6 @@ int common() {
       ASSERT_TRUE(y.data() == twoStr);
       ASSERT_TRUE(y.size() == 4);
       ASSERT_TRUE(y.is_static());
-      ASSERT_TRUE(y.is_null_terminated());
     }
   }
   {
@@ -137,20 +122,17 @@ int common() {
     ASSERT_TRUE(*x.data() == 'o');
     ASSERT_TRUE(x.size() == 3);
     ASSERT_TRUE(x.is_static());
-    ASSERT_FALSE(x.is_null_terminated());
     {
       jasl::string y(x);
       ASSERT_TRUE(y.data() == oneStr);
       ASSERT_TRUE(y.size() == 3);
       ASSERT_TRUE(y.is_static());
-      ASSERT_FALSE(y.is_null_terminated());
     }
     {
       jasl::string y = x;
       ASSERT_TRUE(y.data() == oneStr);
       ASSERT_TRUE(y.size() == 3);
       ASSERT_TRUE(y.is_static());
-      ASSERT_FALSE(y.is_null_terminated());
     }
     const char twoStr[] = {'t', 'w', 'o', 'o'};
     {
@@ -159,7 +141,6 @@ int common() {
       ASSERT_TRUE(y.data() == twoStr);
       ASSERT_TRUE(y.size() == 4);
       ASSERT_TRUE(y.is_static());
-      ASSERT_FALSE(y.is_null_terminated());
     }
     {
       jasl::string y(oneStr);
@@ -167,7 +148,6 @@ int common() {
       ASSERT_TRUE(y.data() == twoStr);
       ASSERT_TRUE(y.size() == 4);
       ASSERT_TRUE(y.is_static());
-      ASSERT_FALSE(y.is_null_terminated());
     }
   }
   {
