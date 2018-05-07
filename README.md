@@ -103,21 +103,24 @@ Cons:
 
 # Configuration
 
-##### ```JASL_USE_JASL_STRING_VIEW_AS_BASE```
+#### ```JASL_USE_JASL_STRING_VIEW_AS_BASE``` and ```JASL_USE_STD_STRING_VIEW_AS_BASE```
 
-If you have no [std::string_view], ```JASL_USE_JASL_STRING_VIEW_AS_BASE``` will be defined automatically and [jasl::string_view] will be used.
+**None of them are defined**: If you have no [std::string_view], ```JASL_USE_JASL_STRING_VIEW_AS_BASE``` will be defined automatically and [jasl::string_view] will be used. If it is C++17 and there is [std::string], it will be used as the base class and [jasl::string_view] will be a typedef to [std::string_view].
 
-If you just want to use [jasl::string_view] (in case of C++17 too), define ```JASL_USE_JASL_STRING_VIEW_AS_BASE```.
-About jasl::string_view: [here](#class-jaslstring_view).
+__```#define JASL_USE_JASL_STRING_VIEW_AS_BASE```__: [jasl::string_view] will be used even if [std::string_view] is possible to use (C++17).
 
-##### ```JASL_TERMINATE_ON_EXCEPTION_ON```
+__```#define JASL_USE_STD_STRING_VIEW_AS_BASE```__: [std::string_view] will be used. If it is not possible, the source won't fallback to [jasl::string_view].
+
+__Note__: Deriving from a __std__ class is not the _best practice_. In case of [std::string_view] it maybe OK.
+
+#### ```JASL_TERMINATE_ON_EXCEPTION_ON```
 
 There are a few functions which can throw. (The design reason is the similarity to __std__.)
 The exceptions are easily avoidable. Defining this macro will result of a call of [std::abort](http://en.cppreference.com/w/cpp/error/terminate) instead of throwing an exception.
 
 __Note__: If this is defined, the tests will abort when they test the exceptions.
 
-##### ```JASL_ASSERT_ON```
+#### ```JASL_ASSERT_ON```
 
 This macro is recommended to be defined during development and testing. It helps identify unproper use of the library.
 
@@ -226,6 +229,7 @@ JASL library uses the [MIT](LICENSE) license.
  * https://github.com/Microsoft/vswhere
 
 # TODO
+ * consider replacing _inheritance_ to _operator string_view_
  * lsan, msan
  * better hash for jasl::string_view
  * jasl::string_view could have more methods like [find_first, etc..](http://en.cppreference.com/w/cpp/header/string_view)
