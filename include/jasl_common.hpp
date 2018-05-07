@@ -30,20 +30,21 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
  */
 
 // http://en.cppreference.com/w/cpp/language/constexpr
-#ifdef __cpp_constexpr
-#if __cpp_constexpr >= 201304L
+#ifdef JASL_cpp_constexpr
+#if JASL_cpp_constexpr >= 201304L
 #define JASL_CONSTEXPR_FROM_14 constexpr
 #define JASL_CONSTEXPR_FROM_11 constexpr
-#elif __cpp_constexpr >= 200704L
+#elif JASL_cpp_constexpr >= 200704L
 #define JASL_CONSTEXPR_FROM_14
 #define JASL_CONSTEXPR_FROM_11 constexpr
 #else
-#error "Something wrong with defines: __cpp_constexpr should not be defined."
+// JASL_cpp_constexpr should not be defined.
+static_assert(false, "Something wrong with the defines.")
 #endif
-#else  // ifdef __cpp_constexpr
+#else   // ifdef JASL_cpp_constexpr
 // There is no reason to support it without supporting noexcept.
-#error "Unsupported C++ standard!"
-#endif
+static_assert(false, "Unsupported C++ standard!")
+#endif  // ifdef JASL_cpp_constexpr
 
 #if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
     defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
@@ -52,7 +53,7 @@ static_assert(false, "Both defines cannot be used at the same time.")
 
 #if !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
     !defined(JASL_USE_STD_STRING_VIEW_AS_BASE) &&  \
-    !defined(__cpp_lib_string_view)
+    !defined(JASL_cpp_lib_string_view)
 #define JASL_USE_JASL_STRING_VIEW_AS_BASE
 #endif
 
@@ -63,7 +64,7 @@ static_assert(false, "Both defines cannot be used at the same time.")
 #define JASL_THROW(exception) throw exception
 #endif
 
-#if defined(JASL_ASSERT_ON) && __cpp_constexpr >= 201304L
+#if defined(JASL_ASSERT_ON) && JASL_cpp_constexpr >= 201304L
 #include <cstdlib>
 #include <iostream>
 #define JASL_ASSERT(expr, message)                                    \
