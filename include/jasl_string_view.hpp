@@ -233,7 +233,7 @@ std::basic_ostream<CharT, Traits>& operator<<(
 }
 }  // namespace jasl
 
-#ifdef __cpp_lib_string_view
+#ifdef JASL_cpp_lib_string_view
 #include <string_view>
 namespace std {
 template <typename CharT, typename Traits>
@@ -256,7 +256,7 @@ struct hash<jasl::basic_string_view<CharT, Traits>> {
   }
 };
 }  // namespace std
-#endif  // __cpp_lib_string_view
+#endif  // JASL_cpp_lib_string_view
 
 #endif  // !JASL_USE_JASL_STRING_VIEW_AS_BASE
 
