@@ -75,13 +75,15 @@ declare_args() {
 }
 
 is_clang = compiler_type == "clang"
+is_gcc = compiler_type == "gcc"
 
 if (is_asan || is_lsan || is_msan) {
   assert(is_clang, "These features requires clang!")
 }
 
 if (is_generate_test_coverage) {
-  assert(is_clang, "This features requires clang!")
+  assert(is_clang || is_gcc, "This features requires clang!")
+  assert(is_debug)
   assert(is_run_tests)
 }
 

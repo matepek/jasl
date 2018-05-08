@@ -208,9 +208,11 @@ gn = GN(
 gn.add_permanent_filter_not(
     lambda x: x[gn.compiler_type] != gn.compiler_type.clang and x[gn.is_asan] == gn.is_asan.true)
 gn.add_permanent_filter_not(
-    lambda x: x[gn.compiler_type] != gn.compiler_type.clang and x[gn.is_generate_test_coverage] == gn.is_generate_test_coverage.true)
+    lambda x: x[gn.compiler_type] not in [gn.compiler_type.clang, gn.compiler_type.gcc] and x[gn.is_generate_test_coverage] == gn.is_generate_test_coverage.true)
 gn.add_permanent_filter_not(lambda x: x[gn.is_generate_test_coverage] ==
                             gn.is_generate_test_coverage.true and x[gn.is_run_tests] == gn.is_run_tests.false)
+gn.add_permanent_filter_not(lambda x: x[gn.is_generate_test_coverage] ==
+                            gn.is_generate_test_coverage.true and x[gn.is_debug] == gn.is_debug.false)
 gn.add_permanent_filter_not(lambda x: x[gn.define_macros] in [
                             gn.define_macros.terminate_on, gn.define_macros.assert_and_terminate_on] and x[gn.is_run_tests] == gn.is_run_tests.true)
 gn.add_permanent_filter_not(

@@ -15,7 +15,10 @@ matrix:
         - GN_HASH=ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874
         - NINJA_LINK=https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip
       script:
+        - pip install --user cpp-coveralls
         - python ./build/build_helper.py --travis-ci --compiler-type gcc
+      after_success:
+        - coveralls --repo-token $COVERALLS_REPO_TOKEN --exclude performance --exclude test --gcov-options '\-lp' -b out/asanF_cGcc_covT_debugT_defsE_perfF_std11_testsT
     - os: osx
       env: 
         - NAME=osx-clang

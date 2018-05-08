@@ -89,8 +89,19 @@ config("compiler_gcc") {
     "-Wextra",
     "-Wpedantic",
   ]
+
+  if (is_generate_test_coverage) {
+    # https://gcc.gnu.org/onlinedocs/gcc/Gcov-and-Optimization.html#Gcov-and-Optimization
+    # https://gcc.gnu.org/onlinedocs/gcc/Invoking-Gcov.html#Invoking-Gcov
+    common_flags += [
+      "-fprofile-arcs", 
+      "-ftest-coverage",
+      "-lgcov",
+    ]
+  }
+
   cflags = common_flags + []
-  ldflags = common_flags
+  ldflags = common_flags + []
 }
 
 config("compiler_msvc") {

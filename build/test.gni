@@ -52,75 +52,80 @@ template("test") {
     }
 
     if (is_generate_test_coverage) {
-      assert(is_clang)
+      if (is_clang) {
+        profdata_name = target_name + ".profdata"
+        html_name = target_name + ".coverage"
 
-      profdata_name = target_name + ".profdata"
-      html_name = target_name + ".coverage"
+        if (host_os == "mac") {
+          llvm_profdata_platfrom_dependent_args_prefix = [
+            "-c",
+            "xcrun",
+            "--",
+            "llvm-profdata",
+          ]
+          llvm_cov_platform_dependent_args_prefix = [
+            "-c",
+            "xcrun",
+            "--",
+            "llvm-cov",
+          ]
+        } else {
+          llvm_profdata_platfrom_dependent_args_prefix = [
+            "-c",
+            "llvm-profdata",
+            "--",
+          ]
+          llvm_cov_platform_dependent_args_prefix = [
+            "-c",
+            "llvm-cov",
+            "--",
+          ]
+        }
 
-      if (host_os == "mac") {
-        llvm_profdata_platfrom_dependent_args_prefix = [
-          "-c",
-          "xcrun",
-          "--",
-          "llvm-profdata",
-        ]
-        llvm_cov_platform_dependent_args_prefix = [
-          "-c",
-          "xcrun",
-          "--",
-          "llvm-cov",
-        ]
+        action(profdata_name) {
+          script = "//build/call.py"
+
+          args = llvm_profdata_platfrom_dependent_args_prefix + [
+                   "merge",
+                   "-sparse",
+                   "$profraw_name",
+                   "-o",
+                   target_name,
+                 ]
+          outputs = [
+            "$root_out_dir/$target_name",
+          ]
+          deps = [
+            ":$tested_name",
+          ]
+        }
+
+        action(html_name) {
+          script = "//build/call.py"
+
+          args = llvm_cov_platform_dependent_args_prefix + [
+                   "show",
+                   "-format=html",
+                   "-instr-profile",
+                   profdata_name,
+                   test_name,
+                   "-o",
+                   target_name,
+                 ]
+
+          outputs = [
+            "$root_out_dir/$target_name",
+          ]
+          deps = [
+            ":$profdata_name",
+            ":$test_name",
+          ]
+        }
+      } else if (is_gcc) {
+        # we could generate a more readable output here.
+        # maybe later
       } else {
-        llvm_profdata_platfrom_dependent_args_prefix = [
-          "-c",
-          "llvm-profdata",
-          "--",
-        ]
-        llvm_cov_platform_dependent_args_prefix = [
-          "-c",
-          "llvm-cov",
-          "--",
-        ]
-      }
-
-      action(profdata_name) {
-        script = "//build/call.py"
-
-        args = llvm_profdata_platfrom_dependent_args_prefix + [
-                 "merge",
-                 "-sparse",
-                 "$profraw_name",
-                 "-o",
-                 target_name,
-               ]
-        outputs = [
-          "$root_out_dir/$target_name",
-        ]
-        deps = [
-          ":$tested_name",
-        ]
-      }
-
-      action(html_name) {
-        script = "//build/call.py"
-
-        args = llvm_cov_platform_dependent_args_prefix + [
-                 "show",
-                 "-format=html",
-                 "-instr-profile",
-                 profdata_name,
-                 test_name,
-                 "-o",
-                 target_name,
-               ]
-
-        outputs = [
-          "$root_out_dir/$target_name",
-        ]
-        deps = [
-          ":$profdata_name",
-          ":$test_name",
-        ]
+        assert(false)
       }
     }
   }
