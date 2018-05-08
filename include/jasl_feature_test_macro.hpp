@@ -6,7 +6,8 @@
 
 #pragma once
 
-#if (__cplusplus < 201103L)
+// MSVC doesn't use __cplusplus well.
+#if !defined(_MSC_VER) && (__cplusplus < 201103L)
 #error "This library needs at least a C++11 compliant compiler."
 #endif
 
