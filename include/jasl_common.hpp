@@ -8,6 +8,9 @@
 
 #include "jasl_feature_test_macro.hpp"
 
+#define JASL_INNER_STR(x) #x
+#define JASL_STR(x) JASL_INNER_STR(x)
+
 /*
  * Same as the first item of the CHANGELOG.md file
  */
@@ -21,9 +24,14 @@ static_assert(JASL_VERSION_MINOR < 100, "JASL_VERSION error");
 static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
 
 // for example version 1.2.3 is: 10020003
-#define JASL_VERSION                                \
+#define JASL_VERSION_NUMBER                         \
   (JASL_VERSION_PATCH + JASL_VERSION_MINOR * 1000 + \
    JASL_VERSION_MAJOR * 1000 * 100)
+
+#define JASL_VERSION_STR                         \
+  JASL_STR(JASL_VERSION_MAJOR)                   \
+  "." JASL_STR(JASL_VERSION_MINOR) "." JASL_STR( \
+      JASL_VERSION_PATCH) " (" JASL_VERSION_DATE ")"
 
 /*
  *http://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
@@ -53,7 +61,7 @@ static_assert(false, "Both defines cannot be used at the same time.")
 
 #if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
     defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
-static_assert(false, "Both defines cannot be used at the same time.")
+    static_assert(false, "Both defines cannot be used at the same time.")
 #endif
 
 #if !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \

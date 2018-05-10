@@ -35,18 +35,18 @@ int common() {
     ASSERT_TRUE(x.data() != onePtr);
     ASSERT_TRUE(*x.data() == 'o');
     ASSERT_TRUE(x.size() == 3);
-    ASSERT_TRUE(!x.is_static());
+    ASSERT_FALSE(x.is_static());
     {
       jasl::string y(x);
       ASSERT_TRUE(y.data() != x.data());
       ASSERT_TRUE(y.size() == 3);
-      ASSERT_TRUE(!y.is_static());
+      ASSERT_FALSE(y.is_static());
     }
     {
       jasl::string y = x;
       ASSERT_TRUE(y.data() != x.data());
       ASSERT_TRUE(y.size() == 3);
-      ASSERT_TRUE(!y.is_static());
+      ASSERT_FALSE(y.is_static());
     }
     const char* twoPtr = "twoo";
     {
@@ -55,7 +55,7 @@ int common() {
       y = jasl::string(twoPtr);
       ASSERT_TRUE(*y.data() == 't');
       ASSERT_TRUE(y.size() == 4);
-      ASSERT_TRUE(!y.is_static());
+      ASSERT_FALSE(y.is_static());
       {
         y = jasl::string("static again");
         ASSERT_TRUE(*y.data() == 's');
@@ -69,7 +69,7 @@ int common() {
       y.assign(twoPtr);
       ASSERT_TRUE(*y.data() == 't');
       ASSERT_TRUE(y.size() == 4);
-      ASSERT_TRUE(!y.is_static());
+      ASSERT_FALSE(y.is_static());
       {
         y = "static again";
         ASSERT_TRUE(*y.data() == 's');
@@ -178,7 +178,7 @@ int common() {
     y = x.substr(2);
     ASSERT_TRUE(*y.data() == 'b');
     ASSERT_TRUE(y.size() == 3);
-    ASSERT_TRUE(!y.is_static());
+    ASSERT_FALSE(y.is_static());
 
     jasl::string::base_type z(x.substr(2, 1));
     ASSERT_TRUE(*z.data() == 'b');

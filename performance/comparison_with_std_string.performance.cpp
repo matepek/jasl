@@ -60,7 +60,8 @@ void print_compare(const std::pair<std::string, double>& left,
 }
 
 int main() {
-  std::cout << "This performance test compares construction and destruction of"
+  std::cout << "JASL version: " << JASL_VERSION_STR << std::endl
+            << "This performance test compares construction and destruction of"
             << std::endl
             << "the jasl::static_string and the jasl::string to std::string."
             << std::endl
