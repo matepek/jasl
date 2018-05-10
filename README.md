@@ -51,6 +51,7 @@ s.assign(exception_message_ptr); // ok: Memory is allocated and the message is c
    * _constexpr_ specifier
    * _noexcept_ specifier.
    * [std::hash](http://en.cppreference.com/w/cpp/utility/hash)
+   * static_assert
 
 # Installation
 

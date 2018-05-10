@@ -73,8 +73,7 @@ static_assert(false, "Compiler behaviour has been changed. Review the change!");
 static_assert(false, "Probably unsupported compiler version!");
 #endif
 #ifndef __cpp_lib_string_view
-#define JASL_cpp_lib_string_view \
-  (__cplusplus >= 201703 && __clang_major__ >= 6 ? 201606L : 0L)
+#define JASL_cpp_lib_string_view (__has_include(<string_view>) ? 201606L : 0L)
 #else
 static_assert(false, "Compiler behaviour has been changed. Review the change!");
 #endif

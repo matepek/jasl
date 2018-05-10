@@ -94,7 +94,7 @@ config("compiler_gcc") {
     # https://gcc.gnu.org/onlinedocs/gcc/Gcov-and-Optimization.html#Gcov-and-Optimization
     # https://gcc.gnu.org/onlinedocs/gcc/Invoking-Gcov.html#Invoking-Gcov
     common_flags += [
-      "-fprofile-arcs", 
+      "-fprofile-arcs",
       "-ftest-coverage",
       "-lgcov",
     ]

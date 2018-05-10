@@ -1,15 +1,15 @@
-template("test") {
+template("test_with_base") {
   forward_variables_from(invoker, "*")
 
-  test_name = target_name + ".test"
+  test_name = invoker.test_name + ".test"
 
   if (is_generate_test_coverage) {
-    profraw_name = target_name + ".profraw"
+    profraw_name = invoker.test_name + ".profraw"
   }
 
   executable(test_name) {
     sources = [
-      test_name + ".cpp",
+      invoker.target_name + ".test.cpp",
     ]
 
     public_deps = [
@@ -18,7 +18,7 @@ template("test") {
   }
 
   if (is_run_tests) {
-    tested_name = target_name + ".tested"
+    tested_name = invoker.test_name + ".tested"
 
     action(tested_name) {
       script = "//build/call.py"
@@ -53,8 +53,8 @@ template("test") {
 
     if (is_generate_test_coverage) {
       if (is_clang) {
-        profdata_name = target_name + ".profdata"
-        html_name = target_name + ".coverage"
+        profdata_name = invoker.test_name + ".profdata"
+        html_name = invoker.test_name + ".coverage"
 
         if (host_os == "mac") {
           llvm_profdata_platfrom_dependent_args_prefix = [
@@ -131,11 +131,29 @@ template("test") {
   }
 }
 
-template("test_build_err") {
+template("test_with_jasl_string_view") {
   forward_variables_from(invoker, [ "dummy_var" ])
 
-  source_name = target_name + ".test_build_err.cpp.c"
-  tested_name = target_name + ".tested"
+  test_with_base(target_name) {
+    defines = [ "JASL_USE_JASL_STRING_VIEW_AS_BASE" ]
+    test_name = target_name + "_with_jasl_string_view"
+  }
+}
+
+template("test_with_std_string_view") {
+  forward_variables_from(invoker, [ "dummy_var" ])
+
+  test_with_base(target_name) {
+    defines = [ "JASL_USE_STD_STRING_VIEW_AS_BASE" ]
+    test_name = target_name + "_with_std_string_view"
+  }
+}
+
+template("test_build_err_with_base") {
+  forward_variables_from(invoker, "*")
+
+  source_name = invoker.target_name + ".test_build_err.cpp.c"
+  tested_name = invoker.tested_name + ".tested"
 
   source_set(tested_name) {
     sources = [
@@ -145,5 +163,27 @@ template("test_build_err") {
     public_deps = [
       "//include",
     ]
+    
+    if (is_clang) {
+      cflags = [ "-Wno-deprecated" ]
+    }
+  }
+}
+
+template("test_build_err_with_jasl_string_view") {
+  forward_variables_from(invoker, [ "dummy_var" ])
+
+  test_build_err_with_base(target_name) {
+    defines = [ "JASL_USE_JASL_STRING_VIEW_AS_BASE" ]
+    tested_name = target_name + "_with_jasl_string_view"
+  }
+}
+
+template("test_build_err_with_std_string_view") {
+  forward_variables_from(invoker, [ "dummy_var" ])
+
+  test_build_err_with_base(target_name) {
+    defines = [ "JASL_USE_STD_STRING_VIEW_AS_BASE" ]
+    tested_name = target_name + "_with_std_string_view"
   }
 }

@@ -8,7 +8,7 @@
 
 #include "jasl_common.hpp"
 
-#if !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE)
+#if defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
 
 #include <string_view>
 
@@ -17,7 +17,7 @@ template <typename CharT, typename Traits = std::char_traits<CharT>>
 using basic_string_view = std::basic_string_view<CharT, Traits>;
 }  // namespace jasl
 
-#else
+#elif defined(JASL_USE_JASL_STRING_VIEW_AS_BASE)
 
 #include <algorithm>
 #include <iterator>
@@ -261,7 +261,13 @@ struct hash<jasl::basic_string_view<CharT, Traits>> {
 }  // namespace std
 #endif  // JASL_cpp_lib_string_view
 
-#endif  // !JASL_USE_JASL_STRING_VIEW_AS_BASE
+#else
+
+static_assert(false,
+              "One of it should be defined by the user or by the fallback "
+              "logic(jasl_common.hpp)")
+
+#endif  // JASL_USE_STD_STRING_VIEW_AS_BASE
 
 namespace jasl {
 typedef basic_string_view<char> string_view;
