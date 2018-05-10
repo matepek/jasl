@@ -233,6 +233,9 @@ std::basic_ostream<CharT, Traits>& operator<<(
 }
 }  // namespace jasl
 
+/*
+ * http://en.cppreference.com/w/cpp/utility/hash
+ */
 #ifdef JASL_cpp_lib_string_view
 #include <string_view>
 namespace std {

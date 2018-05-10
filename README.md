@@ -46,7 +46,11 @@ s.assign(exception_message_ptr); // ok: Memory is allocated and the message is c
 # Requirements
 
  * [C++ standard library](http://en.cppreference.com/w/cpp/header)
- * Minimum C++11 (Reason: Mainly because of _constexpr_ and _noexcept_ specifier. It is not necessary, but this could be easily fixed.)
+ * clang, gcc or msvc
+ * Minimum C++11:
+   * _constexpr_ specifier
+   * _noexcept_ specifier.
+   * [std::hash](http://en.cppreference.com/w/cpp/utility/hash)
 
 # Installation
 
@@ -88,7 +92,7 @@ This class derives from [std::string_view] (or optionally from [jasl::string_vie
 See [Motivation](#motivation) section for examples.
 See [Configuration](#configuration) section for more details.
 
-It has the functionality of its base class ([std::string_view]) only, which means that the content is immutable. This was the convenient implementation because the static string is immutable anyway.
+It has the functionality of its base class ([std::string_view]) only.
 
 ### Pros and Cons comparing to [std::string]
 
@@ -99,8 +103,8 @@ Pros:
     * No memory copy.
 
 Cons:
- * The container is immutable.
  * Only the underlying (string view) type's functionality can be used.
+ * Hashing without C++17 or newer is really bad now. It is a [TODO](#todos).
 
 # Configuration
 
@@ -117,9 +121,9 @@ __Note__: Deriving from a __std__ class is not the _best practice_. In case of [
 #### ```JASL_TERMINATE_ON_EXCEPTION_ON```
 
 There are a few functions which can throw. (The design reason is the similarity to __std__.)
-The exceptions are easily avoidable. Defining this macro will result of a call of [std::abort](http://en.cppreference.com/w/cpp/error/terminate) instead of throwing an exception.
+The exceptions are easily avoidable. Defining this macro will result of a call of [std::terminate](http://en.cppreference.com/w/cpp/error/terminate) instead of throwing an exception.
 
-__Note__: If this is defined, the tests will abort when they test the exceptions.
+__Note__: If this is defined, the tests will terminate when they test the exceptions.
 
 #### ```JASL_ASSERT_ON```
 
@@ -183,6 +187,9 @@ gn args out/default --list
 
 ### Tests
 
+[![Build Status](https://travis-ci.org/matepek/jasl.svg?branch=master)](https://travis-ci.org/matepek/jasl)
+[![Build status](https://ci.appveyor.com/api/projects/status/jmfo82d6oumjpjxf/branch/master?svg=true)](https://ci.appveyor.com/project/matepek/jasl/branch/master)
+
 Following the previous steps will also run the tests. The test binaries are in the out directory (example: out/default) if someone would like to rerun them.
 
 Source location: ```test/*.test.cpp```
@@ -198,13 +205,18 @@ __Note__: This files have a _.c_ extension. This is how gn can differentiate bet
 
 ### Coverage
 
-In case of ```is_generate_test_coverage=true``` gn argument the building will generate html code coverage reports. This is a clang-only feature.
+[![Coverage Status](https://coveralls.io/repos/github/matepek/jasl/badge.svg)](https://coveralls.io/github/matepek/jasl)
+
+In case of ```is_generate_test_coverage=true``` gn argument the building will generate html code coverage reports. Works with clang and gcc.
 
 Location of the test coverage results: ```out/<outdir>/*.coverage``` directories.
 
 __Note__: The coverage report is not perfect.
 
-For example in case of the [jasl::static_string]'s coverage report the [jasl::string_view] file's coverage is irrelevant. Also because of some function is ```constexpr``` and contains template the coverage report shows them false-negative.
+For example in case of the [jasl::static_string]'s coverage report the [jasl::string_view] file's coverage is irrelevant.
+Also because of some function is ```constexpr``` the compiler does its work and executes the code at compile time. In this case the method may seems uncovered.
+Another problem with the coverage is that the library's classes contain templates and the the C++ compilers only instantiate those which are used, the unused ones are not instatiated so those won't be seen in the report as an uncovered code.
+
 
 ### Performance Tests
 
@@ -222,14 +234,14 @@ Source location: ```performance/*.performance.cpp```
  * Ubuntu 16.04 - clang version 6.0.1-svn329487-1~exp1~20180408093033.68 (branches/release_60)
  * MS Windows 10 - Microsoft (R) C/C++ Optimizing Compiler Version 19.13.26132 for x64
 
-# Licence
+# Licence and third-parties
 
 JASL library uses the [MIT](LICENSE) license.
 
 # Thanks and Stuffs I used
  * https://github.com/Microsoft/vswhere
 
-# TODO
+# TODOs
  * consider replacing _inheritance_ to _operator string_view_
  * lsan, msan
  * better hash for jasl::string_view
@@ -241,4 +253,3 @@ JASL library uses the [MIT](LICENSE) license.
  * string allocator template parameter (ngg)
  * dyn_type maybe std::string?
  * declaration - definition separation?
- * impove and write more performance tests
