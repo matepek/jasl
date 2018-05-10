@@ -1,30 +1,48 @@
 group("test") {
 }
 
-test("jasl_static_string_with_jasl_string_view") {
-  defines = [ "JASL_USE_JASL_STRING_VIEW_AS_BASE" ]
+test_with_jasl_string_view("jasl_string_view") {
 }
-test("jasl_static_string_with_std_string_view") {
+test_with_jasl_string_view("jasl_static_string") {
 }
-test("jasl_string_view") {
-}
-test("jasl_string_with_jasl_string_view") {
-  defines = [ "JASL_USE_JASL_STRING_VIEW_AS_BASE" ]
-}
-test("jasl_string_with_std_string_view") {
+test_with_jasl_string_view("jasl_string") {
 }
 
-test_build_err("jasl_static_string_assignment") {
+test_build_err_with_jasl_string_view("jasl_static_string_assignment") {
 }
-test_build_err("jasl_static_string_constructor1") {
+test_build_err_with_jasl_string_view("jasl_static_string_constructor1") {
 }
-test_build_err("jasl_static_string_constructor2") {
+test_build_err_with_jasl_string_view("jasl_static_string_constructor2") {
 }
-test_build_err("jasl_static_string_constructor3") {
+test_build_err_with_jasl_string_view("jasl_static_string_constructor3") {
 }
-test_build_err("jasl_static_string_copy_constructor") {
+test_build_err_with_jasl_string_view("jasl_static_string_copy_constructor") {
 }
-test_build_err("jasl_static_string_swap_with_base") {
+test_build_err_with_jasl_string_view("jasl_static_string_swap_with_base") {
 }
-test_build_err("jasl_string_assignment_cstr") {
+test_build_err_with_jasl_string_view("jasl_string_assignment_cstr") {
+}
+
+if (is_std_string_view_supported) {
+  test_with_std_string_view("jasl_string_view") {
+  }
+  test_with_std_string_view("jasl_static_string") {
+  }
+  test_with_std_string_view("jasl_string") {
+  }
+
+  test_build_err_with_std_string_view("jasl_static_string_assignment") {
+  }
+  test_build_err_with_std_string_view("jasl_static_string_constructor1") {
+  }
+  test_build_err_with_std_string_view("jasl_static_string_constructor2") {
+  }
+  test_build_err_with_std_string_view("jasl_static_string_constructor3") {
+  }
+  test_build_err_with_std_string_view("jasl_static_string_copy_constructor") {
+  }
+  test_build_err_with_std_string_view("jasl_static_string_swap_with_base") {
+  }
+  test_build_err_with_std_string_view("jasl_string_assignment_cstr") {
+  }
 }

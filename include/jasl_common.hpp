@@ -47,27 +47,26 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
 #define JASL_CONSTEXPR_FROM_11 constexpr
 #else
 // JASL_cpp_constexpr should not be defined.
-static_assert(false, "Something wrong with the defines.")
+static_assert(false, "Something wrong with the defines.");
 #endif
 #else   // ifdef JASL_cpp_constexpr
 // There is no reason to support it without supporting noexcept.
-static_assert(false, "Unsupported C++ standard!")
+static_assert(false, "Unsupported C++ standard!");
 #endif  // ifdef JASL_cpp_constexpr
 
 #if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
     defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
-static_assert(false, "Both defines cannot be used at the same time.")
+static_assert(false, "Both defines cannot be used at the same time.");
 #endif
 
-#if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
-    defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
-    static_assert(false, "Both defines cannot be used at the same time.")
-#endif
-
+// fallback logic
 #if !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
-    !defined(JASL_USE_STD_STRING_VIEW_AS_BASE) &&  \
-    !defined(JASL_cpp_lib_string_view)
+    !defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
+#if defined(JASL_cpp_lib_string_view)
+#define JASL_USE_STD_STRING_VIEW_AS_BASE
+#else
 #define JASL_USE_JASL_STRING_VIEW_AS_BASE
+#endif
 #endif
 
 #ifdef JASL_TERMINATE_ON_EXCEPTION_ON

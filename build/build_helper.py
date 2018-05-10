@@ -14,6 +14,8 @@ import argparse
 import platform
 import shutil
 import re
+import tempfile
+import json
 
 is_win = platform.system() == 'Windows'
 is_mac = platform.system() == 'Darwin'
@@ -21,7 +23,7 @@ is_linux = platform.system() == 'Linux'
 assert(is_win or is_mac or is_linux)
 
 
-def detect_compiler_version():
+def detect_compiler_version(vcvarsall=None):
     compiler = {
         'clang': None,
         'gcc': None,
@@ -33,6 +35,35 @@ def detect_compiler_version():
             output = subprocess.check_output(['clang++', '--version'])
             m = version_re.match(output.decode())
             compiler['clang'] = {'version': tuple(int(v) for v in m.groups())}
+
+            def compiler_info():
+                f = tempfile.NamedTemporaryFile(delete=False)
+                f.write('''#include <iostream>
+                        using namespace std;
+                        int main() {
+                            cout << '{' << "\\"has_string_view\\":";
+                            #if __has_include(<string_view>)
+                            cout << "true";
+                            #else
+                            cout << "false";
+                            #endif
+                            cout << endl;
+                            cout << '}';
+                        }
+                    ''')
+                f.close()
+                o = tempfile.NamedTemporaryFile(delete=False)
+                o.close()
+                res = subprocess.call(
+                    ['clang++', '-x', 'c++', f.name, '-o', o.name])
+                if res != 0:
+                    raise Exception(res)
+                output = subprocess.check_output([o.name])
+                os.remove(f.name)
+                os.remove(o.name)
+                clang_prop = json.loads(output)
+                compiler['clang'].update(clang_prop)
+            compiler_info()
         except subprocess.CalledProcessError as e:
             assert(e.returncode == 2)
     if is_linux:
@@ -43,34 +74,33 @@ def detect_compiler_version():
         except subprocess.CalledProcessError as e:
             assert(e.returncode == 2)
     if is_win:
-        vswhere_path = os.path.join(
-            os.path.dirname(__file__), 'win', 'vswhere.exe')
-        output = subprocess.check_output([vswhere_path, '-format', 'json'])
-        import json
-        vss = json.loads(output)
-        if len(vss):
+        def get_msvc_version(vcvarsall):
+            assert(os.path.exists(vcvarsall))
+            params = [vcvarsall, 'x86', '&&', 'cl.exe']
+            output = subprocess.check_output(
+                params, stderr=subprocess.STDOUT, shell=True)
+            m = re.search(
+                r'Compiler Version[^\n\d]+(\d+)\.(\d+)\.(\d+)', output)
+            # for x86 could be parsed
+            return {'version': tuple(int(v) for v in m.groups()), 'vcvarsall': vcvarsall}
+        if vcvarsall:
             compiler['msvc'] = []
-            for vs in vss:
-                compiler['msvc'].append(vs)
-                vcvarsall = os.path.join(
-                    vs['installationPath'], "VC\\Auxiliary\\Build\\vcvarsall.bat")
-                params = [vcvarsall, 'x86', '&&', 'cl.exe']
-                output = subprocess.check_output(
-                    params, stderr=subprocess.STDOUT, shell=True)
-                m = re.search(
-                    r'Compiler Version[^\n\d]+(\d+)\.(\d+)\.(\d+)', output)
-                # for x86 could be parsed
-                assert(m)
-                assert('version' not in compiler['msvc'][-1])
-                compiler[
-                    'msvc'][-1]['version'] = tuple(int(v) for v in m.groups())
-                assert('vcvarsall' not in compiler['msvc'][-1])
-                compiler['msvc'][-1]['vcvarsall'] = vcvarsall
+            compiler['msvc'].append(get_msvc_version(vcvarsall))
+            compiler['msvc'][-1]['instanceId'] = 'param'
+        else:
+            vswhere_path = os.path.join(
+                os.path.dirname(__file__), 'win', 'vswhere.exe')
+            output = subprocess.check_output([vswhere_path, '-format', 'json'])
+            vss = json.loads(output)
+            if len(vss):
+                compiler['msvc'] = []
+                for vs in vss:
+                    compiler['msvc'].append(vs)
+                    vcvarsall = os.path.join(
+                        vs['installationPath'], "VC\\Auxiliary\\Build\\vcvarsall.bat")
+                    compiler['msvc'][-1].update(get_msvc_version(vcvarsall))
     print('Detected compiler', compiler)
     return compiler
-
-
-local_compiler = detect_compiler_version()
 
 
 class Value:
@@ -90,14 +120,29 @@ class Value:
     def __repr__(self):
         return self.value
 
+    def __nonzero__(self):
+        asser(False)
+
+
+class TrueValue(Value):
+
+    def __nonzero__(self):
+        return True
+
+
+class FalseValue(Value):
+
+    def __nonzero__(self):
+        return False
+
 
 class BooleanArg:
 
     def __init__(self, name, short):
         self.name = name
         self.short = short
-        self.true = Value(self, 'true', 't')
-        self.false = Value(self, 'false', 'f')
+        self.true = TrueValue(self, 'true', 't')
+        self.false = FalseValue(self, 'false', 'f')
         self.values = (self.true, self.false)
 
     def __repr__(self):
@@ -151,12 +196,12 @@ class GN:
 
     def descardian(self):
         variants = [{}]
-        for key in self.args:
+        for arg_name in self.args:
             extended_variants = []
             for variant in variants:
-                for value in self.args[key].values:
+                for value in self.args[arg_name].values:
                     extended_variants.append(variant.copy())
-                    extended_variants[-1][self.args[key]] = value
+                    extended_variants[-1][self.args[arg_name]] = value
             variants = extended_variants
 
         class Descardian:
@@ -192,6 +237,8 @@ gn = GN(
         '"clang"', 'clang'), gcc=('"gcc"', 'gcc'), msvc=('"msvc"', 'msvc')),
     std_version=StringArg('std_version', 'std', cpp11=('"c++11"', '11'), cpp14=(
         '"c++14"', '14'), cpp17=('"c++17"', '17'), cpplatest=('"c++latest"', 'latest')),
+    is_std_string_view_supported=BooleanArg(
+        'is_std_string_view_supported', 'stdsv'),
     define_macros=StringArg('define_macros', 'defs',
                             no_macro=('[]', 'e'),
                             assert_on=('["JASL_ASSERT_ON"]', 'assert'),
@@ -206,15 +253,17 @@ gn = GN(
 # These filters exlude illegal variations
 
 gn.add_permanent_filter_not(
-    lambda x: x[gn.compiler_type] != gn.compiler_type.clang and x[gn.is_asan] == gn.is_asan.true)
+    lambda x: x[gn.compiler_type] != gn.compiler_type.clang and x[gn.is_asan])
 gn.add_permanent_filter_not(
-    lambda x: x[gn.compiler_type] not in [gn.compiler_type.clang, gn.compiler_type.gcc] and x[gn.is_generate_test_coverage] == gn.is_generate_test_coverage.true)
+    lambda x: x[gn.compiler_type] not in [gn.compiler_type.clang, gn.compiler_type.gcc] and x[gn.is_generate_test_coverage])
 gn.add_permanent_filter_not(lambda x: x[gn.is_generate_test_coverage] ==
-                            gn.is_generate_test_coverage.true and x[gn.is_run_tests] == gn.is_run_tests.false)
-gn.add_permanent_filter_not(lambda x: x[gn.is_generate_test_coverage] ==
-                            gn.is_generate_test_coverage.true and x[gn.is_debug] == gn.is_debug.false)
+                            gn.is_generate_test_coverage.true and not x[gn.is_run_tests])
+gn.add_permanent_filter_not(
+    lambda x: x[gn.is_generate_test_coverage] and not x[gn.is_debug])
+gn.add_permanent_filter_not(
+    lambda x: x[gn.is_std_string_view_supported] and x[gn.std_version] != gn.std_version.cpp17)
 gn.add_permanent_filter_not(lambda x: x[gn.define_macros] in [
-                            gn.define_macros.terminate_on, gn.define_macros.assert_and_terminate_on] and x[gn.is_run_tests] == gn.is_run_tests.true)
+                            gn.define_macros.terminate_on, gn.define_macros.assert_and_terminate_on] and x[gn.is_run_tests])
 gn.add_permanent_filter_not(
     lambda x: x[gn.compiler_type] == gn.compiler_type.msvc and x[gn.std_version] == gn.std_version.cpp11)
 gn.add_permanent_filter_not(
@@ -260,19 +309,15 @@ if __name__ == '__main__':
         args.ninja = True
 
     # remark: vswhere.exe somehow not working on appveyor
-    if args.msvc_vcvarsall_path:
-        assert(is_win)
-        assert(not args.compiler_type or args.compiler_type == 'msvc')
-        assert(os.path.exists(args.msvc_vcvarsall_path))
-        gn.add_args(visual_studio_path=StringArg(
-                'visual_studio_path', 'vs', param=('"' + args.msvc_vcvarsall_path + '"', 'param')))
-    elif is_win:
-        # vswhere.exe should have found the compilers
+    local_compiler = detect_compiler_version(
+        vcvarsall=args.msvc_vcvarsall_path)
+
+    if is_win:
         assert(local_compiler['msvc'])
         vs_vers = {}
         for vs in local_compiler['msvc']:
-            instanceId = 'id' + vs['instanceId']
-            vs_vers[instanceId] = ('"' + vs['vcvarsall'] + '"', instanceId)
+            assert('instanceId' in vs)
+            vs_vers[vs['instanceId']] = ('"' + vs['vcvarsall'] + '"', vs['instanceId'])
         gn.add_args(visual_studio_path=StringArg(
             'visual_studio_path', 'vs', **vs_vers))
 
@@ -331,12 +376,12 @@ if __name__ == '__main__':
     # Filter more, build less
     # These builds are not so importants
     variants = variants.filter(
-        lambda x: x[gn.is_run_performance_tests] == gn.is_run_performance_tests.false)
+        lambda x: not x[gn.is_run_performance_tests])
 
     if args.travis_ci:
-        variants = variants.filter(lambda x: x[gn.is_asan] == gn.is_asan.false)
+        variants = variants.filter(lambda x: not x[gn.is_asan])
         variants = variants.filter(
-            lambda x: x[gn.is_generate_test_coverage] == gn.is_generate_test_coverage.false)
+            lambda x: not x[gn.is_generate_test_coverage])
     elif not args.compiler_type:  # local testing
         variants = variants.filter(
             lambda x: x[gn.compiler_type] == current_platform_default_compiler_type())
@@ -345,12 +390,20 @@ if __name__ == '__main__':
         if is_mac and local_compiler['clang']['version'][0] < 9:
             variants = variants.filter_not(
                 lambda x: x[gn.compiler_type] == gn.compiler_type.clang and x[gn.std_version] == gn.std_version.cpp17)
+        if not local_compiler['clang']['has_string_view']:
+            variants = variants.filter_not(
+                lambda x: x[gn.std_version] == gn.std_version.cpp17 and x[gn.is_std_string_view_supported])
     if local_compiler['gcc']:
         if local_compiler['gcc']['version'][0] < 5:
             variants = variants.filter_not(
                 lambda x: x[gn.compiler_type] == gn.compiler_type.gcc and x[gn.std_version] in [gn.std_version.cpp14, gn.std_version.cpp17])
     if local_compiler['msvc']:
-        pass
+        for vc in local_compiler['msvc']:
+            if vc['version'][0] > 19 or (vc['version'][0] == 19 and vc['version'][1] >= 10):
+                continue
+            variants = variants.filter_not(
+                lambda x: x[gn.visual_studio_path] == getattr(gn.visual_studio_path, vc['instanceId'])
+                          and x[gn.is_std_string_view_supported])
 
     assert(len(variants) > 0)
 

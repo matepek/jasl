@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "jasl_static_string.hpp"
 #include "test_helper.hpp"
 
 template <size_t N1, size_t N2>
@@ -13,7 +14,7 @@ int eq_helper(const char (&left)[N1], const char (&right)[N2]) {
   return jasl::static_string(left) == jasl::static_string(right);
 }
 
-int common() {
+int main() {
   {
     jasl::static_string x;
     ASSERT_TRUE(x.data() != nullptr);

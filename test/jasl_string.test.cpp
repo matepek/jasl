@@ -6,9 +6,10 @@
 
 #include <set>
 
+#include "jasl_string.hpp"
 #include "test_helper.hpp"
 
-int common() {
+int main() {
   {
     jasl::string x;
     ASSERT_TRUE(x.data() != nullptr);
