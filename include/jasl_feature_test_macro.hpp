@@ -12,7 +12,6 @@
 #endif
 
 #ifdef _MSC_VER  // msvc
-
 /*
  * https://msdn.microsoft.com/en-us/library/b0084kay.aspx
  * https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B

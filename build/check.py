@@ -5,16 +5,8 @@ import sys
 import re
 import argparse
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers()
 
-    vc_parser = subparsers.add_parser("version-consistency")
-    vc_parser.add_argument("--changelog", required=True)
-    vc_parser.add_argument("--jasl_common", required=True)
-    vc_parser.add_argument("--output", required=True)
-    args = parser.parse_args()
-
+def version_consistency(args):
     with open(args.jasl_common, 'r') as f:
         jasl_common_lines = '\n'.join(f.readlines())
 
@@ -42,9 +34,24 @@ if __name__ == '__main__':
     assert(len(jasl_common_version) == len(changelog_version))
     for k in jasl_common_version.keys():
         if jasl_common_version[k] != changelog_version[k]:
-            raise Exception("Version mismatch!",
+            raise Exception("Version mismatch!", k,
                             jasl_common_version, changelog_version)
 
+    # touch
     open(args.output, 'w').close()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+
+    vc_parser = subparsers.add_parser("version-consistency")
+    vc_parser.add_argument("--changelog", required=True)
+    vc_parser.add_argument("--jasl_common", required=True)
+    vc_parser.add_argument("--output", required=True)
+    vc_parser.set_defaults(func=version_consistency)
+
+    args = parser.parse_args()
+    args.func(args)
 
     sys.exit(0)

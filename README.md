@@ -208,7 +208,7 @@ __Note__: This files have a _.c_ extension. This is how gn can differentiate bet
 
 [![Coverage Status](https://coveralls.io/repos/github/matepek/jasl/badge.svg)](https://coveralls.io/github/matepek/jasl)
 
-In case of ```is_generate_test_coverage=true``` gn argument the building will generate html code coverage reports. Works with clang and gcc.
+In case of ```is_generate_test_coverage=true``` gn argument the building will generate html code coverage reports. Works with clang.
 
 Location of the test coverage results: ```out/<outdir>/*.coverage``` directories.
 
@@ -218,6 +218,7 @@ For example in case of the [jasl::static_string]'s coverage report the [jasl::st
 Also because of some function is ```constexpr``` the compiler does its work and executes the code at compile time. In this case the method may seems uncovered.
 Another problem with the coverage is that the library's classes contain templates and the the C++ compilers only instantiate those which are used, the unused ones are not instatiated so those won't be seen in the report as an uncovered code.
 
+__Note__: Generating coverage report with gcc is also works, but it only generates raw data.
 
 ### Performance Tests
 

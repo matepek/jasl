@@ -297,7 +297,7 @@ if __name__ == '__main__':
         .add(Value('terminate_on', '["JASL_TERMINATE_ON_EXCEPTION_ON"]')) \
         .add(Value('assert_on_term_on', '["JASL_ASSERT_ON", "JASL_TERMINATE_ON_EXCEPTION_ON"]'))
 
-    # These filters exlude illegal variations
+    # These filters exclude illegal variations
     gn.filter_not(lambda x: x.compiler_type !=
                   gn.compiler_type.clang and x.is_asan)
     gn.filter_not(lambda x: x.compiler_type not in [
