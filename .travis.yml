@@ -3,6 +3,7 @@ language: cpp
 matrix:
   include:
     - os: linux
+      compiler: clang
       env:
         - N=linux-clang 
         - GN_HASH=ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874
@@ -10,6 +11,7 @@ matrix:
       script:
         - python ./build/build_helper.py --travis-ci --compiler-type clang
     - os: linux
+      compiler: gcc
       env: 
         - N=linux-gcc
         - GN_HASH=ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874
@@ -22,6 +24,7 @@ matrix:
       after_success:
         - coveralls -t $COVERALLS_REPO_TOKEN -e performance -e test -b out/coveralls
     - os: osx
+      compiler: clang
       env: 
         - N=osx-clang
         - GN_HASH=a14b089cbae9c29ecbc781686ada8babac8550af
