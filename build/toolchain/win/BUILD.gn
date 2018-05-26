@@ -1,98 +1,101 @@
 template("msvc_toolchain") {
-  # https://docs.microsoft.com/hu-hu/cpp/build/building-on-the-command-line
 
-  assert(host_os == target_os)
-  if (host_cpu == "x64" && target_cpu == "x86") {
-    arch = "amd64_x86"
-  } else if (host_cpu == "x86" && target_cpu == "x64") {
-    arch = "x86_amd64"
-  } else if (host_cpu == "x64") {
-    assert(host_cpu == target_cpu)
-    arch = "amd64"
-  } else if (host_cpu == "x86") {
-    assert(host_cpu == target_cpu)
-    arch = "x86"
-  } else {
-    assert(false)
-  }
+  toolchain(target_name) {
 
-  tool("stamp") {
-    tool_wrapper_path =
-        rebase_path("//build/toolchain/win/tool_wrapper.py", root_build_dir)
-    command = "python $tool_wrapper_path stamp {{output}}"
-    description = "STAMP {{output}}"
-  }
+    assert(host_os == target_os)
+    if (host_cpu == "x64" && target_cpu == "x86") {
+      arch = "amd64_x86"
+    } else if (host_cpu == "x86" && target_cpu == "x64") {
+      arch = "x86_amd64"
+    } else if (host_cpu == "x64") {
+      assert(host_cpu == target_cpu)
+      arch = "amd64"
+    } else if (host_cpu == "x86") {
+      assert(host_cpu == target_cpu)
+      arch = "x86"
+    } else {
+      assert(false)
+    }
 
-  msvc = exec_script("setup_msvc_toolchain.py",
-                     [
-                       "--arch",
-                       arch,
-                       "--vs-path",
-                       visual_studio_path,
-                     ],
-                     "scope")
-  env = msvc.env_filename
-  link = msvc.tool_dir + "/link.exe"
-  cl = msvc.tool_dir + "/cl.exe"
+    # https://docs.microsoft.com/hu-hu/cpp/build/building-on-the-command-line
+    tool("stamp") {
+      tool_wrapper_path =
+          rebase_path("//build/toolchain/win/tool_wrapper.py", root_build_dir)
+      command = "python $tool_wrapper_path stamp {{output}}"
+      description = "STAMP {{output}}"
+    }
 
-  tool("link") {
-    exename = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
-    pdbname = "$exename.pdb"
-    rspfile = "$exename.rsp"
-    pool = ":concurent_link_pool"
+    msvc = exec_script("setup_msvc_toolchain.py",
+                       [
+                         "--arch",
+                         arch,
+                         "--vs-path",
+                         visual_studio_path,
+                       ],
+                       "scope")
+    env = msvc.env_filename
+    link = msvc.tool_dir + "/link.exe"
+    cl = msvc.tool_dir + "/cl.exe"
 
-    command = "ninja -t msvc -e \"$env\" -- \"$link\" /nologo /OUT:$exename /PDB:$pdbname @$rspfile"
+    tool("link") {
+      exename = "{{output_dir}}/{{target_output_name}}{{output_extension}}"
+      pdbname = "$exename.pdb"
+      rspfile = "$exename.rsp"
+      pool = ":concurent_link_pool"
 
-    default_output_extension = ".exe"
-    default_output_dir = "{{root_out_dir}}"
-    description = "LINK {{output}}"
-    outputs = [
-      exename,
-    ]
+      command = "ninja -t msvc -e \"$env\" -- \"$link\" /nologo /OUT:$exename /PDB:$pdbname @$rspfile"
 
-    # The use of inputs_newline is to work around a fixed per-line buffer
-    # size in the linker.
-    rspfile_content = "{{inputs_newline}} {{libs}} {{solibs}} {{ldflags}}"
-  }
+      default_output_extension = ".exe"
+      default_output_dir = "{{root_out_dir}}"
+      description = "LINK {{output}}"
+      outputs = [
+        exename,
+      ]
 
-  tool("cc") {
-    # Object files go in this directory.
-    output_subdir = "{{target_out_dir}}/{{label_name}}"
-    precompiled_header_type = "msvc"
+      # The use of inputs_newline is to work around a fixed per-line buffer
+      # size in the linker.
+      rspfile_content = "{{inputs_newline}} {{libs}} {{solibs}} {{ldflags}}"
+    }
 
-    # The PDB name needs to be different between C and C++ compiled files.
-    pdbname = "{{target_out_dir}}/{{label_name}}_cc.pdb"
+    tool("cc") {
+      # Object files go in this directory.
+      output_subdir = "{{target_out_dir}}/{{label_name}}"
+      precompiled_header_type = "msvc"
 
-    # See comment in CC tool about quoting.
-    depsformat = "msvc"
-    description = "COMPILE_AND_EXPECT_ERROR {{output}}"
-    outputs = [
-      "$output_subdir/{{source_name_part}}.obj",
-    ]
-    rspfile = "{{output}}.rsp"
-    rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}}"
+      # The PDB name needs to be different between C and C++ compiled files.
+      pdbname = "{{target_out_dir}}/{{label_name}}_cc.pdb"
 
-    command = "..\..\build\toolchain\win\compile_and_expect_error.bat " + "\"{{output}}\" ninja -t msvc -e \"$env\" -- \"$cl\" /nologo /showIncludes @\"$rspfile\" /Fo\"{{output}}\" /Fd\"$pdbname\" /c \"{{source}}\""
-  }
+      # See comment in CC tool about quoting.
+      depsformat = "msvc"
+      description = "COMPILE_AND_EXPECT_ERROR {{output}}"
+      outputs = [
+        "$output_subdir/{{source_name_part}}.obj",
+      ]
+      rspfile = "{{output}}.rsp"
+      rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}}"
 
-  tool("cxx") {
-    # Object files go in this directory.
-    output_subdir = "{{target_out_dir}}/{{label_name}}"
-    precompiled_header_type = "msvc"
+      command = "..\..\build\toolchain\win\compile_and_expect_error.bat " + "\"{{output}}\" ninja -t msvc -e \"$env\" -- \"$cl\" /nologo /showIncludes @\"$rspfile\" /Fo\"{{output}}\" /Fd\"$pdbname\" /c \"{{source}}\""
+    }
 
-    # The PDB name needs to be different between C and C++ compiled files.
-    pdbname = "{{target_out_dir}}/{{label_name}}_cc.pdb"
+    tool("cxx") {
+      # Object files go in this directory.
+      output_subdir = "{{target_out_dir}}/{{label_name}}"
+      precompiled_header_type = "msvc"
 
-    # See comment in CC tool about quoting.
-    depsformat = "msvc"
-    description = "CXX {{output}}"
-    outputs = [
-      "$output_subdir/{{source_name_part}}.obj",
-    ]
-    rspfile = "{{output}}.rsp"
-    rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}}"
+      # The PDB name needs to be different between C and C++ compiled files.
+      pdbname = "{{target_out_dir}}/{{label_name}}_cc.pdb"
 
-    command = "ninja -t msvc -e \"$env\" -- \"$cl\" /nologo /showIncludes @\"$rspfile\" /Fo\"{{output}}\" /Fd\"$pdbname\" /c \"{{source}}\""
+      # See comment in CC tool about quoting.
+      depsformat = "msvc"
+      description = "CXX {{output}}"
+      outputs = [
+        "$output_subdir/{{source_name_part}}.obj",
+      ]
+      rspfile = "{{output}}.rsp"
+      rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}}"
+
+      command = "ninja -t msvc -e \"$env\" -- \"$cl\" /nologo /showIncludes @\"$rspfile\" /Fo\"{{output}}\" /Fd\"$pdbname\" /c \"{{source}}\""
+    }
   }
 }
 
