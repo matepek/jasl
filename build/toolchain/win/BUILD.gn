@@ -1,5 +1,20 @@
-toolchain("x64msvc") {
+template("msvc_toolchain") {
   # https://docs.microsoft.com/hu-hu/cpp/build/building-on-the-command-line
+
+  assert(host_os == target_os)
+  if (host_cpu == "x64" && target_cpu == "x86") {
+    arch = "amd64_x86"
+  } else if (host_cpu == "x86" && target_cpu == "x64") {
+    arch = "x86_amd64"
+  } else if (host_cpu == "x64") {
+    assert(host_cpu == target_cpu)
+    arch = "amd64"
+  } else if (host_cpu == "x86") {
+    assert(host_cpu == target_cpu)
+    arch = "x86"
+  } else {
+    assert(false)
+  }
 
   tool("stamp") {
     tool_wrapper_path =
@@ -11,7 +26,7 @@ toolchain("x64msvc") {
   msvc = exec_script("setup_msvc_toolchain.py",
                      [
                        "--arch",
-                       "amd64",
+                       arch,
                        "--vs-path",
                        visual_studio_path,
                      ],
@@ -83,4 +98,10 @@ toolchain("x64msvc") {
 
 pool("concurent_link_pool") {
   depth = 1
+}
+
+msvc_toolchain("x64msvc") {
+}
+
+msvc_toolchain("x86msvc") {
 }

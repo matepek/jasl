@@ -46,6 +46,14 @@ clang_gcc_toolchain("x64gcc") {
   current_compiler_exec = compiler_exec
 }
 
+clang_gcc_toolchain("x86gcc") {
+  current_compiler_exec = compiler_exec
+}
+
 clang_gcc_toolchain("x64clang") {
+  current_compiler_exec = compiler_exec
+}
+
+clang_gcc_toolchain("x86clang") {
   current_compiler_exec = compiler_exec
 }
