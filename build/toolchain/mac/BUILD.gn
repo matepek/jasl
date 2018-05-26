@@ -34,7 +34,7 @@ toolchain("x64clang") {
   tool("cxx") {
     precompiled_header_type = "gcc"
     depfile = "{{output}}.d"
-    command = "clang++ -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+    command = "$compiler_exec -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
     depsformat = "gcc"
     description = "CXX {{output}}"
     outputs = [
@@ -44,7 +44,7 @@ toolchain("x64clang") {
 
   # It is a hack to test compile errors. The project has no C file.
   tool("cc") {
-    command = "(clang++ {{defines}} {{include_dirs}} {{cflags}} -c {{source}} -o {{output}}" + " > /dev/null 2>&1); if test \$? -eq 0;" + "then rm {{output}}; echo Error: Compilation error was expected, but not occured: {{source}}!;" + "else touch {{output}}; fi;"
+    command = "($compiler_exec {{defines}} {{include_dirs}} {{cflags}} -c {{source}} -o {{output}}" + " > /dev/null 2>&1); if test \$? -eq 0;" + "then rm {{output}}; echo Error: Compilation error was expected, but not occured: {{source}}!;" + "else touch {{output}}; fi;"
     description = "COMPILE_AND_EXPECT_ERROR {{output}}"
     outputs = [
       "$output_subdir/{{source_name_part}}.err_ok",
