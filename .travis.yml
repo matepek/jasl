@@ -3,14 +3,6 @@ language: cpp
 matrix:
   include:
     - os: linux
-      compiler: clang
-      env:
-        - N=linux-clang 
-        - GN_HASH=ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874
-        - NINJA_LINK=https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip
-      script:
-        - python ./build/build_helper.py --travis-ci --compiler-type clang
-    - os: linux
       compiler: gcc
       env: 
         - N=linux-gcc

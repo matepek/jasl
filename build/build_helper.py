@@ -29,8 +29,12 @@ def compiler_info(exec_file):
     using namespace std;
     int main() {
         cout << '{' << "\\"has_string_view\\":";
+        #if defined(__has_include)
         #if __has_include(<string_view>)
         cout << "true";
+        #else
+        cout << "false";
+        #endif
         #else
         cout << "false";
         #endif
@@ -67,22 +71,17 @@ def detect_compiler_version(vcvarsall=None):
                 continue
             used |= {os.path.realpath(c)}
             if os.path.basename(c).startswith('clang++'):
-                try:
-                    output = subprocess.check_output([c, '--version'])
-                    m = version_re.match(output.decode())
-                    compiler.append({'type': 'clang', 'compiler_exec': c,
-                                     'version': tuple(int(v) for v in m.groups())})
-                    compiler[-1].update(compiler_info(c))
-                except subprocess.CalledProcessError as e:
-                    assert(e.returncode == 2)
-            elif os.path.basename(c).startswith('g++'):
-                try:
-                    output = subprocess.check_output([c, '--version'])
-                    m = version_re.match(output.decode())
-                    compiler.append(
-                        {'type': 'gcc', 'compiler_exec': c, 'version': tuple(int(v) for v in m.groups())})
-                except subprocess.CalledProcessError as e:
-                    assert(e.returncode == 2)
+                compiler_type = 'clang'
+            else:
+                compiler_type = 'gcc'
+            try:
+                output = subprocess.check_output([c, '--version'])
+                m = version_re.match(output.decode())
+                compiler.append({'type': compiler_type, 'compiler_exec': c,
+                                 'version': tuple(int(v) for v in m.groups())})
+                compiler[-1].update(compiler_info(c))
+            except subprocess.CalledProcessError as e:
+                assert(e.returncode == 2)
     elif is_win:
         def get_msvc_version(vcvarsall):
             assert(os.path.exists(vcvarsall))
@@ -379,6 +378,8 @@ if __name__ == '__main__':
             # older gcc hasn't c++17
             if c['version'][0] < 5:
                 gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version in [gn.std_version.cpp14, gn.std_version.cpp17])
+            if not c['has_string_view']:
+                gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
         else:
             assert(False)
 
