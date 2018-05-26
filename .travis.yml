@@ -43,3 +43,4 @@ before_install:
   - ninja --version
   - python --version
   - echo $PATH
+  - ls -all /usr/bin/ | grep ++
