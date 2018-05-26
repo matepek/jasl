@@ -1,4 +1,5 @@
 template("msvc_toolchain") {
+  forward_variables_from(invoker, [ "dummy  " ])
 
   toolchain(target_name) {
 

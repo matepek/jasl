@@ -319,6 +319,9 @@ if __name__ == '__main__':
         .add(Value('assert_on', '["JASL_ASSERT_ON"]')) \
         .add(Value('terminate_on', '["JASL_TERMINATE_ON_EXCEPTION_ON"]')) \
         .add(Value('assert_on_term_on', '["JASL_ASSERT_ON", "JASL_TERMINATE_ON_EXCEPTION_ON"]'))
+    gn.add(StringArg('target_cpu', '')) \
+        .add(StringValue('x64')) \
+        .add(StringValue('x86'))
 
     # These filters exclude illegal variations
     gn.filter_not(lambda x: x.compiler_type !=
@@ -338,7 +341,7 @@ if __name__ == '__main__':
     
     # existing toolchain
     if is_mac:
-        gn.filter(lambda x: x.compiler_type in [gn.compiler_type.clang])
+        gn.filter(lambda x: x.compiler_type in [gn.compiler_type.clang] and x.target_cpu == gn.target_cpu.x64)
     elif is_linux:
         gn.filter(lambda x: x.compiler_type in [
                   gn.compiler_type.gcc, gn.compiler_type.clang])
