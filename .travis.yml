@@ -1,9 +1,14 @@
 language: cpp
 
+addons:
+  apt:
+    update: true
+
 matrix:
   include:
     - os: linux
       compiler: clang
+      dist: precise
       addons:
         apt:
           sources:
@@ -16,31 +21,34 @@ matrix:
             - clang-3.7
             - clang-3.8
       env: 
-        - N=linux-clang
+        - N=clang 3.6, 3.7, 3.8
         - GN_HASH=ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874
         - NINJA_LINK=https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip
       script:
-        - python ./build/build_helper.py --travis-ci --compiler-type clang
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-3
     - os: linux
       compiler: clang
+      dist: trusty
       addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-3.9
+            - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-4.0
             - llvm-toolchain-trusty-5.0
+            - llvm-toolchain-trusty-6.0
           packages:
-            - clang-3.9
             - clang-4.0
             - clang-5.0
+            - clang-6.0
       env: 
-        - N=linux-clang
+        - N=clang 4.0, 5.0, 6.0
         - GN_HASH=ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874
         - NINJA_LINK=https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip
       script:
-        - python ./build/build_helper.py --travis-ci --compiler-type clang
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-4 clang++-5 clang++-6
     - os: linux
       compiler: gcc
+      dist: trusty
       addons:
         apt:
           sources:
@@ -48,27 +56,14 @@ matrix:
           packages:
             - g++-4.8
             - g++-5
-      env: 
-        - N=linux-gcc
-        - GN_HASH=ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874
-        - NINJA_LINK=https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip
-      script:
-        - python ./build/build_helper.py --travis-ci --compiler-type gcc
-    - os: linux
-      compiler: gcc
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
             - g++-6
             - g++-7
       env: 
-        - N=linux-gcc
+        - N=g++ 4.8, 5, 6, 7
         - GN_HASH=ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874
         - NINJA_LINK=https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip
       script:
-        - python ./build/build_helper.py --travis-ci --compiler-type gcc
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-4 g++-5 g++-6 g++-7
       after_success:
         - pip install --user cpp-coveralls
         - gn gen out/coveralls --args="is_debug=true is_generate_test_coverage=true compiler_type=\"gcc\" std_version=\"c++11\""

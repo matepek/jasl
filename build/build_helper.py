@@ -67,6 +67,9 @@ def detect_compiler_version(vcvarsall=None):
         for c in filter(lambda x: os.path.isfile(x), usrbincontent):
             if not os.path.basename(c).startswith('clang++') and not os.path.basename(c).startswith('g++'):
                 continue
+            if os.path.basename(c) == 'g++':
+                # we dont care about the version-less symlink
+                continue
             if os.path.realpath(c) in used:
                 continue
             used |= {os.path.realpath(c)}
@@ -286,6 +289,7 @@ if __name__ == '__main__':
     parser.add_argument('--appveyor', action='store_true')
     parser.add_argument('--compiler-type',
                         choices=['msvc', 'clang', 'gcc'])
+    parser.add_argument('--compiler-exec-like', nargs='+')
     parser.add_argument('--msvc-vcvarsall-path')
     script_arg = parser.parse_args()
 
@@ -331,6 +335,7 @@ if __name__ == '__main__':
                   gn.compiler_type.msvc and x.std_version == gn.std_version.cpp11)
     gn.filter_not(lambda x: x.compiler_type !=
                   gn.compiler_type.msvc and x.std_version == gn.std_version.cpplatest)
+    
     # existing toolchain
     if is_mac:
         gn.filter(lambda x: x.compiler_type in [gn.compiler_type.clang])
@@ -369,6 +374,8 @@ if __name__ == '__main__':
             # older mac clang hasn't c++17
             if is_mac and c['version'][0] < 9:
                 gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17)
+            if is_linux and not (c['version'][0] > 4 or (c['version'][0] == 4 and c['version'][1] >= 8)):
+                gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17)
             if not c['has_string_view']:
                 gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
         elif c['type'] == 'gcc':
@@ -382,6 +389,10 @@ if __name__ == '__main__':
                 gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
         else:
             assert(False)
+
+    # compiler-exec-like
+    if script_arg.compiler_exec_like:
+        gn.filter(lambda x, likes=script_arg.compiler_exec_like: any(l in x.compiler_exec.value for l in likes))
 
     # clean
     if script_arg.clean:
