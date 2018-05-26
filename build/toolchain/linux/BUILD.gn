@@ -1,5 +1,5 @@
 template("clang_gcc_toolchain") {
-  forward_variables_from(invoker, [ "compiler_exec" ])
+  forward_variables_from(invoker, [ "current_compiler_exec" ])
 
   toolchain(target_name) {
     output_subdir = "{{target_out_dir}}/{{label_name}}"
@@ -13,7 +13,7 @@ template("clang_gcc_toolchain") {
       outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"
       rspfile_content = "{{inputs}} {{solibs}} {{libs}}"
-      command = "$compiler_exec {{ldflags}} -o \"$outfile\" @\"$rspfile\""
+      command = "$current_compiler_exec {{ldflags}} -o \"$outfile\" @\"$rspfile\""
       description = "LINK $outfile"
       outputs = [
         outfile,
@@ -23,7 +23,7 @@ template("clang_gcc_toolchain") {
     tool("cxx") {
       precompiled_header_type = "gcc"
       depfile = "{{output}}.d"
-      command = "$compiler_exec -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+      command = "$current_compiler_exec -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "CXX {{output}}"
       outputs = [
@@ -33,7 +33,7 @@ template("clang_gcc_toolchain") {
 
     # It is a hack to test compile errors. The project has no C file.
     tool("cc") {
-      command = "($compiler_exec {{defines}} {{include_dirs}} {{cflags}} -c {{source}} -o {{output}}" + " > /dev/null 2>&1); if test \$? -eq 0;" + "then rm {{output}}; echo Error: Compilation error was expected, but not occured: {{source}}!;" + "else touch {{output}}; fi;"
+      command = "($current_compiler_exec {{defines}} {{include_dirs}} {{cflags}} -c {{source}} -o {{output}}" + " > /dev/null 2>&1); if test \$? -eq 0;" + "then rm {{output}}; echo Error: Compilation error was expected, but not occured: {{source}}!;" + "else touch {{output}}; fi;"
       description = "COMPILE_AND_EXPECT_ERROR {{output}}"
       outputs = [
         "$output_subdir/{{source_name_part}}.err_ok",
@@ -43,9 +43,9 @@ template("clang_gcc_toolchain") {
 }
 
 clang_gcc_toolchain("x64gcc") {
-  compiler_exec = compiler_exec
+  current_compiler_exec = compiler_exec
 }
 
 clang_gcc_toolchain("x64clang") {
-  compiler_exec = compiler_exec
+  current_compiler_exec = compiler_exec
 }

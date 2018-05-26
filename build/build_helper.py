@@ -23,7 +23,7 @@ is_linux = platform.system() == 'Linux'
 assert(is_win or is_mac or is_linux)
 
 
-def compiler_info(exec_name):
+def compiler_info(exec_file):
     compiler_info_program = '''
     #include <iostream>
     using namespace std;
@@ -44,7 +44,7 @@ def compiler_info(exec_name):
     o = tempfile.NamedTemporaryFile(delete=False)
     o.close()
     res = subprocess.call(
-        [exec_name, '-x', 'c++', f.name, '-o', o.name])
+        [exec_file, '-x', 'c++', f.name, '-o', o.name])
     if res != 0:
         raise Exception(res)
     output = subprocess.check_output([o.name])
@@ -55,25 +55,35 @@ def compiler_info(exec_name):
 
 def detect_compiler_version(vcvarsall=None):
     compiler = []
-    version_re = re.compile(r'[^\n\d]*(\d+)\.(\d+)\.(\d+).*')
+    version_re = re.compile(r'.*[ \t](\d+)\.(\d+)\.(\d+)[- \t\n].*')
     if is_mac or is_linux:
-        try:
-            output = subprocess.check_output(['clang++', '--version'])
-            m = version_re.match(output.decode())
-            compiler.append({'type': 'clang', 'compiler_exec': 'clang++',
-                             'version': tuple(int(v) for v in m.groups())})
-            compiler[-1].update(compiler_info('clang++'))
-        except subprocess.CalledProcessError as e:
-            assert(e.returncode == 2)
-    if is_linux:
-        try:
-            output = subprocess.check_output(['g++', '--version'])
-            m = version_re.match(output.decode())
-            compiler['gcc'].append(
-                {'type': 'gcc', 'compiler_exec': 'g++', 'version': tuple(int(v) for v in m.groups())})
-        except subprocess.CalledProcessError as e:
-            assert(e.returncode == 2)
-    if is_win:
+        used = set()
+        usrbin = '/usr/bin'
+        usrbincontent = [os.path.join(usrbin, x) for x in os.listdir(usrbin)]
+        for c in filter(lambda x: os.path.isfile(x), usrbincontent):
+            if not os.path.basename(c).startswith('clang++') and not os.path.basename(c).startswith('g++'):
+                continue
+            if os.path.realpath(c) in used:
+                continue
+            used |= {os.path.realpath(c)}
+            if os.path.basename(c).startswith('clang++'):
+                try:
+                    output = subprocess.check_output([c, '--version'])
+                    m = version_re.match(output.decode())
+                    compiler.append({'type': 'clang', 'compiler_exec': c,
+                                     'version': tuple(int(v) for v in m.groups())})
+                    compiler[-1].update(compiler_info(c))
+                except subprocess.CalledProcessError as e:
+                    assert(e.returncode == 2)
+            elif os.path.basename(c).startswith('g++'):
+                try:
+                    output = subprocess.check_output([c, '--version'])
+                    m = version_re.match(output.decode())
+                    compiler.append(
+                        {'type': 'gcc', 'compiler_exec': c, 'version': tuple(int(v) for v in m.groups())})
+                except subprocess.CalledProcessError as e:
+                    assert(e.returncode == 2)
+    elif is_win:
         def get_msvc_version(vcvarsall):
             assert(os.path.exists(vcvarsall))
             params = [vcvarsall, 'x86', '&&', 'cl.exe']
@@ -345,22 +355,32 @@ if __name__ == '__main__':
     else:
         comp_exec = gn.add(StringArg('compiler_exec', ''))
 
-    for comp in local_compiler:
-        if comp['type'] == 'msvc':
-            vs_arg.add(StringValue(comp['instanceId'], comp['vcvarsall']))
-            if not (comp['version'][0] > 19 or (comp['version'][0] == 19 and comp['version'][1] >= 10)):
-                gn.filter_not(lambda x: x.visual_studio_path == getattr(
-                    gn.visual_studio_path, comp['instanceId']) and x.is_std_string_view_supported)
-        elif comp['type'] == 'clang':
-            comp_exec.add(StringValue(comp['compiler_exec']))
-            if is_mac and comp['version'][0] < 9:
-                gn.filter_not(lambda x: x.compiler_exec == getattr(gn.compiler_exec, comp['compiler_exec']) and x.std_version == gn.std_version.cpp17)
-            if not comp['has_string_view']:
-                gn.filter_not(lambda x: x.compiler_exec == getattr(gn.compiler_exec, comp['compiler_exec']) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
-        elif comp['type'] == 'gcc':
-            comp_exec.add(StringValue(comp['compiler_exec']))
-            if comp['version'][0] < 5:
-                gn.filter_not(lambda x: x.compiler_exec == getattr(gn.compiler_exec, comp['compiler_exec']) and x.std_version in [gn.std_version.cpp14, gn.std_version.cpp17])
+    for c in local_compiler:
+        if c['type'] == 'msvc':
+            vs_arg.add(StringValue(c['instanceId'], c['vcvarsall']))
+            gn.filter_not(lambda x, ii=c['instanceId']: x.visual_studio_path == getattr(
+                    gn.visual_studio_path, ii) and x.compiler_type != gn.compiler_type.msvc)
+            if not (c['version'][0] > 19 or (c['version'][0] == 19 and c['version'][1] >= 10)):
+                gn.filter_not(lambda x, ii=c['instanceId']: x.visual_studio_path == getattr(
+                    gn.visual_studio_path, ii) and x.is_std_string_view_supported)
+        elif c['type'] == 'clang':
+            comp_exec_name = os.path.basename(c['compiler_exec'])
+            comp_exec.add(StringValue(comp_exec_name, c['compiler_exec']))
+            gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.compiler_type != gn.compiler_type.clang)
+            # older mac clang hasn't c++17
+            if is_mac and c['version'][0] < 9:
+                gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17)
+            if not c['has_string_view']:
+                gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
+        elif c['type'] == 'gcc':
+            comp_exec_name = os.path.basename(c['compiler_exec'])
+            comp_exec.add(StringValue(comp_exec_name, c['compiler_exec']))
+            gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.compiler_type != gn.compiler_type.gcc)
+            # older gcc hasn't c++17
+            if c['version'][0] < 5:
+                gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version in [gn.std_version.cpp14, gn.std_version.cpp17])
+        else:
+            assert(False)
 
     # clean
     if script_arg.clean:
