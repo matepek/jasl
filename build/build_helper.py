@@ -338,6 +338,7 @@ if __name__ == '__main__':
                   gn.compiler_type.msvc and x.std_version == gn.std_version.cpp11)
     gn.filter_not(lambda x: x.compiler_type !=
                   gn.compiler_type.msvc and x.std_version == gn.std_version.cpplatest)
+    gn.filter_not(lambda x: x.target_cpu == gn.target_cpu.x86 and x.compiler_type == gn.compiler_type.clang)
     
     # existing toolchain
     if is_mac:

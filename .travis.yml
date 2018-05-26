@@ -55,9 +55,13 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-4.8
+            - g++-4.8-multilib
             - g++-5
+            - g++-5-multilib
             - g++-6
+            - g++-6-multilib
             - g++-7
+            - g++-7-multilib
       env: 
         - N=g++ 4.8, 5, 6, 7
         - GN_HASH=ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874
