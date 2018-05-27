@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include "jasl_feature_test_macro.hpp"
-
 #define JASL_INNER_STR(x) #x
 #define JASL_STR(x) JASL_INNER_STR(x)
 
@@ -16,8 +14,8 @@
  */
 #define JASL_VERSION_MAJOR 0
 #define JASL_VERSION_MINOR 1
-#define JASL_VERSION_PATCH 0
-#define JASL_VERSION_DATE "2018-04-12"
+#define JASL_VERSION_PATCH 1
+#define JASL_VERSION_DATE "2018-05-27"
 
 static_assert(JASL_VERSION_MAJOR < 100, "JASL_VERSION error");
 static_assert(JASL_VERSION_MINOR < 100, "JASL_VERSION error");
@@ -33,11 +31,12 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
   "." JASL_STR(JASL_VERSION_MINOR) "." JASL_STR( \
       JASL_VERSION_PATCH) " (" JASL_VERSION_DATE ")"
 
-/*
- *http://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
- */
+#include "jasl_feature_test_macro.hpp"
 
-// http://en.cppreference.com/w/cpp/language/constexpr
+/*
+ * http://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
+ * http://en.cppreference.com/w/cpp/language/constexpr
+ */
 #ifdef JASL_cpp_constexpr
 #if JASL_cpp_constexpr >= 201304L
 #define JASL_CONSTEXPR_FROM_14 constexpr
@@ -73,7 +72,7 @@ static_assert(false, "Both defines cannot be used at the same time.");
 #include <exception>
 #define JASL_THROW(exception) ::std::terminate()
 #else
-#define JASL_THROW(exception) throw exception
+#define JASL_THROW(exception) throw(exception)
 #endif
 
 #if defined(JASL_ASSERT_ON) && JASL_cpp_constexpr >= 201304L

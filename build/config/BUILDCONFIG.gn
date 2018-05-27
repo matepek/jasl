@@ -58,20 +58,34 @@ declare_args() {
   define_macros = []
 
   # Tests will be built and run with std::string_view too.
-  #  Only works, if the compiler version and the std_version is proper. (C++17 or later)
+  #   Only works, if the compiler version and the std_version is proper. (C++17 or later)
   is_std_string_view_supported = false
 }
 
 declare_args() {
   if (host_os == "win") {
     # Windows only.
-    # We are looking for the "vcvarsall.bat" file.
-    # It really depends on the VS version.
+    #   We are looking for the "vcvarsall.bat" file.
+    #   It really depends on the VS version.
     visual_studio_path = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat"
 
     # C++ version. :std=<std_version> for compiler.
     std_version = "c++latest"
   } else {
+    if (compiler_type == "clang") {
+      # Unix only.
+      #   Other versions can be set with this.
+      #   Analoge to make's CXX.
+      compiler_exec = "clang++"
+    } else if (compiler_type == "gcc") {
+      # Unix only.
+      #   Other versions can be set with this.
+      #   Analoge to make's CXX.
+      compiler_exec = "g++"
+    } else {
+      assert(false)
+    }
+
     # C++ version. -std=<std_version> for compiler.
     std_version = "c++17"
   }

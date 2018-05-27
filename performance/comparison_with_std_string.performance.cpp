@@ -17,6 +17,13 @@
 constexpr static size_t ItemCount = 100000;
 constexpr static size_t IterCount = 5;
 
+constexpr static char short_string_array[] = "short";
+constexpr static char long_string_array[] =
+    "n4iwohgoiuwhvjknvirwthbuihvnjkrwhtuinvkjrwnviuwphjewh"
+    "gvuiwnvw giuwrtgj itwrj vjern ijowthgiu whg "
+    "uipwvjprwg piuwrhtg puiwrfj prin 4irufjwe "
+    "iupnwiuptg";
+
 template <typename ItemType,
           size_t ItemCountT = ItemCount,
           size_t IterCountT = IterCount>
@@ -52,76 +59,102 @@ std::pair<std::string, double> measure(
 
 void print_compare(const std::pair<std::string, double>& left,
                    const std::pair<std::string, double>& right) {
-  std::cout << left.first << ": " << left.second << " / unit" << std::endl
-            << right.first << ": " << right.second << " / unit" << std::endl
-            << right.first << " / " << left.first << " = "
+  std::cout << " - " << right.first << " / " << left.first << " = "
             << static_cast<int>(100 * right.second / left.second) << " %"
+            << std::endl
+            << "   - " << left.first << ": " << left.second << " sec / unit"
+            << std::endl
+            << "   - " << right.first << ": " << right.second << " sec / unit"
+            << std::endl
             << std::endl;
 }
 
-int main() {
-  std::cout << "JASL version: " << JASL_VERSION_STR << std::endl
-            << "This performance test compares construction and destruction of"
-            << std::endl
-            << "the jasl::static_string and the jasl::string to std::string."
-            << std::endl
-            << "NOTE: Base type of the jasl::static_string and jasl::string is "
-#ifdef JASL_USE_JASL_STRING_VIEW_AS_BASE
-            << "*jasl::string_view*."
-#else
-            << "*std::string_view*."
-#endif
-            << std::endl
-            << std::endl
-            << "ATTENTION: Are you sure you don't run any resourceful "
-               "application right now?!"
-            << std::endl
-            << "(I know its tempting to read xkcd.org while you are waiting "
-               "for the result, "
-            << std::endl
-            << "but you should preolad your articles before you measure.)"
-            << std::endl
-            << std::endl;
+int main(int, char* argv[]) {
+  auto& c = std::cout;
+  using std::endl;
+  c << "**ATTENTION**: Are you sure you don't run any resourceful "
+       "application right now?!"
+    << endl
+    << "(I know it's tempting to read xkcd.org while you are waiting "
+       "for the result, "
+    << endl
+    << "but you should preolad your articles before you measure.)" << endl
+    << " - Is you notebook connected to power source?" << endl
 #ifdef JASL_DEBUG
-  std::cout << "!!! WARNING !!! This is not an optimized build!" << std::endl
-            << std::endl;
+    << "**!!! WARNING !!!** This is not an optimized build!" << endl
 #endif
+    << endl
+    << endl;
 
-  auto small_jasl_static_string = measure<jasl::static_string>(
-      "small jasl::static_string",
-      [](jasl::static_string* ptr) { new (ptr) jasl::static_string("small"); },
+  c << "##### " << argv[0] << endl
+    << endl
+    << "JASL version: " << JASL_VERSION_STR << endl
+    << endl
+    << "This performance test compares construction and destruction of" << endl
+    << "the jasl::static_string and the [jasl::string] to [std::string]."
+    << endl
+    << endl
+    << "Parameters:" << endl
+    << " - ( ItemCount, IterCount ) := ( " << ItemCount << ", " << IterCount
+    << " )" << endl
+    << " - ( sizeof(short_string_array), sizeof(long_string_array) ) := ( "
+    << sizeof(short_string_array) << ", " << sizeof(long_string_array) << " )"
+    << endl
+    << endl
+    << "   **Remarks**: The results depend on the size of the character array "
+       "given to the std::string's constructor."
+    << endl
+    << endl
+    << "Hardware:" << endl
+    << " - Processor (type, frequency): TODO" << endl
+    << " - Memory: TODO" << endl
+    << " - Operating System: TODO" << endl
+    << endl
+    << "**NOTE**: Base type of the [jasl::static_string] and [jasl::string] is "
+#ifdef JASL_USE_JASL_STRING_VIEW_AS_BASE
+    << "[jasl::string_view]."
+#else
+    << "[std::string_view]."
+#endif
+    << endl
+    << endl;
+
+  auto short_jasl_static_string = measure<jasl::static_string>(
+      "short [jasl::static_string]",
+      [](jasl::static_string* ptr) {
+        new (ptr) jasl::static_string(short_string_array);
+      },
       [](jasl::static_string& str) {
         using namespace jasl;
         str.~static_string();
       });
 
-  auto small_jasl_string_static = measure<jasl::string>(
-      "small jasl::string with static",
-      [](jasl::string* ptr) { new (ptr) jasl::string("small"); },
+  auto short_jasl_string_static = measure<jasl::string>(
+      "short static [jasl::string]",
+      [](jasl::string* ptr) {
+        static_assert(sizeof(short_string_array) < 8, "Err!");
+        new (ptr) jasl::string(short_string_array);
+      },
       [](jasl::string& str) {
         using namespace jasl;
         str.~string();
       });
 
-  auto small_std_string = measure<std::string>(
-      "small std::string",
-      [](std::string* ptr) { new (ptr) std::string("small"); },
+  auto short_std_string = measure<std::string>(
+      "short [std::string]",
+      [](std::string* ptr) { new (ptr) std::string(short_string_array); },
       [](std::string& str) {
         using namespace std;
         str.~string();
       });
 
-  print_compare(small_jasl_static_string, small_std_string);
-  print_compare(small_jasl_string_static, small_std_string);
+  print_compare(short_jasl_static_string, short_std_string);
+  print_compare(short_jasl_string_static, short_std_string);
 
   auto long_jasl_static_string = measure<jasl::static_string>(
-      "long jasl::static_string",
+      "long [jasl::static_string]",
       [](jasl::static_string* ptr) {
-        new (ptr) jasl::static_string(
-            "n4iwohgoiuwhvjknvirwthbuihvnjkrwhtuinvkjrwnviuwphjewh"
-            "gvuiwnvw giuwrtgj itwrj vjern ijowthgiu whg "
-            "uipwvjprwg piuwrhtg puiwrfj prin 4irufjwe "
-            "iupnwiuptg");
+        new (ptr) jasl::static_string(long_string_array);
       },
       [](jasl::static_string& str) {
         using namespace jasl;
@@ -129,13 +162,17 @@ int main() {
       });
 
   auto long_jasl_string_static = measure<jasl::string>(
-      "long jasl::string static",
+      "long static [jasl::string]",
+      [](jasl::string* ptr) { new (ptr) jasl::string(long_string_array); },
+      [](jasl::string& str) {
+        using namespace jasl;
+        str.~string();
+      });
+
+  auto long_jasl_string_dynamic = measure<jasl::string>(
+      "long dynamic [jasl::string]",
       [](jasl::string* ptr) {
-        new (ptr) jasl::string(
-            "n4iwohgoiuwhvjknvirwthbuihvnjkrwhtuinvkjrwnviuwphjewh"
-            "gvuiwnvw giuwrtgj itwrj vjern ijowthgiu whg "
-            "uipwvjprwg piuwrhtg puiwrfj prin 4irufjwe "
-            "iupnwiuptg");
+        new (ptr) jasl::string(static_cast<const char*>(long_string_array));
       },
       [](jasl::string& str) {
         using namespace jasl;
@@ -143,11 +180,10 @@ int main() {
       });
 
   auto long_std_string = measure<std::string>(
-      "long std::string",
+      "long [std::string]",
       [](std::string* ptr) {
-        new (ptr) std::string(
-            "bigger than std::string's static storage, which is "
-            "usually 16 character");
+        static_assert(sizeof(long_string_array) > 16, "Err!");
+        new (ptr) std::string(long_string_array);
       },
       [](std::string& str) {
         using namespace std;
@@ -156,6 +192,7 @@ int main() {
 
   print_compare(long_jasl_static_string, long_std_string);
   print_compare(long_jasl_string_static, long_std_string);
+  print_compare(long_jasl_string_dynamic, long_std_string);
 
   return 0;
 }

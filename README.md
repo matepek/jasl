@@ -208,7 +208,7 @@ __Note__: This files have a _.c_ extension. This is how gn can differentiate bet
 
 [![Coverage Status](https://coveralls.io/repos/github/matepek/jasl/badge.svg)](https://coveralls.io/github/matepek/jasl)
 
-In case of ```is_generate_test_coverage=true``` gn argument the building will generate html code coverage reports. Works with clang and gcc.
+In case of ```is_generate_test_coverage=true``` gn argument the building will generate html code coverage reports. Works with clang.
 
 Location of the test coverage results: ```out/<outdir>/*.coverage``` directories.
 
@@ -218,6 +218,7 @@ For example in case of the [jasl::static_string]'s coverage report the [jasl::st
 Also because of some function is ```constexpr``` the compiler does its work and executes the code at compile time. In this case the method may seems uncovered.
 Another problem with the coverage is that the library's classes contain templates and the the C++ compilers only instantiate those which are used, the unused ones are not instatiated so those won't be seen in the report as an uncovered code.
 
+__Note__: Generating coverage report with gcc is also works, but it only generates raw data.
 
 ### Performance Tests
 
@@ -227,7 +228,51 @@ After building, the performance binaries are in the out directory and they are r
 
 Source location: ```performance/*.performance.cpp```
 
+#### (Generated) Performance Test Results
+
+##### ./comparison_with_std_string.performance
+
+JASL version: 0.1.1 (2018-05-27)
+
+This performance test compares construction and destruction of
+the jasl::static_string and the [jasl::string] to [std::string].
+
+Parameters:
+ - ( ItemCount, IterCount ) := ( 100000, 5 )
+ - ( sizeof(short_string_array), sizeof(long_string_array) ) := ( 6, 150 )
+
+   **Remarks**: The results depend on the size of the character array given to the std::string's constructor.
+
+Hardware:
+ - Processor (type, frequency): 2,6 GHz Intel Core i5
+ - Memory: 8 GB 1600 MHz DDR3
+ - Operating System: macOS 10.13.4
+
+**NOTE**: Base type of the [jasl::static_string] and [jasl::string] is [jasl::string_view].
+
+ - short [std::string] / short [jasl::static_string] = 208 %
+   - short [jasl::static_string]: 1.54476e-08 sec / unit
+   - short [std::string]: 3.22507e-08 sec / unit
+
+ - short [std::string] / short static [jasl::string] = 186 %
+   - short static [jasl::string]: 1.7339e-08 sec / unit
+   - short [std::string]: 3.22507e-08 sec / unit
+
+ - long [std::string] / long [jasl::static_string] = 4083 %
+   - long [jasl::static_string]: 1.29123e-08 sec / unit
+   - long [std::string]: 5.27216e-07 sec / unit
+
+ - long [std::string] / long static [jasl::string] = 3480 %
+   - long static [jasl::string]: 1.5146e-08 sec / unit
+   - long [std::string]: 5.27216e-07 sec / unit
+
+ - long [std::string] / long dynamic [jasl::string] = 199 %
+   - long dynamic [jasl::string]: 2.63628e-07 sec / unit
+   - long [std::string]: 5.27216e-07 sec / unit
+
 ### Tested on
+
+[Travis](https://travis-ci.org/matepek/jasl) and [Appveyor](https://ci.appveyor.com/api/projects/status/jmfo82d6oumjpjxf/branch/master?svg=true) build and run the tests with more compiler than the following list.
 
  * OSX 10.13.4 - Apple LLVM version 9.1.0 (clang-902.0.39.1)
  * Ubuntu 16.04 - g++ (Ubuntu 4.8.5-4ubuntu2) 4.8.5

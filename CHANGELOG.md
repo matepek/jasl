@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.1.1] - 2018-05-27
+### Added
+ - A lot of things happened, but this version update is becasue I added a performance measurements to README.md.
+
 ## [0.1.0] - 2018-04-12
 ### Added
  - Everything. This is the initial version for review.
