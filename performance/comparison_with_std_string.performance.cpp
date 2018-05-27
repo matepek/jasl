@@ -60,32 +60,36 @@ void print_compare(const std::pair<std::string, double>& left,
 }
 
 int main() {
-  std::cout << "JASL version: " << JASL_VERSION_STR << std::endl
-            << "This performance test compares construction and destruction of"
-            << std::endl
-            << "the jasl::static_string and the jasl::string to std::string."
-            << std::endl
-            << "NOTE: Base type of the jasl::static_string and jasl::string is "
-#ifdef JASL_USE_JASL_STRING_VIEW_AS_BASE
-            << "*jasl::string_view*."
-#else
-            << "*std::string_view*."
-#endif
-            << std::endl
-            << std::endl
-            << "ATTENTION: Are you sure you don't run any resourceful "
-               "application right now?!"
-            << std::endl
-            << "(I know its tempting to read xkcd.org while you are waiting "
-               "for the result, "
-            << std::endl
-            << "but you should preolad your articles before you measure.)"
-            << std::endl
-            << std::endl;
+  auto& c = std::cout;
+  c << "**ATTENTION**: Are you sure you don't run any resourceful "
+       "application right now?!"
+    << std::endl
+    << "(I know its tempting to read xkcd.org while you are waiting "
+       "for the result, "
+    << std::endl
+    << "but you should preolad your articles before you measure.)" << std::endl
 #ifdef JASL_DEBUG
-  std::cout << "!!! WARNING !!! This is not an optimized build!" << std::endl
-            << std::endl;
+    << "**!!! WARNING !!!** This is not an optimized build!" << std::endl
 #endif
+    << std::endl
+    << std::endl;
+
+  c << "#### JASL: Performance comparison" << std::endl
+    << "JASL version: " << JASL_VERSION_STR << std::endl
+    << std::endl
+    << "This performance test compares construction and destruction of"
+    << std::endl
+    << "the jasl::static_string and the [jasl::string] to [std::string]."
+    << std::endl
+    << std::endl
+    << "**NOTE**: Base type of the [jasl::static_string] and [jasl::string] is "
+#ifdef JASL_USE_JASL_STRING_VIEW_AS_BASE
+    << "[jasl::string_view]."
+#else
+    << "[std::string_view]."
+#endif
+    << std::endl
+    << std::endl;
 
   auto small_jasl_static_string = measure<jasl::static_string>(
       "small jasl::static_string",

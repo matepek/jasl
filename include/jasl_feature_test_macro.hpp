@@ -12,7 +12,6 @@
 #endif
 
 #ifdef _MSC_VER  // msvc
-
 /*
  * https://msdn.microsoft.com/en-us/library/b0084kay.aspx
  * https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
@@ -45,24 +44,24 @@ static_assert(false, "Compiler behaviour has been changed. Review the change!");
  * http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
  */
 
-#ifndef __cpp_constexpr
+#ifdef __cpp_constexpr
+#define JASL_cpp_constexpr __cpp_constexpr
+#else
 #define JASL_cpp_constexpr \
   (__GNUC__ >= 7L          \
        ? 201603L           \
        : (__GNUC__ >= 5L   \
               ? 201304L    \
               : (__GNUC__ == 4L && __GNUC_MINOR__ >= 6L ? 200704L : 0L)))
-#else
-static_assert(false, "Compiler behaviour has been changed. Review the change!");
 #endif  // __cpp_constexpr
-#ifndef __cpp_lib_string_view
+#ifdef __cpp_lib_string_view
+#define JASL_cpp_lib_string_view __cpp_lib_string_view
+#else
 #define JASL_cpp_lib_string_view                                       \
   (__cplusplus >= 201703 &&                                            \
            (__GNUC__ > 7L || (__GNUC__ == 7L && __GNUC_MINOR__ >= 1L)) \
        ? 201606L                                                       \
        : 0L)
-#else
-static_assert(false, "Compiler behaviour has been changed. Review the change!");
 #endif  // __cpp_lib_string_view
 
 #elif defined(__clang__)  // clang
@@ -72,10 +71,10 @@ static_assert(false, "Compiler behaviour has been changed. Review the change!");
 #else
 static_assert(false, "Probably unsupported compiler version!");
 #endif
-#ifndef __cpp_lib_string_view
-#define JASL_cpp_lib_string_view (__has_include(<string_view>) ? 201606L : 0L)
+#ifdef __cpp_lib_string_view
+#define JASL_cpp_lib_string_view __cpp_lib_string_view
 #else
-static_assert(false, "Compiler behaviour has been changed. Review the change!");
+#define JASL_cpp_lib_string_view (__has_include(<string_view>) ? 201606L : 0L)
 #endif
 
 #else
