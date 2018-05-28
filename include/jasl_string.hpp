@@ -45,11 +45,12 @@ class basic_string : public basic_string_view<CharT, Traits> {
   };
 
  public:
-  JASL_CONSTEXPR_FROM_14 basic_string() noexcept(
+  JASL_CONSTEXPR_FROM_14
+  basic_string() noexcept(
       std::is_nothrow_constructible<base_type, const CharT*, size_t>::value)
       : base_type(empty_string, 0) {}
 
-  JASL_CONSTEXPR_FROM_14 basic_string(const ParamterWrapper& paramW) {
+  basic_string(const ParamterWrapper& paramW) {
     std::unique_ptr<CharT[]> dyn(new CharT[paramW._size + 1]());
     Traits::copy(dyn.get(), paramW._ptr, paramW._size);
     // base_type(std::string_view) may not null terminated
@@ -58,13 +59,12 @@ class basic_string : public basic_string_view<CharT, Traits> {
     base_type::operator=(base_type(_dyn.get(), paramW._size));
   }
 
-  template <std::size_t N>
+  template <size_t N>
   constexpr basic_string(const CharT (&str)[N]) noexcept(
-      std::is_nothrow_constructible<base_type, const CharT*, std::size_t>::
-          value)
+      std::is_nothrow_constructible<base_type, const CharT*, size_t>::value)
       : base_type(str, str[N - 1] == 0 ? N - 1 : N) {}
 
-  JASL_CONSTEXPR_FROM_14 basic_string(const basic_string& other)
+  basic_string(const basic_string& other)
       : base_type(other.data(), other.size()) {
     if (other._dyn != nullptr) {
       std::unique_ptr<CharT[]> dyn(new CharT[other.size() + 1]());
@@ -82,8 +82,8 @@ class basic_string : public basic_string_view<CharT, Traits> {
     base_type::operator=(std::move(other));
   }
 
-  template <std::size_t N>
-  JASL_CONSTEXPR_FROM_14 basic_string& assign(const CharT (&str)[N]) noexcept(
+  template <size_t N>
+  basic_string& assign(const CharT (&str)[N]) noexcept(
       std::is_nothrow_assignable<base_type, base_type>::value&&
           std::is_nothrow_destructible<dyn_type>::value) {
     _dyn.reset();
@@ -91,7 +91,7 @@ class basic_string : public basic_string_view<CharT, Traits> {
     return *this;
   }
 
-  JASL_CONSTEXPR_FROM_14 basic_string& assign(const ParamterWrapper& paramW) {
+  basic_string& assign(const ParamterWrapper& paramW) {
     std::unique_ptr<CharT[]> dyn(new CharT[paramW._size + 1]());
     Traits::copy(dyn.get(), paramW._ptr, paramW._size);
     dyn[paramW._size] = 0;
@@ -100,7 +100,7 @@ class basic_string : public basic_string_view<CharT, Traits> {
     return *this;
   }
 
-  JASL_CONSTEXPR_FROM_14 basic_string& assign(const basic_string& other) {
+  basic_string& assign(const basic_string& other) {
     if (other._dyn == nullptr) {
       _dyn.reset();
       base_type::operator=(other);
@@ -122,16 +122,13 @@ class basic_string : public basic_string_view<CharT, Traits> {
     return *this;
   }
 
-  template <std::size_t N>
-  JASL_CONSTEXPR_FROM_14 basic_string&
-  operator=(const CharT (&str)[N]) noexcept(
+  template <size_t N>
+  basic_string& operator=(const CharT (&str)[N]) noexcept(
       std::is_nothrow_assignable<base_type, base_type>::value) {
     return assign(str);
   }
 
-  JASL_CONSTEXPR_FROM_14 basic_string& operator=(const basic_string& other) {
-    return assign(other);
-  }
+  basic_string& operator=(const basic_string& other) { return assign(other); }
 
   JASL_CONSTEXPR_FROM_14 basic_string& operator=(basic_string&& other) {
     return assign(std::move(other));
@@ -155,8 +152,7 @@ class basic_string : public basic_string_view<CharT, Traits> {
     std::swap(*this, other);
   }
 
-  JASL_CONSTEXPR_FROM_14 basic_string
-  substr(typename base_type::size_type pos) const {
+  basic_string substr(typename base_type::size_type pos) const {
     if (_dyn == nullptr) {
       basic_string cpy(*this);
       cpy.base_type::operator=(base_type::substr(pos));

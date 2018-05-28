@@ -31,10 +31,9 @@ class basic_static_string : public basic_string_view<CharT, Traits> {
       std::is_nothrow_constructible<base_type, const CharT*, size_t>::value)
       : base_type(empty_string, 0) {}
 
-  template <std::size_t N>
+  template <size_t N>
   constexpr basic_static_string(const CharT (&str)[N]) noexcept(
-      std::is_nothrow_constructible<base_type, const CharT*, std::size_t>::
-          value)
+      std::is_nothrow_constructible<base_type, const CharT*, size_t>::value)
       : base_type(str, str[N - 1] == 0 ? N - 1 : N) {}
 
   constexpr basic_static_string(const basic_static_string& other) noexcept(
@@ -44,7 +43,7 @@ class basic_static_string : public basic_string_view<CharT, Traits> {
   ~basic_static_string() noexcept(
       std::is_nothrow_destructible<base_type>::value) = default;
 
-  template <std::size_t N>
+  template <size_t N>
   JASL_CONSTEXPR_FROM_14 basic_static_string&
   operator=(const CharT (&str)[N]) noexcept(
       std::is_nothrow_assignable<base_type, base_type>::value) {

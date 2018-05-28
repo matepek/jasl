@@ -30,7 +30,7 @@ namespace jasl {
 template <typename CharT, typename Traits = std::char_traits<CharT> /**/>
 class basic_string_view {
   const CharT* _ptr;
-  std::size_t _size;
+  size_t _size;
 
  public:
   // types
@@ -44,7 +44,7 @@ class basic_string_view {
   typedef const_iterator iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
   typedef const_reverse_iterator reverse_iterator;
-  typedef std::size_t size_type;
+  typedef size_t size_type;
   typedef std::ptrdiff_t difference_type;
   static constexpr const size_type npos = static_cast<size_type>(-1);
 
@@ -227,8 +227,7 @@ template <class CharT, class Traits>
 std::basic_ostream<CharT, Traits>& operator<<(
     std::basic_ostream<CharT, Traits>& os,
     basic_string_view<CharT, Traits> v) {
-  os.write(v.data(),
-           static_cast<std::make_signed<std::size_t>::type>(v.size()));
+  os.write(v.data(), static_cast<std::make_signed<size_t>::type>(v.size()));
   return os;
 }
 }  // namespace jasl
@@ -241,7 +240,7 @@ std::basic_ostream<CharT, Traits>& operator<<(
 namespace std {
 template <typename CharT, typename Traits>
 struct hash<jasl::basic_string_view<CharT, Traits>> {
-  std::size_t operator()(const jasl::basic_string_view<CharT, Traits>& x) const
+  size_t operator()(const jasl::basic_string_view<CharT, Traits>& x) const
       noexcept {
     return std::hash<std::basic_string_view<CharT, Traits>>{}(
         std::basic_string_view<CharT, Traits>(x.data(), x.size()));
@@ -252,7 +251,7 @@ struct hash<jasl::basic_string_view<CharT, Traits>> {
 namespace std {
 template <typename CharT, typename Traits>
 struct hash<jasl::basic_string_view<CharT, Traits>> {
-  std::size_t operator()(const jasl::basic_string_view<CharT, Traits>& x) const
+  size_t operator()(const jasl::basic_string_view<CharT, Traits>& x) const
       noexcept {
     return std::hash<std::basic_string<CharT, Traits>>{}(
         std::basic_string<CharT, Traits>(x.data(), x.size()));

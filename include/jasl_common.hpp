@@ -40,10 +40,8 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
 #ifdef JASL_cpp_constexpr
 #if JASL_cpp_constexpr >= 201304L
 #define JASL_CONSTEXPR_FROM_14 constexpr
-#define JASL_CONSTEXPR_FROM_11 constexpr
 #elif JASL_cpp_constexpr >= 200704L
 #define JASL_CONSTEXPR_FROM_14
-#define JASL_CONSTEXPR_FROM_11 constexpr
 #else
 // JASL_cpp_constexpr should not be defined.
 static_assert(false, "Something wrong with the defines.");

@@ -9,7 +9,12 @@
 #include "jasl_string.hpp"
 #include "test_helper.hpp"
 
-int main() {
+int main(int, char* argv[]) {
+  {
+    // pretty sure it isn't constexpr
+    jasl::string x(argv[0]);
+    ASSERT_TRUE(x.data() != nullptr);
+  }
   {
     jasl::string x;
     ASSERT_TRUE(x.data() != nullptr);
