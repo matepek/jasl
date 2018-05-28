@@ -6,6 +6,22 @@ group("all") {
   ]
 }
 
+source_set("include") {
+  sources = [
+    "jasl_common.hpp",
+    "jasl_feature_test_macro.hpp",
+    "jasl_static_string.hpp",
+    "jasl_string.hpp",
+    "jasl_string_view.hpp",
+  ]
+
+  public_configs = [ ":public_config" ]
+}
+
+config("public_config") {
+  include_dirs = [ "//include" ]
+}
+
 action("version-consistency.check") {
   script = "//build/check.py"
 
@@ -20,7 +36,7 @@ action("version-consistency.check") {
   ]
 
   deps = [
-    "//include",
+    ":include",
   ]
   sources = [
     "//CHANGELOG.md",

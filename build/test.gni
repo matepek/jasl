@@ -13,7 +13,7 @@ template("test_with_base") {
     ]
 
     public_deps = [
-      "//include",
+      "//:include",
     ]
   }
 
@@ -161,7 +161,7 @@ template("test_build_err_with_base") {
     ]
 
     public_deps = [
-      "//include",
+      "//:include",
     ]
     
     if (is_clang) {
