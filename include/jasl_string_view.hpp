@@ -235,7 +235,9 @@ std::basic_ostream<CharT, Traits>& operator<<(
 /*
  * http://en.cppreference.com/w/cpp/utility/hash
  */
-#ifdef JASL_cpp_lib_string_view
+#if !defined(JASL_DISABLE_JASL_STRING_VIEW_HASH)
+#if defined(JASL_cpp_lib_string_view) && \
+    !defined(JASL_FORCE_USE_MURMURHASH_HASH)
 #include <string_view>
 namespace std {
 template <typename CharT, typename Traits>
@@ -248,17 +250,28 @@ struct hash<jasl::basic_string_view<CharT, Traits>> {
 };
 }  // namespace std
 #else
+#include "jasl_murmurhash3.hpp"
 namespace std {
 template <typename CharT, typename Traits>
 struct hash<jasl::basic_string_view<CharT, Traits>> {
   size_t operator()(const jasl::basic_string_view<CharT, Traits>& x) const
       noexcept {
-    return std::hash<std::basic_string<CharT, Traits>>{}(
-        std::basic_string<CharT, Traits>(x.data(), x.size()));
+    static_assert(sizeof(size_t) <= 16, "Unexpected platform!");
+    size_t res[16 / sizeof(size_t)];
+    auto len = static_cast<int>(
+        std::min(x.size() * sizeof(CharT),
+                 static_cast<size_t>(std::numeric_limits<int>::max())));
+    if (sizeof(size_t) >= 8) {
+      jasl::murmurhash3::MurmurHash3_x64_128(x.data(), len, 33, &res);
+    } else {
+      jasl::murmurhash3::MurmurHash3_x86_128(x.data(), len, 33, &res);
+    }
+    return res[0];
   }
 };
 }  // namespace std
 #endif  // JASL_cpp_lib_string_view
+#endif  // JASL_DISABLE_JASL_STRING_VIEW_HASH
 
 #else
 

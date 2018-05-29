@@ -21,7 +21,9 @@ static_assert(JASL_VERSION_MAJOR < 100, "JASL_VERSION error");
 static_assert(JASL_VERSION_MINOR < 100, "JASL_VERSION error");
 static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
 
-// for example version 1.2.3 is: 10020003
+/*
+ * for example version 1.2.3 is: 10020003
+ */
 #define JASL_VERSION_NUMBER                         \
   (JASL_VERSION_PATCH + JASL_VERSION_MINOR * 1000 + \
    JASL_VERSION_MAJOR * 1000 * 100)
@@ -56,7 +58,9 @@ static_assert(false, "Unsupported C++ standard!");
 static_assert(false, "Both defines cannot be used at the same time.");
 #endif
 
-// fallback logic
+/*
+ * fallback logic
+ */
 #if !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
     !defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
 #if defined(JASL_cpp_lib_string_view)
@@ -66,6 +70,9 @@ static_assert(false, "Both defines cannot be used at the same time.");
 #endif
 #endif
 
+/*
+ * JASL_TERMINATE_ON_EXCEPTION_ON
+ */
 #ifdef JASL_TERMINATE_ON_EXCEPTION_ON
 #include <exception>
 #define JASL_THROW(exception) ::std::terminate()
@@ -73,6 +80,9 @@ static_assert(false, "Both defines cannot be used at the same time.");
 #define JASL_THROW(exception) throw(exception)
 #endif
 
+/*
+ * JASL_ASSERT_ON
+ */
 #if defined(JASL_ASSERT_ON) && JASL_cpp_constexpr >= 201304L
 #include <cstdlib>
 #include <iostream>
@@ -85,4 +95,27 @@ static_assert(false, "Both defines cannot be used at the same time.");
   } while (false)
 #else
 #define JASL_ASSERT(...)
+#endif
+
+/*
+ * JASL_DISABLE_JASL_STRING_VIEW_HASH
+ * If this macro is provided, then jasl::string_view has no std::hash
+ * specialization. The user can manually add one.
+ */
+
+/*
+ * JASL_FORCE_USE_MURMURHASH_HASH
+ * In case of this macro if the std::string_view is provided jasl::string_view
+ * still will use murmurhash.
+ */
+
+#if defined(JASL_FORCE_USE_MURMURHASH_HASH) && \
+    defined(JASL_DISABLE_JASL_STRING_VIEW_HASH)
+static_assert(false, "Illegal configration!")
+#endif
+
+#if (defined(JASL_FORCE_USE_MURMURHASH_HASH) ||      \
+     defined(JASL_DISABLE_JASL_STRING_VIEW_HASH)) && \
+    defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
+    static_assert(false, "Illegal configration!")
 #endif
