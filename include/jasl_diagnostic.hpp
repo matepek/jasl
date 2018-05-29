@@ -30,12 +30,16 @@
 #define JASL_DIAGNOSTIC_PUSH() _Pragma("GCC diagnostic push")
 #define JASL_DIAGNOSTIC_POP() _Pragma("GCC diagnostic pop")
 
-#define JASL_INNER_PRAGMA(x) _Pragma(JASL_STR(x))
-
 #define JASL_DIAGNOSTIC_IGNORED_MSVC(id)
 #define JASL_DIAGNOSTIC_IGNORED_GCC(id) \
   _Pragma(JASL_STR(GCC diagnostic ignored id))
 #define JASL_DIAGNOSTIC_IGNORED_CLANG(id)
+
+#if __GNUC__ >= 7L
+#define JASL_DIAGNOSTIC_IGNORED_GCC_SINCE7(id) JASL_DIAGNOSTIC_IGNORED_GCC(id)
+#else
+#define JASL_DIAGNOSTIC_IGNORED_GCC_SINCE7(id)
+#endif
 
 #define JASL_DIAGNOSTIC_IGNORED(id) JASL_DIAGNOSTIC_IGNORED_GCC(id)
 
