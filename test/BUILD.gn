@@ -1,6 +1,9 @@
 group("test") {
 }
 
+test_with_jasl_string_view("jasl_murmurhash3") {
+}
+
 test_with_jasl_string_view("jasl_string_view") {
 }
 test_with_jasl_string_view("jasl_static_string") {
