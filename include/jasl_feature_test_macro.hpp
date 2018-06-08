@@ -90,3 +90,26 @@ static_assert(false, "Unsupported compiler!");
 #if !JASL_cpp_lib_string_view
 #undef JASL_cpp_lib_string_view
 #endif  // !JASL_cpp_lib_string_view
+
+/*
+ * http://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
+ * http://en.cppreference.com/w/cpp/language/constexpr
+ */
+#ifdef JASL_cpp_constexpr
+#if JASL_cpp_constexpr >= 201304L
+#define JASL_CONSTEXPR_FROM_14 constexpr
+#elif JASL_cpp_constexpr >= 200704L
+#define JASL_CONSTEXPR_FROM_14
+#else
+// JASL_cpp_constexpr should not be defined.
+static_assert(false, "Something wrong with the defines.");
+#endif
+#else   // ifdef JASL_cpp_constexpr
+// There is no reason to support it without supporting noexcept.
+static_assert(false, "Unsupported C++ standard!");
+#endif  // ifdef JASL_cpp_constexpr
+
+#if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
+    defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
+static_assert(false, "Both defines cannot be used at the same time.");
+#endif
