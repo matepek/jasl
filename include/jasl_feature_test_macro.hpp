@@ -108,8 +108,3 @@ static_assert(false, "Something wrong with the defines.");
 // There is no reason to support it without supporting noexcept.
 static_assert(false, "Unsupported C++ standard!");
 #endif  // ifdef JASL_cpp_constexpr
-
-#if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
-    defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
-static_assert(false, "Both defines cannot be used at the same time.");
-#endif

@@ -34,18 +34,6 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
       JASL_VERSION_PATCH) " (" JASL_VERSION_DATE ")"
 
 /*
- * fallback logic
- */
-#if !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
-    !defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
-#if defined(JASL_cpp_lib_string_view)
-#define JASL_USE_STD_STRING_VIEW_AS_BASE
-#else
-#define JASL_USE_JASL_STRING_VIEW_AS_BASE
-#endif
-#endif
-
-/*
  * JASL_TERMINATE_ON_EXCEPTION_ON
  */
 #ifdef JASL_TERMINATE_ON_EXCEPTION_ON
@@ -70,27 +58,4 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
   } while (false)
 #else
 #define JASL_ASSERT(...)
-#endif
-
-/*
- * JASL_DISABLE_JASL_STRING_VIEW_HASH
- * If this macro is provided, then jasl::string_view has no std::hash
- * specialization. The user can manually add one.
- */
-
-/*
- * JASL_FORCE_USE_MURMURHASH_HASH
- * In case of this macro if the std::string_view is provided jasl::string_view
- * still will use murmurhash.
- */
-
-#if defined(JASL_FORCE_USE_MURMURHASH_HASH) && \
-    defined(JASL_DISABLE_JASL_STRING_VIEW_HASH)
-static_assert(false, "Illegal configration!")
-#endif
-
-#if (defined(JASL_FORCE_USE_MURMURHASH_HASH) ||      \
-     defined(JASL_DISABLE_JASL_STRING_VIEW_HASH)) && \
-    defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
-    static_assert(false, "Illegal configration!")
 #endif
