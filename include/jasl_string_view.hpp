@@ -6,8 +6,40 @@
 
 #pragma once
 
+#include <algorithm>
+#include <iterator>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
 #include "jasl_common.hpp"
 #include "jasl_feature_test_macro.hpp"
+
+namespace jasl {
+namespace nonstd {
+template <typename CharT, typename Traits = std::char_traits<CharT>>
+class basic_string_view;
+}  // namespace nonstd
+}  // namespace jasl
+
+/*
+ * check
+ */
+#if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
+    defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
+static_assert(false, "Both defines cannot be used at the same time.");
+#endif
+
+/*
+ * fallback logic
+ */
+#if !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
+    !defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
+#if defined(JASL_cpp_lib_string_view)
+#define JASL_USE_STD_STRING_VIEW_AS_BASE
+#else
+#define JASL_USE_JASL_STRING_VIEW_AS_BASE
+#endif
+#endif
 
 #if defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
 
@@ -20,15 +52,30 @@ using basic_string_view = std::basic_string_view<CharT, Traits>;
 
 #elif defined(JASL_USE_JASL_STRING_VIEW_AS_BASE)
 
-#include <algorithm>
-#include <iterator>
-#include <stdexcept>
-#include <string>
-#include <type_traits>
+namespace jasl {
+template <typename CharT, typename Traits = std::char_traits<CharT>>
+using basic_string_view = jasl::nonstd::basic_string_view<CharT, Traits>;
+}  // namespace jasl
+
+#else
+
+static_assert(false,
+              "One of it should be defined by the user or by the fallback "
+              "logic(jasl_common.hpp)")
+
+#endif  // JASL_USE_STD_STRING_VIEW_AS_BASE
 
 namespace jasl {
+typedef basic_string_view<char> string_view;
+typedef basic_string_view<wchar_t> wstring_view;
+typedef basic_string_view<char16_t> u16string_view;
+typedef basic_string_view<char32_t> u32string_view;
+}  // namespace jasl
 
-template <typename CharT, typename Traits = std::char_traits<CharT> /**/>
+namespace jasl {
+namespace nonstd {
+
+template <typename CharT, typename Traits>
 class basic_string_view {
   const CharT* _ptr;
   size_t _size;
@@ -231,7 +278,32 @@ std::basic_ostream<CharT, Traits>& operator<<(
   os.write(v.data(), static_cast<std::make_signed<size_t>::type>(v.size()));
   return os;
 }
+
+}  // namespace nonstd
 }  // namespace jasl
+
+/*
+ * JASL_DISABLE_JASL_STRING_VIEW_HASH
+ * If this macro is provided, then jasl::nonstd::string_view has no std::hash
+ * specialization. The user can manually add one.
+ */
+
+/*
+ * JASL_FORCE_USE_MURMURHASH_HASH
+ * In case of this macro if the std::string_view is provided jasl::string_view
+ * still will use murmurhash.
+ */
+
+#if defined(JASL_FORCE_USE_MURMURHASH_HASH) && \
+    defined(JASL_DISABLE_JASL_STRING_VIEW_HASH)
+static_assert(false, "Illegal configration!");
+#endif
+
+#if (defined(JASL_FORCE_USE_MURMURHASH_HASH) ||      \
+     defined(JASL_DISABLE_JASL_STRING_VIEW_HASH)) && \
+    defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
+static_assert(false, "Illegal configration!");
+#endif
 
 /*
  * http://en.cppreference.com/w/cpp/utility/hash
@@ -242,9 +314,9 @@ std::basic_ostream<CharT, Traits>& operator<<(
 #include <string_view>
 namespace std {
 template <typename CharT, typename Traits>
-struct hash<jasl::basic_string_view<CharT, Traits>> {
-  size_t operator()(const jasl::basic_string_view<CharT, Traits>& x) const
-      noexcept {
+struct hash<jasl::nonstd::basic_string_view<CharT, Traits>> {
+  size_t operator()(
+      const jasl::nonstd::basic_string_view<CharT, Traits>& x) const noexcept {
     return std::hash<std::basic_string_view<CharT, Traits>>{}(
         std::basic_string_view<CharT, Traits>(x.data(), x.size()));
   }
@@ -254,9 +326,9 @@ struct hash<jasl::basic_string_view<CharT, Traits>> {
 #include "jasl_murmurhash3.hpp"
 namespace std {
 template <typename CharT, typename Traits>
-struct hash<jasl::basic_string_view<CharT, Traits>> {
-  size_t operator()(const jasl::basic_string_view<CharT, Traits>& x) const
-      noexcept {
+struct hash<jasl::nonstd::basic_string_view<CharT, Traits>> {
+  size_t operator()(
+      const jasl::nonstd::basic_string_view<CharT, Traits>& x) const noexcept {
     static_assert(sizeof(size_t) <= 16, "Unexpected platform!");
     size_t res[16 / sizeof(size_t)];
     auto len = static_cast<int>(
@@ -273,18 +345,3 @@ struct hash<jasl::basic_string_view<CharT, Traits>> {
 }  // namespace std
 #endif  // JASL_cpp_lib_string_view
 #endif  // JASL_DISABLE_JASL_STRING_VIEW_HASH
-
-#else
-
-static_assert(false,
-              "One of it should be defined by the user or by the fallback "
-              "logic(jasl_common.hpp)")
-
-#endif  // JASL_USE_STD_STRING_VIEW_AS_BASE
-
-namespace jasl {
-typedef basic_string_view<char> string_view;
-typedef basic_string_view<wchar_t> wstring_view;
-typedef basic_string_view<char16_t> u16string_view;
-typedef basic_string_view<char32_t> u32string_view;
-}  // namespace jasl
