@@ -6,9 +6,10 @@
 
 #pragma once
 
-#include "jasl_common.hpp"
-
 #include <string>
+
+#include "jasl_common.hpp"
+#include "jasl_feature_test_macro.hpp"
 #include "jasl_string_view.hpp"
 
 namespace jasl {

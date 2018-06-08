@@ -7,6 +7,7 @@
 #pragma once
 
 #include "jasl_common.hpp"
+#include "jasl_feature_test_macro.hpp"
 
 #if defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
 
