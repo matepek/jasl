@@ -54,9 +54,6 @@ declare_args() {
   # Build will generate coverage report.
   is_generate_test_coverage = false
 
-  # These macros will be defined too.
-  define_macros = []
-
   # Tests will be built and run with std::string_view too.
   #   Only works, if the compiler version and the std_version is proper. (C++17 or later)
   is_std_string_view_supported = false
@@ -89,6 +86,12 @@ declare_args() {
     # C++ version. -std=<std_version> for compiler.
     std_version = "c++17"
   }
+}
+
+declare_args() {
+  is_defined_JASL_ASSERT_ON = false
+  is_defined_JASL_TERMINATE_ON_EXCEPTION_ON = false
+  is_defined_JASL_FORCE_USE_MURMURHASH_HASH = false
 }
 
 is_clang = compiler_type == "clang"

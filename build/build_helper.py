@@ -212,7 +212,7 @@ class GN(object):
     def filter(self, func):
         self._filters.append(func)
 
-    def filter_not(self, func):
+    def filter_out(self, func):
         self._filters.append(lambda x: not func(x))
 
     def variants(self):
@@ -257,7 +257,7 @@ class GN(object):
             def filter(self, func):
                 self.variants = filter(func, self.variants)
 
-            def filter_not(self, func):
+            def filter_out(self, func):
                 self.filter(lambda x: not func(x))
 
             def __repr__(self):
@@ -314,35 +314,36 @@ if __name__ == '__main__':
         .add(StringValue('cpp14', 'c++14')) \
         .add(StringValue('cpp17', 'c++17')) \
         .add(StringValue('cpplatest', 'c++latest'))
-    gn.add(StringArg('define_macros', 'm')) \
-        .add(Value('macro_off', '[]')) \
-        .add(Value('assert_on', '["JASL_ASSERT_ON"]')) \
-        .add(Value('terminate_on', '["JASL_TERMINATE_ON_EXCEPTION_ON"]')) \
-        .add(Value('assert_on_term_on', '["JASL_ASSERT_ON", "JASL_TERMINATE_ON_EXCEPTION_ON"]'))
     gn.add(StringArg('target_cpu', '')) \
         .add(StringValue('x64')) \
         .add(StringValue('x86'))
+    gn.add(BooleanArg('is_defined_JASL_ASSERT_ON', 'as'))
+    gn.add(BooleanArg('is_defined_JASL_TERMINATE_ON_EXCEPTION_ON', 'term'))
+    gn.add(BooleanArg('is_defined_JASL_FORCE_USE_MURMURHASH_HASH', 'mur'))
 
     # These filters exclude illegal variations
-    gn.filter_not(lambda x: x.compiler_type !=
+    gn.filter_out(lambda x: x.compiler_type !=
                   gn.compiler_type.clang and x.is_asan)
-    gn.filter_not(lambda x: x.compiler_type not in [
+    gn.filter_out(lambda x: x.compiler_type not in [
                   gn.compiler_type.clang, gn.compiler_type.gcc] and x.is_generate_test_coverage)
-    gn.filter_not(lambda x: x.is_generate_test_coverage and not x.is_run_tests)
-    gn.filter_not(lambda x: x.is_generate_test_coverage and not x.is_debug)
-    gn.filter_not(
+    gn.filter_out(lambda x: x.is_generate_test_coverage and not x.is_run_tests)
+    gn.filter_out(lambda x: x.is_generate_test_coverage and not x.is_debug)
+    gn.filter_out(
         lambda x: x.is_std_string_view_supported and x.std_version != gn.std_version.cpp17)
-    gn.filter_not(lambda x: x.define_macros in [
-                  gn.define_macros.terminate_on, gn.define_macros.assert_on_term_on] and x.is_run_tests)
-    gn.filter_not(lambda x: x.compiler_type ==
+    # because tests are testing exceptions too
+    gn.filter_out(lambda x: x.compiler_type ==
                   gn.compiler_type.msvc and x.std_version == gn.std_version.cpp11)
-    gn.filter_not(lambda x: x.compiler_type !=
+    gn.filter_out(lambda x: x.compiler_type !=
                   gn.compiler_type.msvc and x.std_version == gn.std_version.cpplatest)
-    gn.filter_not(lambda x: x.target_cpu == gn.target_cpu.x86 and x.compiler_type != gn.compiler_type.msvc)
-    
+    gn.filter_out(lambda x: x.target_cpu ==
+                  gn.target_cpu.x86 and x.compiler_type != gn.compiler_type.msvc)
+    gn.filter_out(
+        lambda x: x.is_defined_JASL_TERMINATE_ON_EXCEPTION_ON and x.is_run_tests)
+
     # existing toolchain
     if is_mac:
-        gn.filter(lambda x: x.compiler_type in [gn.compiler_type.clang] and x.target_cpu == gn.target_cpu.x64)
+        gn.filter(lambda x: x.compiler_type in [
+                  gn.compiler_type.clang] and x.target_cpu == gn.target_cpu.x64)
     elif is_linux:
         gn.filter(lambda x: x.compiler_type in [
                   gn.compiler_type.gcc, gn.compiler_type.clang])
@@ -366,37 +367,45 @@ if __name__ == '__main__':
     for c in local_compiler:
         if c['type'] == 'msvc':
             vs_arg.add(StringValue(c['instanceId'], c['vcvarsall']))
-            gn.filter_not(lambda x, ii=c['instanceId']: x.visual_studio_path == getattr(
-                    gn.visual_studio_path, ii) and x.compiler_type != gn.compiler_type.msvc)
+            gn.filter_out(lambda x, ii=c['instanceId']: x.visual_studio_path == getattr(
+                gn.visual_studio_path, ii) and x.compiler_type != gn.compiler_type.msvc)
             if not (c['version'][0] > 19 or (c['version'][0] == 19 and c['version'][1] >= 10)):
-                gn.filter_not(lambda x, ii=c['instanceId']: x.visual_studio_path == getattr(
+                gn.filter_out(lambda x, ii=c['instanceId']: x.visual_studio_path == getattr(
                     gn.visual_studio_path, ii) and x.is_std_string_view_supported)
         elif c['type'] == 'clang':
             comp_exec_name = os.path.basename(c['compiler_exec'])
             comp_exec.add(StringValue(comp_exec_name, c['compiler_exec']))
-            gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.compiler_type != gn.compiler_type.clang)
+            gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
+                gn.compiler_exec, n) and x.compiler_type != gn.compiler_type.clang)
             # older mac clang hasn't c++17
             if is_mac and c['version'][0] < 9:
-                gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17)
+                gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
+                    gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17)
             if is_linux and not (c['version'][0] > 4 or (c['version'][0] == 4 and c['version'][1] >= 8)):
-                gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17)
+                gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
+                    gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17)
             if not c['has_string_view']:
-                gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
+                gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
+                    gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
         elif c['type'] == 'gcc':
             comp_exec_name = os.path.basename(c['compiler_exec'])
             comp_exec.add(StringValue(comp_exec_name, c['compiler_exec']))
-            gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.compiler_type != gn.compiler_type.gcc)
+            gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
+                gn.compiler_exec, n) and x.compiler_type != gn.compiler_type.gcc)
             # older gcc hasn't c++17
             if c['version'][0] < 5:
-                gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version in [gn.std_version.cpp14, gn.std_version.cpp17])
+                gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
+                    gn.compiler_exec, n) and x.std_version in [gn.std_version.cpp14, gn.std_version.cpp17])
             if not c['has_string_view']:
-                gn.filter_not(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
+                gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
+                    gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
         else:
             assert(False)
 
     # compiler-exec-like
     if script_arg.compiler_exec_like:
-        gn.filter(lambda x, likes=script_arg.compiler_exec_like: any(l in x.compiler_exec.value for l in likes))
+        gn.filter(lambda x, likes=script_arg.compiler_exec_like: any(
+            l in x.compiler_exec.value for l in likes))
 
     # clean
     if script_arg.clean:
@@ -442,7 +451,7 @@ if __name__ == '__main__':
             raise Exception()
 
     # Filter more, build less. These builds are not so importants
-    variants.filter(lambda x: not x.is_run_performance_tests)
+    variants.filter_out(lambda x: x.is_run_performance_tests)
 
     if script_arg.travis_ci:
         variants.filter(lambda x: not x.is_asan)  # TODO why?

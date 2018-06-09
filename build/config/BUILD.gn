@@ -1,7 +1,17 @@
 config("default") {
   cflags = []
   configs = []
-  defines = [] + define_macros
+  defines = []
+
+  if (is_defined_JASL_ASSERT_ON) {
+    defines += [ "JASL_ASSERT_ON" ]
+  }
+  if (is_defined_JASL_TERMINATE_ON_EXCEPTION_ON) {
+    defines += [ "JASL_TERMINATE_ON_EXCEPTION_ON" ]
+  }
+  if (is_defined_JASL_FORCE_USE_MURMURHASH_HASH) {
+    defines += [ "JASL_FORCE_USE_MURMURHASH_HASH" ]
+  }
 
   configs += [ ":compiler_$compiler_type" ]
 

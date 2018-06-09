@@ -50,18 +50,12 @@ template <typename CharT, typename Traits = std::char_traits<CharT>>
 using basic_string_view = std::basic_string_view<CharT, Traits>;
 }  // namespace jasl
 
-#elif defined(JASL_USE_JASL_STRING_VIEW_AS_BASE)
+#else  // defined(JASL_USE_JASL_STRING_VIEW_AS_BASE)
 
 namespace jasl {
 template <typename CharT, typename Traits = std::char_traits<CharT>>
 using basic_string_view = jasl::nonstd::basic_string_view<CharT, Traits>;
 }  // namespace jasl
-
-#else
-
-static_assert(false,
-              "One of it should be defined by the user or by the fallback "
-              "logic(jasl_common.hpp)")
 
 #endif  // JASL_USE_STD_STRING_VIEW_AS_BASE
 
