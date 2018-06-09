@@ -4,6 +4,7 @@
 //
 // This code is licensed under the MIT License (MIT).
 
+#include <cstring>
 #include <iostream>
 #include "jasl_murmurhash3.hpp"
 #include "test_helper.hpp"
