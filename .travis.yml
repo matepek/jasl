@@ -65,21 +65,35 @@ matrix:
             - g++-4.8-multilib
             - g++-5
             - g++-5-multilib
-            - g++-6
-            - g++-6-multilib
-            - g++-7
-            - g++-7-multilib
       env: 
-        - N=g++ 4.8, 5, 6, 7
+        - N=g++ 4.8, 5
         - GN_HASH=$LINUX_GN_HASH
         - NINJA_LINK=$LINUX_NINJA_LINK
       script:
-        - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-4 g++-5 g++-6 g++-7
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-4 g++-5
       after_success:
         - pip install --user cpp-coveralls
         - gn gen out/coveralls --args="is_debug=true is_generate_test_coverage=true compiler_type=\"gcc\" std_version=\"c++11\""
         - ninja -C out/coveralls
         - coveralls -t $COVERALLS_REPO_TOKEN -e performance -e test -b out/coveralls
+    - os: linux
+      compiler: gcc
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+            - g++-6-multilib
+            - g++-7
+            - g++-7-multilib
+      env: 
+        - N=g++ 6, 7
+        - GN_HASH=$LINUX_GN_HASH
+        - NINJA_LINK=$LINUX_NINJA_LINK
+      script:
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-6 g++-7
     - os: osx
       compiler: clang
       env: 
