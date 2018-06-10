@@ -92,6 +92,7 @@ class basic_string_view {
 
  public:
   constexpr basic_string_view() noexcept : _ptr(nullptr), _size(0) {}
+  constexpr basic_string_view(std::nullptr_t) noexcept : basic_string_view() {}
 
   constexpr basic_string_view(const CharT* ptr, size_type size) noexcept
       : _ptr(ptr), _size(size) {}
@@ -290,12 +291,6 @@ std::basic_ostream<CharT, Traits>& operator<<(
 
 #if defined(JASL_FORCE_USE_MURMURHASH_HASH) && \
     defined(JASL_DISABLE_JASL_STRING_VIEW_HASH)
-static_assert(false, "Illegal configration!");
-#endif
-
-#if (defined(JASL_FORCE_USE_MURMURHASH_HASH) ||      \
-     defined(JASL_DISABLE_JASL_STRING_VIEW_HASH)) && \
-    defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
 static_assert(false, "Illegal configration!");
 #endif
 
