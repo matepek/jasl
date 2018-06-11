@@ -24,17 +24,51 @@ is_linux = platform.system() == 'Linux'
 assert(is_win or is_mac or is_linux)
 
 
-def download_ninja_and_gn():
-    gn_server="https://storage.googleapis.com/chromium-gn/"
-    linux_gn_hash="ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874"
-    linux_ninja_link="https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip"
-    osx_gn_hash="a14b089cbae9c29ecbc781686ada8babac8550af"
-    osx_ninja_link="https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-mac.zip"
-    from six.moves import urllib
-    def hook(count_of_blocks, block_size, total_size):
-        print(count_of_blocks, block_size, total_size)
-    result = urllib.request.urlopen(osx_ninja_link, "./out/.bin/ninja", hook)
-    print(result)
+def download_ninja_and_gn(target_dir):
+    links = {
+        'Linux': {'ninja': 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip',
+                  'gn': 'https://storage.googleapis.com/chromium-gn/ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874'},
+        'Darwin': {'ninja': 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-mac.zip',
+                  'gn': 'https://storage.googleapis.com/chromium-gn/a14b089cbae9c29ecbc781686ada8babac8550af'},
+        'Windows': {'ninja': 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-win.zip',
+                  'gn': 'https://storage.googleapis.com/chromium-gn/e93779cab57d5f36100faa4d88524a1e33be7b0f'},
+    }
+    target_dir = 'out/.bin'
+    try:
+        os.makedirs(target_dir)
+    except OSError:
+        pass
+    os.environ["PATH"] += os.pathsep + os.path.join(os.getcwd(), target_dir)
+    def dl(url, target_path):
+        from six.moves import urllib
+        def hook(count_of_blocks, block_size, total_size):
+            sys.stdout.write('.')
+            sys.stdout.flush()
+        sys.stdout.write('Downloading: ' + url)
+        result = urllib.request.urlretrieve(url, target_path, hook)
+        print('done')
+    # ninja
+    ninja_zip_path = os.path.join(target_dir, 'ninja.zip')
+    dl(links[platform.system()]['ninja'], ninja_zip_path)
+    import zipfile
+    zip_ref = zipfile.ZipFile(ninja_zip_path, 'r')
+    zip_ref.extractall(target_dir)
+    zip_ref.close()
+    os.remove(ninja_zip_path)
+    ninja_path = os.path.join(target_dir, 'ninja')
+    if is_win:
+        ninja_path += '.exe'
+    else:
+        os.chmod(ninja_path, 744)
+    subprocess.call([ninja_path, '--version'])
+    # gn
+    gn_path = os.path.join(target_dir, 'gn')
+    dl(links[platform.system()]['gn'], gn_path)
+    if is_win:
+        gn_path += '.exe'
+    else:
+        os.chmod(gn_path, 744)
+    subprocess.call(['gn', '--version'])
 
 
 def compiler_info(exec_file):
@@ -431,7 +465,7 @@ if __name__ == '__main__':
 
     # install
     if script_arg.install:
-        download_ninja_and_gn()
+        download_ninja_and_gn('out/.bin')
 
     variants = gn.variants()
 
