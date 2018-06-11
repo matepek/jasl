@@ -16,8 +16,7 @@
 
 namespace jasl {
 
-template <typename CharT,
-          typename Traits = std::char_traits<CharT>,
+template <typename CharT, typename Traits = std::char_traits<CharT>,
           typename AllocatorT = std::allocator<CharT>>
 class basic_string : public basic_string_view<CharT, Traits> {
  public:
@@ -26,8 +25,13 @@ class basic_string : public basic_string_view<CharT, Traits> {
 
  private:
   typedef std::allocator_traits<AllocatorT> alloc_traits;
-  constexpr static bool base_type_nothrow_constructible =
+  constexpr static bool is_nothrow_constructible_base_type =
       std::is_nothrow_constructible<base_type, const CharT*, size_t>::value;
+  // https://stackoverflow.com/questions/12332772/why-arent-container-move-assignment-operators-noexcept
+  constexpr static bool is_noexcept_assign_rvalue =
+      alloc_traits::propagate_on_container_move_assignment::value &&
+      std::is_nothrow_move_assignable<AllocatorT>::value &&
+      noexcept(std::declval<base_type&>().swap(std::declval<base_type&>()));
 
  private:
   allocator_type allocator;
@@ -79,8 +83,7 @@ class basic_string : public basic_string_view<CharT, Traits> {
       const auto begin = const_cast<CharT*>(base_type::data());
       if (!std::is_integral<CharT>::value) {
         auto end = begin + capacity;
-        for (auto p = begin; p < end; ++p)
-          alloc_traits::destroy(allocator, p);
+        for (auto p = begin; p < end; ++p) alloc_traits::destroy(allocator, p);
       }
       alloc_traits::deallocate(allocator, begin, capacity);
       capacity = 0;
@@ -101,12 +104,12 @@ class basic_string : public basic_string_view<CharT, Traits> {
   }
 
   basic_string() noexcept(
-      base_type_nothrow_constructible&&
+      is_nothrow_constructible_base_type&&
           std::is_nothrow_default_constructible<AllocatorT>::value)
       : basic_string(AllocatorT()) {}
 
   basic_string(const AllocatorT& a) noexcept(
-      base_type_nothrow_constructible&&
+      is_nothrow_constructible_base_type&&
           std::is_nothrow_copy_constructible<AllocatorT>::value)
       : base_type(), allocator(a), capacity(0) {}
 
@@ -119,22 +122,21 @@ class basic_string : public basic_string_view<CharT, Traits> {
 
   template <size_t N>
   basic_string(const CharT (&str)[N]) noexcept(
-      base_type_nothrow_constructible&&
+      is_nothrow_constructible_base_type&&
           std::is_nothrow_default_constructible<AllocatorT>::value)
       : base_type(str, str[N - 1] == 0 ? N - 1 : N), allocator(), capacity(0) {}
 
   template <size_t N>
   basic_string(const CharT (&str)[N], const AllocatorT& alloc) noexcept(
-      base_type_nothrow_constructible&&
+      is_nothrow_constructible_base_type&&
           std::is_nothrow_copy_constructible<AllocatorT>::value)
       : base_type(str, str[N - 1] == 0 ? N - 1 : N),
         allocator(alloc),
         capacity(0) {}
 
   basic_string(const basic_string& other)
-      : basic_string(other,
-                     alloc_traits::select_on_container_copy_construction(
-                         other.allocator)) {}
+      : basic_string(other, alloc_traits::select_on_container_copy_construction(
+                                other.allocator)) {}
 
   basic_string(const basic_string& other, const AllocatorT& alloc)
       : base_type(other), allocator(alloc), capacity(0) {
@@ -202,10 +204,7 @@ class basic_string : public basic_string_view<CharT, Traits> {
   }
 
   basic_string& assign(basic_string&& other) noexcept(
-      // https://stackoverflow.com/questions/12332772/why-arent-container-move-assignment-operators-noexcept
-      alloc_traits::propagate_on_container_move_assignment::value&&
-          std::is_nothrow_move_assignable<AllocatorT>::value&& noexcept(
-              std::declval<base_type>().swap(other))) {
+      is_noexcept_assign_rvalue) {
     if (this == &other) {
       return *this;
     }
@@ -230,15 +229,14 @@ class basic_string : public basic_string_view<CharT, Traits> {
   }
 
   template <size_t N>
-  basic_string& operator=(const CharT (&str)[N]) noexcept(
-      noexcept(assign<N>(str))) {
+  basic_string& operator=(const CharT (&str)[N]) noexcept {
     return assign<N>(str);
   }
 
   basic_string& operator=(const basic_string& other) { return assign(other); }
 
   basic_string& operator=(basic_string&& other) noexcept(
-      noexcept(assign(std::move(other)))) {
+      is_noexcept_assign_rvalue) {
     return assign(std::move(other));
   }
 
@@ -283,7 +281,7 @@ class basic_string : public basic_string_view<CharT, Traits> {
 
 template <typename CharT, typename Traits>
 void swap(basic_string<CharT, Traits>& lhs,
-          basic_string<CharT, Traits>& rhs) noexcept(lhs.swap(rhs)) {
+          basic_string<CharT, Traits>& rhs) noexcept(noexcept(lhs.swap(rhs))) {
   lhs.swap(rhs);
 }
 
