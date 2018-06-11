@@ -17,8 +17,8 @@
 namespace jasl {
 
 template <typename CharT,
-          class Traits = std::char_traits<CharT>,
-          class AllocatorT = std::allocator<CharT>>
+          typename Traits = std::char_traits<CharT>,
+          typename AllocatorT = std::allocator<CharT>>
 class basic_string : public basic_string_view<CharT, Traits> {
  public:
   typedef basic_string_view<CharT, Traits> base_type;
@@ -28,10 +28,6 @@ class basic_string : public basic_string_view<CharT, Traits> {
   typedef std::allocator_traits<AllocatorT> alloc_traits;
   constexpr static bool base_type_nothrow_constructible =
       std::is_nothrow_constructible<base_type, const CharT*, size_t>::value;
-  // https://stackoverflow.com/questions/12332772/why-arent-container-move-assignment-operators-noexcept
-  constexpr static bool assing_operator_rvalue =
-      alloc_traits::propagate_on_container_move_assignment::value &&
-      std::is_nothrow_move_assignable<AllocatorT>::value;
 
  private:
   static const CharT empty_string[1];
@@ -206,7 +202,11 @@ class basic_string : public basic_string_view<CharT, Traits> {
     return *this;
   }
 
-  basic_string& assign(basic_string&& other) noexcept(assing_operator_rvalue) {
+  basic_string& assign(basic_string&& other) noexcept(
+      // https://stackoverflow.com/questions/12332772/why-arent-container-move-assignment-operators-noexcept
+      alloc_traits::propagate_on_container_move_assignment::value&&
+          std::is_nothrow_move_assignable<AllocatorT>::value&& noexcept(
+              std::declval<base_type>().swap(other))) {
     if (this == &other) {
       return *this;
     }
@@ -225,28 +225,31 @@ class basic_string : public basic_string_view<CharT, Traits> {
       init(other.data(), other.size());
       return *this;
     }
-    std::swap<base_type>(*this, other);
+    base_type::swap(other);
     std::swap(capacity, other.capacity);
     return *this;
   }
 
   template <size_t N>
   basic_string& operator=(const CharT (&str)[N]) noexcept(
-      std::is_nothrow_assignable<base_type, base_type>::value) {
+      noexcept(assign<N>(str))) {
     return assign<N>(str);
   }
 
   basic_string& operator=(const basic_string& other) { return assign(other); }
 
   basic_string& operator=(basic_string&& other) noexcept(
-      assing_operator_rvalue) {
+      noexcept(assign(std::move(other)))) {
     return assign(std::move(other));
   }
 
   constexpr bool is_static() const noexcept { return capacity == 0; }
 
   void swap(basic_string& other) noexcept(
-      alloc_traits::propagate_on_container_swap::value) {
+      (!alloc_traits::propagate_on_container_swap::value ||
+       JASL_is_nothrow_swappable_value(AllocatorT)) &&
+      noexcept(std::declval<base_type>().swap(other))) {
+    using std::swap;
     /*propagate_on_container_swap
      * true if the allocators of type A need to be swapped when two containers
      * that use them are swapped. If this member is false and the allocators of
@@ -254,13 +257,13 @@ class basic_string : public basic_string_view<CharT, Traits> {
      * is undefined.
      */
     if (alloc_traits::propagate_on_container_swap::value) {
-      std::swap(allocator, other.allocator);
+      swap(allocator, other.allocator);
     } else if (allocator != other.allocator) {
       JASL_ASSERT(false, "Undefined behaviour");
       std::terminate();
     }
-    std::swap<base_type>(*this, other);
-    std::swap(capacity, other.capacity);
+    base_type::swap(other);
+    swap(capacity, other.capacity);
   }
 
   basic_string substr(typename base_type::size_type pos) const {
@@ -278,6 +281,13 @@ class basic_string : public basic_string_view<CharT, Traits> {
     return base_type::substr(pos, count);
   }
 };
+
+template <typename CharT, typename Traits>
+void swap(basic_string<CharT, Traits>& lhs,
+          basic_string<CharT, Traits>& rhs) noexcept(lhs.swap(rhs))
+{
+  lhs.swap(rhs);
+}
 
 template <typename CharT, typename Traits, typename Allocator>
 const CharT basic_string<CharT, Traits, Allocator>::empty_string[1] = {0};

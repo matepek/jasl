@@ -54,7 +54,7 @@ using basic_string_view = std::basic_string_view<CharT, Traits>;
 
 namespace jasl {
 template <typename CharT, typename Traits = std::char_traits<CharT>>
-using basic_string_view = jasl::nonstd::basic_string_view<CharT, Traits>;
+using basic_string_view = nonstd::basic_string_view<CharT, Traits>;
 }  // namespace jasl
 
 #endif  // JASL_USE_STD_STRING_VIEW_AS_BASE
@@ -217,7 +217,7 @@ class basic_string_view {
     }
     return npos;
   }
-};  // namespace jasl
+};
 
 // http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare
 
@@ -268,10 +268,15 @@ JASL_CONSTEXPR_FROM_14 bool operator>=(
 
 template <class CharT, class Traits>
 std::basic_ostream<CharT, Traits>& operator<<(
-    std::basic_ostream<CharT, Traits>& os,
-    basic_string_view<CharT, Traits> v) {
+    std::basic_ostream<CharT, Traits>& os, basic_string_view<CharT, Traits> v) {
   os.write(v.data(), static_cast<std::make_signed<size_t>::type>(v.size()));
   return os;
+}
+
+template <typename CharT, typename Traits>
+void swap(basic_string_view<CharT, Traits>& lhs,
+          basic_string_view<CharT, Traits>& rhs) noexcept(lhs.swap(rhs)) {
+  lhs.swap(rhs);
 }
 
 }  // namespace nonstd

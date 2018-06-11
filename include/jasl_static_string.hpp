@@ -60,15 +60,8 @@ class basic_static_string : public basic_string_view<CharT, Traits> {
   }
 
   JASL_CONSTEXPR_FROM_14 void swap(basic_static_string& other) noexcept(
-#ifdef __cpp_lib_is_swappable
-      std::is_nothrow_swappable<base_type>::value
-#else
-      // http://en.cppreference.com/w/cpp/algorithm/swap
-      std::is_nothrow_move_constructible<base_type>::value&&
-          std::is_nothrow_move_assignable<base_type>::value
-#endif
-  ) {
-    std::swap<base_type>(*this, other);
+      noexcept(std::declval<base_type>().swap(other))) {
+    base_type::swap(other);
   }
 
   constexpr basic_static_string substr(
@@ -77,6 +70,13 @@ class basic_static_string : public basic_string_view<CharT, Traits> {
     return basic_static_string(base_type::substr(pos, count));
   }
 };
+
+template <typename CharT, typename Traits>
+void swap(basic_static_string<CharT, Traits>& lhs,
+          basic_static_string<CharT, Traits>& rhs) noexcept(lhs.swap(rhs))
+{
+  lhs.swap(rhs);
+}
 
 template <typename CharT, typename Traits>
 const CharT basic_static_string<CharT, Traits>::empty_string[1] = {0};
