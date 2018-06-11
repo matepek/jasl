@@ -298,6 +298,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--clean', '-c', action='store_true')
     parser.add_argument('--install', '-i', action='store_true')
+    parser.add_argument('--stop-on-error', '-e', action='store_true')
     parser.add_argument('--gen', '--gn', '-g', action='store_true')
     parser.add_argument('--ninja', '-n', action='store_true')
     parser.add_argument('--travis-ci', action='store_true')
@@ -368,6 +369,7 @@ if __name__ == '__main__':
     if script_arg.travis_ci or script_arg.appveyor:
         script_arg.gen = True
         script_arg.ninja = True
+        script_arg.stop_on_error = True
 
     # remark: vswhere.exe somehow not working on appveyor
     local_compiler = detect_compiler_version(
@@ -460,9 +462,10 @@ if __name__ == '__main__':
             except KeyboardInterrupt:
                 sys.exit(1)
             if return_code != 0:
-                print('Error: ' + str(return_code))
                 fail_count += 1
-                raise Exception()
+                if script_arg.stop_on_error:
+                    raise Exception('stop-on-error', return_code, succ_count)
+                print('Error: ' + str(return_code))
             else:
                 succ_count += 1
         print('ok(' + str(succ_count) + '), failed(' + str(fail_count) + ')')
@@ -495,6 +498,8 @@ if __name__ == '__main__':
                 sys.exit(1)
             if return_code != 0:
                 fail_count += 1
+                if script_arg.stop_on_error:
+                    raise Exception('stop-on-error', return_code, succ_count)
                 print('Error: ' + str(return_code))
             else:
                 succ_count += 1

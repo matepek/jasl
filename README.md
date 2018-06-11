@@ -296,13 +296,8 @@ JASL library uses the [MIT](LICENSE) license.
  * https://github.com/Microsoft/vswhere
 
 # TODOs
- * consider replacing _inheritance_ to _operator string_view_
  * lsan, msan
  * jasl::string_view could have more methods like [find_first, etc..](http://en.cppreference.com/w/cpp/header/string_view)
- * smart_string(shared_ptr and appending)
  * support for [literals](http://en.cppreference.com/w/cpp/language/user_literal)
  * std_string support (to_std_string, ?)
- * string allocator template parameter (ngg)
- * dyn_type maybe std::string?
  * declaration - definition separation?
- * empty_string remove

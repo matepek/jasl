@@ -30,7 +30,6 @@ class basic_string : public basic_string_view<CharT, Traits> {
       std::is_nothrow_constructible<base_type, const CharT*, size_t>::value;
 
  private:
-  static const CharT empty_string[1];
   allocator_type allocator;
   size_t capacity;
 
@@ -89,7 +88,7 @@ class basic_string : public basic_string_view<CharT, Traits> {
   }
 
   basic_string(const base_type& other, const AllocatorT& alloc)
-      : base_type(nullptr), allocator(alloc), capacity(0) {
+      : base_type(), allocator(alloc), capacity(0) {
     init(other.data(), other.size());
   }
 
@@ -109,11 +108,11 @@ class basic_string : public basic_string_view<CharT, Traits> {
   basic_string(const AllocatorT& a) noexcept(
       base_type_nothrow_constructible&&
           std::is_nothrow_copy_constructible<AllocatorT>::value)
-      : base_type(empty_string, 0), allocator(a), capacity(0) {}
+      : base_type(), allocator(a), capacity(0) {}
 
   basic_string(const ParamterWrapper& paramW,
                const AllocatorT& alloc = AllocatorT())
-      : base_type(nullptr), allocator(alloc), capacity(0) {
+      : base_type(), allocator(alloc), capacity(0) {
     JASL_ASSERT(paramW.ptr != nullptr, "paramW != nullptr");
     init(paramW.ptr, paramW.size);
   }
@@ -284,13 +283,9 @@ class basic_string : public basic_string_view<CharT, Traits> {
 
 template <typename CharT, typename Traits>
 void swap(basic_string<CharT, Traits>& lhs,
-          basic_string<CharT, Traits>& rhs) noexcept(lhs.swap(rhs))
-{
+          basic_string<CharT, Traits>& rhs) noexcept(lhs.swap(rhs)) {
   lhs.swap(rhs);
 }
-
-template <typename CharT, typename Traits, typename Allocator>
-const CharT basic_string<CharT, Traits, Allocator>::empty_string[1] = {0};
 
 typedef basic_string<char> string;
 typedef basic_string<wchar_t> wstring;

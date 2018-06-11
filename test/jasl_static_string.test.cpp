@@ -17,8 +17,7 @@ int eq_helper(const char (&left)[N1], const char (&right)[N2]) {
 int main() {
   {
     jasl::static_string x;
-    ASSERT_TRUE(x.data() != nullptr);
-    ASSERT_TRUE(*x.data() == 0);
+    ASSERT_TRUE(x.data() == nullptr);
     ASSERT_TRUE(x.size() == 0);
   }
   {

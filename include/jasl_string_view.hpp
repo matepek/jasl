@@ -92,7 +92,6 @@ class basic_string_view {
 
  public:
   constexpr basic_string_view() noexcept : _ptr(nullptr), _size(0) {}
-  constexpr basic_string_view(std::nullptr_t) noexcept : basic_string_view() {}
 
   constexpr basic_string_view(const CharT* ptr, size_type size) noexcept
       : _ptr(ptr), _size(size) {}
@@ -268,7 +267,8 @@ JASL_CONSTEXPR_FROM_14 bool operator>=(
 
 template <class CharT, class Traits>
 std::basic_ostream<CharT, Traits>& operator<<(
-    std::basic_ostream<CharT, Traits>& os, basic_string_view<CharT, Traits> v) {
+    std::basic_ostream<CharT, Traits>& os,
+    basic_string_view<CharT, Traits> v) {
   os.write(v.data(), static_cast<std::make_signed<size_t>::type>(v.size()));
   return os;
 }
