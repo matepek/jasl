@@ -20,9 +20,6 @@ class basic_static_string : public basic_string_view<CharT, Traits> {
   typedef basic_string_view<CharT, Traits> base_type;
 
  private:
-  static const CharT empty_string[1];
-
- private:
   constexpr basic_static_string(const base_type& other) noexcept(
       std::is_nothrow_constructible<base_type, const base_type&>::value)
       : base_type(other) {}
@@ -30,7 +27,7 @@ class basic_static_string : public basic_string_view<CharT, Traits> {
  public:
   JASL_CONSTEXPR_FROM_14 basic_static_string() noexcept(
       std::is_nothrow_constructible<base_type, const CharT*, size_t>::value)
-      : base_type(empty_string, 0) {}
+      : base_type() {}
 
   template <size_t N>
   constexpr basic_static_string(const CharT (&str)[N]) noexcept(
@@ -73,13 +70,9 @@ class basic_static_string : public basic_string_view<CharT, Traits> {
 
 template <typename CharT, typename Traits>
 void swap(basic_static_string<CharT, Traits>& lhs,
-          basic_static_string<CharT, Traits>& rhs) noexcept(lhs.swap(rhs))
-{
+          basic_static_string<CharT, Traits>& rhs) noexcept(lhs.swap(rhs)) {
   lhs.swap(rhs);
 }
-
-template <typename CharT, typename Traits>
-const CharT basic_static_string<CharT, Traits>::empty_string[1] = {0};
 
 typedef basic_static_string<char> static_string;
 typedef basic_static_string<wchar_t> static_wstring;

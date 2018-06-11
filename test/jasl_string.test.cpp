@@ -54,8 +54,7 @@ int main(int, char* argv[]) {
   }
   {
     jasl::string x;
-    ASSERT_TRUE(x.data() != nullptr);
-    ASSERT_TRUE(*x.data() == 0);
+    ASSERT_TRUE(x.data() == nullptr);
     ASSERT_TRUE(x.size() == 0);
     ASSERT_TRUE(x.is_static());
   }
