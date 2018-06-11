@@ -17,10 +17,24 @@ import re
 import tempfile
 import json
 
+
 is_win = platform.system() == 'Windows'
 is_mac = platform.system() == 'Darwin'
 is_linux = platform.system() == 'Linux'
 assert(is_win or is_mac or is_linux)
+
+
+def download_ninja_and_gn():
+    gn_server="https://storage.googleapis.com/chromium-gn/"
+    linux_gn_hash="ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874"
+    linux_ninja_link="https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip"
+    osx_gn_hash="a14b089cbae9c29ecbc781686ada8babac8550af"
+    osx_ninja_link="https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-mac.zip"
+    from six.moves import urllib
+    def hook(count_of_blocks, block_size, total_size):
+        print(count_of_blocks, block_size, total_size)
+    result = urllib.request.urlopen(osx_ninja_link, "./out/.bin/ninja", hook)
+    print(result)
 
 
 def compiler_info(exec_file):
@@ -283,6 +297,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--clean', '-c', action='store_true')
+    parser.add_argument('--install', '-i', action='store_true')
     parser.add_argument('--gen', '--gn', '-g', action='store_true')
     parser.add_argument('--ninja', '-n', action='store_true')
     parser.add_argument('--travis-ci', action='store_true')
@@ -411,6 +426,10 @@ if __name__ == '__main__':
     if script_arg.clean:
         for item in filter(lambda x: x not in ['.clang-format'], os.listdir('out')):
             shutil.rmtree(os.path.join('out', item), ignore_errors=True)
+
+    # install
+    if script_arg.install:
+        download_ninja_and_gn()
 
     variants = gn.variants()
 

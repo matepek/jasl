@@ -110,10 +110,11 @@ static_assert(false, "Unsupported C++ standard!");
 #endif  // ifdef JASL_cpp_constexpr
 
 #ifdef __cpp_lib_is_swappable
-#define JASL_is_nothrow_swappable_value(type) (std::is_nothrow_swappable<type>::value)
+#define JASL_is_nothrow_swappable_value(type) \
+  (std::is_nothrow_swappable<type>::value)
 #else
 // http://en.cppreference.com/w/cpp/algorithm/swap
-#define JASL_is_nothrow_swappable_value(type)           \
+#define JASL_is_nothrow_swappable_value(type)         \
   (std::is_nothrow_move_constructible<type>::value && \
    std::is_nothrow_move_assignable<type>::value)
 #endif
