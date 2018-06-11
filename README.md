@@ -305,4 +305,4 @@ JASL library uses the [MIT](LICENSE) license.
  * string allocator template parameter (ngg)
  * dyn_type maybe std::string?
  * declaration - definition separation?
- * mumrurhash constexpr
+ * empty_string remove
