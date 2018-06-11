@@ -173,7 +173,7 @@ int main() {
   std::hash<jasl::static_string::base_type>{}(jasl::static_string(""));
 
   // test only hash
-  std::set<jasl::static_string>().size();
+  ASSERT_TRUE(std::set<jasl::static_string>().size() == 0);
 
   return 0;
 }
