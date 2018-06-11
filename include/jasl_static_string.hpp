@@ -69,8 +69,9 @@ class basic_static_string : public basic_string_view<CharT, Traits> {
 };
 
 template <typename CharT, typename Traits>
-void swap(basic_static_string<CharT, Traits>& lhs,
-          basic_static_string<CharT, Traits>& rhs) noexcept(lhs.swap(rhs)) {
+void swap(
+    basic_static_string<CharT, Traits>& lhs,
+    basic_static_string<CharT, Traits>& rhs) noexcept(noexcept(lhs.swap(rhs))) {
   lhs.swap(rhs);
 }
 

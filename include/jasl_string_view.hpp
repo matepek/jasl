@@ -131,8 +131,7 @@ class basic_string_view {
   }
 
   JASL_CONSTEXPR_FROM_14 const_reference at(size_type pos) const {
-    if (pos >= size())
-      JASL_THROW(std::out_of_range("string_view::substr"));
+    if (pos >= size()) JASL_THROW(std::out_of_range("string_view::substr"));
     return _ptr[pos];
   }
 
@@ -157,8 +156,7 @@ class basic_string_view {
   }
 
   size_type copy(CharT* s, size_type n, size_type pos = 0) const {
-    if (pos > size())
-      JASL_THROW(std::out_of_range("string_view::copy"));
+    if (pos > size()) JASL_THROW(std::out_of_range("string_view::copy"));
     size_type rlen = std::min(n, size() - pos);
     Traits::copy(s, data() + pos, rlen);
     return rlen;
@@ -267,15 +265,15 @@ JASL_CONSTEXPR_FROM_14 bool operator>=(
 
 template <class CharT, class Traits>
 std::basic_ostream<CharT, Traits>& operator<<(
-    std::basic_ostream<CharT, Traits>& os,
-    basic_string_view<CharT, Traits> v) {
+    std::basic_ostream<CharT, Traits>& os, basic_string_view<CharT, Traits> v) {
   os.write(v.data(), static_cast<std::make_signed<size_t>::type>(v.size()));
   return os;
 }
 
 template <typename CharT, typename Traits>
-void swap(basic_string_view<CharT, Traits>& lhs,
-          basic_string_view<CharT, Traits>& rhs) noexcept(lhs.swap(rhs)) {
+void swap(
+    basic_string_view<CharT, Traits>& lhs,
+    basic_string_view<CharT, Traits>& rhs) noexcept(noexcept(lhs.swap(rhs))) {
   lhs.swap(rhs);
 }
 
