@@ -353,6 +353,7 @@ if __name__ == '__main__':
     gn.add(BooleanArg('is_run_tests', 't'))
     gn.add(BooleanArg('is_run_performance_tests', 'p'))
     gn.add(BooleanArg('is_asan', 'asan'))
+    gn.add(BooleanArg('is_usan', 'usan'))
     gn.add(BooleanArg('is_generate_test_coverage', 'cov'))
     gn.add(BooleanArg('is_std_string_view_supported', 'sv'))
     gn.add(StringArg('compiler_type', '')) \
@@ -374,6 +375,7 @@ if __name__ == '__main__':
     # These filters exclude illegal variations
     gn.filter_out(lambda x: x.compiler_type !=
                   gn.compiler_type.clang and x.is_asan)
+    gn.filter_out(lambda x: x.is_usan and not x.is_asan)
     gn.filter_out(lambda x: x.compiler_type not in [
                   gn.compiler_type.clang, gn.compiler_type.gcc] and x.is_generate_test_coverage)
     gn.filter_out(lambda x: x.is_generate_test_coverage and not x.is_run_tests)

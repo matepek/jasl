@@ -25,6 +25,20 @@ template("test_with_base") {
 
       args = []
 
+      if (is_lsan) {
+        args += [
+          "-e",
+          "ASAN_OPTIONS=detect_leaks=1",
+        ]
+      }
+
+      if (is_usan) {
+        args += [
+          "-e",
+          "UBSAN_OPTIONS=print_stacktrace=1",
+        ]
+      }
+
       if (is_generate_test_coverage) {
         args += [
           "-e",

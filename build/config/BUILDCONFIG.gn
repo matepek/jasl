@@ -34,11 +34,9 @@ declare_args() {
   is_asan = false
 
   # Compile for Leak Sanitizer to find leaks.
-  #   Currently something wrong with it.
   is_lsan = false
 
   # Compile for Memory Sanitizer to find uninitialized reads.
-  #   Currently something wrong with it.
   is_msan = false
 
   # Compile for Undefined Behavior Sanitizer to find bugs.
@@ -100,6 +98,7 @@ is_gcc = compiler_type == "gcc"
 if (is_asan || is_lsan || is_msan) {
   assert(is_clang, "These features requires clang!")
 }
+assert(!is_lsan || is_asan, "is_lsan => is_asan!")
 
 if (is_generate_test_coverage) {
   assert(is_clang || is_gcc, "This features requires clang!")
