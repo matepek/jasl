@@ -40,13 +40,24 @@ def download_ninja_and_gn(target_dir):
         pass
     os.environ["PATH"] += os.pathsep + os.path.join(os.getcwd(), target_dir)
     def dl(url, target_path):
-        from six.moves import urllib
-        def hook(count_of_blocks, block_size, total_size):
-            sys.stdout.write('.')
-            sys.stdout.flush()
         sys.stdout.write('Downloading: ' + url)
-        result = urllib.request.urlretrieve(url, target_path, hook)
+        sys.stdout.flush()
+        try:
+            from six.moves import urllib
+            def hook(count_of_blocks, block_size, total_size):
+                sys.stdout.write('.')
+                sys.stdout.flush()
+            result = urllib.request.urlretrieve(url, target_path, hook)
+            sys.stdout.flush()
+        except Exception as e:
+            print(e, 'trying other ways')
+            sys.stdout.flush()
+            if not is_win:
+                assert(0 == subprocess.call(['wget', '-O', target_path, url]))
+            else:
+                assert(False)
         print('done')
+        sys.stdout.flush()
     # ninja
     ninja_zip_path = os.path.join(target_dir, 'ninja.zip')
     dl(links[platform.system()]['ninja'], ninja_zip_path)
@@ -60,7 +71,7 @@ def download_ninja_and_gn(target_dir):
         ninja_path += '.exe'
     else:
         os.chmod(ninja_path, 744)
-    subprocess.call([ninja_path, '--version'])
+    assert(0 == subprocess.call([ninja_path, '--version']))
     # gn
     gn_path = os.path.join(target_dir, 'gn')
     dl(links[platform.system()]['gn'], gn_path)
@@ -402,6 +413,8 @@ if __name__ == '__main__':
     elif is_win:
         gn.filter(lambda x: x.compiler_type in [gn.compiler_type.msvc])
 
+    if script_arg.travis_ci:
+        script_arg.install = True
     if script_arg.travis_ci or script_arg.appveyor:
         script_arg.gen = True
         script_arg.ninja = True

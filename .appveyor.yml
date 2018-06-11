@@ -17,8 +17,8 @@ install:
   - ps: $env:Path
   - gn.exe --version
   - ninja.exe --version
-  - python.exe --version
   - cinst python2
+  - python.exe --version
 
 build: off
 

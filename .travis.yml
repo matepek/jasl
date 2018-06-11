@@ -4,13 +4,6 @@ addons:
   apt:
     update: true
 
-env:
-  global:
-    - LINUX_GN_HASH=ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874
-    - LINUX_NINJA_LINK=https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip
-    - OSX_GN_HASH=a14b089cbae9c29ecbc781686ada8babac8550af
-    - OSX_NINJA_LINK=https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-mac.zip
-
 matrix:
   include:
     - os: linux
@@ -29,8 +22,6 @@ matrix:
             - clang-3.8
       env: 
         - N=clang 3.6, 3.7, 3.8
-        - GN_HASH=$LINUX_GN_HASH
-        - NINJA_LINK=$LINUX_NINJA_LINK
       script:
         - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-3
     - os: linux
@@ -49,8 +40,6 @@ matrix:
             - clang-6.0
       env: 
         - N=clang 4.0, 5.0, 6.0
-        - GN_HASH=$LINUX_GN_HASH
-        - NINJA_LINK=$LINUX_NINJA_LINK
       script:
         - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-4 clang++-5 clang++-6
     - os: linux
@@ -67,8 +56,6 @@ matrix:
             - g++-5-multilib
       env: 
         - N=g++ 4.8, 5
-        - GN_HASH=$LINUX_GN_HASH
-        - NINJA_LINK=$LINUX_NINJA_LINK
       script:
         - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-4 g++-5
       after_success:
@@ -90,31 +77,15 @@ matrix:
             - g++-7-multilib
       env: 
         - N=g++ 6, 7
-        - GN_HASH=$LINUX_GN_HASH
-        - NINJA_LINK=$LINUX_NINJA_LINK
       script:
         - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-6 g++-7
     - os: osx
       compiler: clang
       env: 
         - N=osx-clang
-        - GN_HASH=$OSX_GN_HASH
-        - NINJA_LINK=$OSX_NINJA_LINK
       script:
         - python ./build/build_helper.py --travis-ci --compiler-type clang
 
 before_install:
-  - mkdir bin
-  - cd bin
-  - wget -O gn https://storage.googleapis.com/chromium-gn/$GN_HASH
-  - chmod +x gn
-  - wget -O ninja.zip $NINJA_LINK
-  - unzip ninja.zip
-  - chmod +x ninja
-  - PATH=$PATH:`pwd`
-  - cd ..
-  - gn --version
-  - ninja --version
   - python --version
-  - echo $PATH
   - ls -all /usr/bin/ | grep ++
