@@ -535,7 +535,7 @@ if __name__ == '__main__':
             variants.filter_out(lambda x: is_sanitizer(x) and (not x.is_debug or
                                                                x.compiler_exec.data['version'][0] < 6))
             # LeakSanitizer does not work under ptrace (strace, gdb, etc)
-            variants.filter_out(lambda x: x.is_lsan)
+            variants.filter_out(lambda x: x.is_lsan or x.is_asan)
         else:
             variants.filter_out(lambda x: is_sanitizer(x))
         variants.filter(lambda x: not x.is_generate_test_coverage)
