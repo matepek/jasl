@@ -126,7 +126,7 @@ def detect_compiler_version(vcvarsall=None):
         for c in filter(lambda x: os.path.isfile(x), usrbincontent):
             if not os.path.basename(c).startswith('clang++') and not os.path.basename(c).startswith('g++'):
                 continue
-            if os.path.basename(c) == 'g++':
+            if os.path.basename(c) == 'g++' or (is_linux and os.path.basename(c) == 'clang++'):
                 # we dont care about the version-less symlink
                 continue
             if os.path.realpath(c) in used:
@@ -176,10 +176,11 @@ def detect_compiler_version(vcvarsall=None):
 
 class Value(object):
 
-    def __init__(self, name, value, short=None):
+    def __init__(self, name, value, short=None, data=None):
         self.name = name
         self.value = value
         self.short = short if short else name
+        self.data = data
 
     def __call__(self):
         return self.value
@@ -196,14 +197,14 @@ class Value(object):
 
 class StringValue(Value):
 
-    def __init__(self, name, value=None, short=None):
+    def __init__(self, name, value=None, short=None, data=None):
         if value is None:
             value = '"' + name + '"'
         else:
             assert(not value.startswith('"'))
             assert(not value.endswith('"'))
             value = '"' + value + '"'
-        super(StringValue, self).__init__(name, value, short)
+        super(StringValue, self).__init__(name, value, short, data)
 
 
 class TrueValue(Value):
@@ -434,7 +435,7 @@ if __name__ == '__main__':
 
     for c in local_compiler:
         if c['type'] == 'msvc':
-            vs_arg.add(StringValue(c['instanceId'], c['vcvarsall']))
+            vs_arg.add(StringValue(c['instanceId'], c['vcvarsall'], data=c))
             gn.filter_out(lambda x, ii=c['instanceId']: x.visual_studio_path == getattr(
                 gn.visual_studio_path, ii) and x.compiler_type != gn.compiler_type.msvc)
             if not (c['version'][0] > 19 or (c['version'][0] == 19 and c['version'][1] >= 10)):
@@ -442,7 +443,7 @@ if __name__ == '__main__':
                     gn.visual_studio_path, ii) and x.is_std_string_view_supported)
         elif c['type'] == 'clang':
             comp_exec_name = os.path.basename(c['compiler_exec'])
-            comp_exec.add(StringValue(comp_exec_name, c['compiler_exec']))
+            comp_exec.add(StringValue(comp_exec_name, c['compiler_exec'], data=c))
             gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
                 gn.compiler_exec, n) and x.compiler_type != gn.compiler_type.clang)
             # older mac clang hasn't c++17
@@ -457,7 +458,7 @@ if __name__ == '__main__':
                     gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
         elif c['type'] == 'gcc':
             comp_exec_name = os.path.basename(c['compiler_exec'])
-            comp_exec.add(StringValue(comp_exec_name, c['compiler_exec']))
+            comp_exec.add(StringValue(comp_exec_name, c['compiler_exec'], data=c))
             gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
                 gn.compiler_exec, n) and x.compiler_type != gn.compiler_type.gcc)
             # older gcc hasn't c++17
@@ -488,15 +489,8 @@ if __name__ == '__main__':
 
     #
     if script_arg.compiler_type:
-        if script_arg.compiler_type == 'clang':
-            variants.filter(lambda x: x.compiler_type ==
-                            gn.compiler_type.clang)
-        elif script_arg.compiler_type == 'gcc':
-            variants.filter(lambda x: x.compiler_type == gn.compiler_type.gcc)
-        elif script_arg.compiler_type == 'msvc':
-            variants.filter(lambda x: x.compiler_type == gn.compiler_type.msvc)
-        else:
-            assert(False)
+        ct = getattr(gn.compiler_type, script_arg.compiler_type)
+        variants.filter(lambda x: x.compiler_type == ct)
 
     # gen
     if script_arg.gen:
@@ -528,8 +522,8 @@ if __name__ == '__main__':
 
     if script_arg.travis_ci:
         if is_linux:
-            variants.filter_out(lambda x: x.std_version != gn.std_version.cpp17 
-                                          and not x.is_debug and is_sanitizer(x))
+            variants.filter_out(lambda x: is_sanitizer(x) and (not x.is_debug or
+                                x.compiler_exec.data['version'][0] < 4))
         else:
             variants.filter_out(lambda x: is_sanitizer(x))
         variants.filter(lambda x: not x.is_generate_test_coverage)
