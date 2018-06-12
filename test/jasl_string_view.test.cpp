@@ -154,25 +154,38 @@ int main() {
   std::hash<jasl::string_view>{}(jasl::string_view("", 0));
 
   {
-    std::set<jasl::string_view> s;
-    jasl::string_view empty("", 0);
-    jasl::string_view small("small", 5);
-    char array[1024]{};
-    jasl::string_view longg(array, 1024);
-    ASSERT_TRUE(s.empty());
-    s.insert(empty);
-    ASSERT_TRUE(s.count(empty) == 1);
-    ASSERT_TRUE(s.count(small) == 0);
-    ASSERT_TRUE(s.count(longg) == 0);
-    s.insert(small);
-    ASSERT_TRUE(s.count(empty) == 1);
-    ASSERT_TRUE(s.count(small) == 1);
-    ASSERT_TRUE(s.count(longg) == 0);
-    s.insert(longg);
-    ASSERT_TRUE(s.count(empty) == 1);
-    ASSERT_TRUE(s.count(small) == 1);
-    ASSERT_TRUE(s.count(longg) == 1);
-    ASSERT_TRUE(s.size() == 3);
+    auto test_with_set = [] {
+      std::set<jasl::string_view> s;
+      jasl::string_view empty("", 0);
+      jasl::string_view small("small", 5);
+      char array[1024]{};
+      jasl::string_view longg(array, 1024);
+      ASSERT_TRUE(s.empty());
+      s.insert(empty);
+      ASSERT_TRUE(s.count(empty) == 1);
+      ASSERT_TRUE(s.count(small) == 0);
+      ASSERT_TRUE(s.count(longg) == 0);
+      s.insert(small);
+      ASSERT_TRUE(s.count(empty) == 1);
+      ASSERT_TRUE(s.count(small) == 1);
+      ASSERT_TRUE(s.count(longg) == 0);
+      s.insert(longg);
+      ASSERT_TRUE(s.count(empty) == 1);
+      ASSERT_TRUE(s.count(small) == 1);
+      ASSERT_TRUE(s.count(longg) == 1);
+
+      ASSERT_TRUE(s.size() == 3);
+      return 0;
+    };
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer)
+    ASSERT_TRUE(test_with_set != nullptr);
+#else
+    ASSERT_TRUE(test_with_set() == 0);
+#endif
+#else
+    ASSERT_TRUE(test_with_set() == 0);
+#endif
   }
 
   {

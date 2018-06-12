@@ -89,6 +89,16 @@ JASL_DIAGNOSTIC_IGNORED_CLANG(JASL_WARNING_IMPLICIT_FALLTHROUGH)
 JASL_DIAGNOSTIC_IGNORED_GCC_SINCE7(JASL_WARNING_IMPLICIT_FALLTHROUGH)
 JASL_DIAGNOSTIC_IGNORED_CLANG(JAS_WARNING_CAST_ALING)
 
+#if defined(__clang__)
+#if __has_attribute(no_sanitize)
+#define JASL_USAN_IGNORE(type) __attribute__((no_sanitize(#type)))
+#else
+#define JASL_USAN_IGNORE(type)
+#endif
+#else
+#define JASL_USAN_IGNORE(type)
+#endif
+
 //-----------------------------------------------------------------------------
 // Block read - if your platform needs to do endian-swapping or can only
 // handle aligned reads, do the conversion here
@@ -100,7 +110,7 @@ FORCE_INLINE uint64_t getblock64(const uint64_t* p, int i) { return p[i]; }
 //-----------------------------------------------------------------------------
 // Finalization mix - force all bits of a hash block to avalanche
 
-FORCE_INLINE uint32_t fmix32(uint32_t h) {
+JASL_USAN_IGNORE(integer) FORCE_INLINE uint32_t fmix32(uint32_t h) {
   h ^= h >> 16;
   h *= 0x85ebca6b;
   h ^= h >> 13;
@@ -112,7 +122,7 @@ FORCE_INLINE uint32_t fmix32(uint32_t h) {
 
 //----------
 
-FORCE_INLINE uint64_t fmix64(uint64_t k) {
+JASL_USAN_IGNORE(integer) FORCE_INLINE uint64_t fmix64(uint64_t k) {
   k ^= k >> 33;
   k *= BIG_CONSTANT(0xff51afd7ed558ccd);
   k ^= k >> 33;
@@ -124,6 +134,7 @@ FORCE_INLINE uint64_t fmix64(uint64_t k) {
 
 //-----------------------------------------------------------------------------
 
+JASL_USAN_IGNORE(integer)
 void MurmurHash3_x86_128(const void* key, const int len, uint32_t seed,
                          void* out) {
   const uint8_t* data = (const uint8_t*)key;
@@ -284,6 +295,7 @@ void MurmurHash3_x86_128(const void* key, const int len, uint32_t seed,
 
 //-----------------------------------------------------------------------------
 
+JASL_USAN_IGNORE(integer)
 void MurmurHash3_x64_128(const void* key, const int len, const uint32_t seed,
                          void* out) {
   const uint8_t* data = (const uint8_t*)key;

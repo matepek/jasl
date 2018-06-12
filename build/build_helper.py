@@ -29,9 +29,9 @@ def download_ninja_and_gn(target_dir):
         'Linux': {'ninja': 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip',
                   'gn': 'https://storage.googleapis.com/chromium-gn/ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874'},
         'Darwin': {'ninja': 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-mac.zip',
-                  'gn': 'https://storage.googleapis.com/chromium-gn/a14b089cbae9c29ecbc781686ada8babac8550af'},
+                   'gn': 'https://storage.googleapis.com/chromium-gn/a14b089cbae9c29ecbc781686ada8babac8550af'},
         'Windows': {'ninja': 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-win.zip',
-                  'gn': 'https://storage.googleapis.com/chromium-gn/e93779cab57d5f36100faa4d88524a1e33be7b0f'},
+                    'gn': 'https://storage.googleapis.com/chromium-gn/e93779cab57d5f36100faa4d88524a1e33be7b0f'},
     }
     target_dir = 'out/.bin'
     try:
@@ -39,14 +39,27 @@ def download_ninja_and_gn(target_dir):
     except OSError:
         pass
     os.environ["PATH"] += os.pathsep + os.path.join(os.getcwd(), target_dir)
+
     def dl(url, target_path):
-        from six.moves import urllib
-        def hook(count_of_blocks, block_size, total_size):
-            sys.stdout.write('.')
-            sys.stdout.flush()
         sys.stdout.write('Downloading: ' + url)
-        result = urllib.request.urlretrieve(url, target_path, hook)
+        sys.stdout.flush()
+        try:
+            from six.moves import urllib
+
+            def hook(count_of_blocks, block_size, total_size):
+                sys.stdout.write('.')
+                sys.stdout.flush()
+            result = urllib.request.urlretrieve(url, target_path, hook)
+            sys.stdout.flush()
+        except Exception as e:
+            print(e, 'trying other ways')
+            sys.stdout.flush()
+            if not is_win:
+                assert(0 == subprocess.call(['wget', '-O', target_path, url]))
+            else:
+                assert(False)
         print('done')
+        sys.stdout.flush()
     # ninja
     ninja_zip_path = os.path.join(target_dir, 'ninja.zip')
     dl(links[platform.system()]['ninja'], ninja_zip_path)
@@ -60,7 +73,7 @@ def download_ninja_and_gn(target_dir):
         ninja_path += '.exe'
     else:
         os.chmod(ninja_path, 744)
-    subprocess.call([ninja_path, '--version'])
+    assert(0 == subprocess.call([ninja_path, '--version']))
     # gn
     gn_path = os.path.join(target_dir, 'gn')
     dl(links[platform.system()]['gn'], gn_path)
@@ -115,7 +128,7 @@ def detect_compiler_version(vcvarsall=None):
         for c in filter(lambda x: os.path.isfile(x), usrbincontent):
             if not os.path.basename(c).startswith('clang++') and not os.path.basename(c).startswith('g++'):
                 continue
-            if os.path.basename(c) == 'g++':
+            if os.path.basename(c) == 'g++' or (is_linux and os.path.basename(c) == 'clang++'):
                 # we dont care about the version-less symlink
                 continue
             if os.path.realpath(c) in used:
@@ -165,10 +178,11 @@ def detect_compiler_version(vcvarsall=None):
 
 class Value(object):
 
-    def __init__(self, name, value, short=None):
+    def __init__(self, name, value, short=None, data=None):
         self.name = name
         self.value = value
         self.short = short if short else name
+        self.data = data
 
     def __call__(self):
         return self.value
@@ -185,14 +199,14 @@ class Value(object):
 
 class StringValue(Value):
 
-    def __init__(self, name, value=None, short=None):
+    def __init__(self, name, value=None, short=None, data=None):
         if value is None:
             value = '"' + name + '"'
         else:
             assert(not value.startswith('"'))
             assert(not value.endswith('"'))
             value = '"' + value + '"'
-        super(StringValue, self).__init__(name, value, short)
+        super(StringValue, self).__init__(name, value, short, data)
 
 
 class TrueValue(Value):
@@ -271,6 +285,9 @@ class GN(object):
 
             def copy(self):
                 return Variant(self.arg_value_dict.copy())
+
+            def as_dict(self):
+                return {arg.name: self.arg_value_dict[arg].value for arg in self.arg_value_dict}
 
             def as_dir(self):
                 # warning: On windows path name has a limit. We should carefully generate directory names.
@@ -353,6 +370,12 @@ if __name__ == '__main__':
     gn.add(BooleanArg('is_run_tests', 't'))
     gn.add(BooleanArg('is_run_performance_tests', 'p'))
     gn.add(BooleanArg('is_asan', 'asan'))
+    gn.add(BooleanArg('is_lsan', 'lsan'))
+    gn.add(BooleanArg('is_msan', 'msan'))
+    gn.add(BooleanArg('is_usan', 'usan'))
+
+    def is_sanitizer(
+        x): return x.is_asan or x.is_lsan or x.is_msan or x.is_usan
     gn.add(BooleanArg('is_generate_test_coverage', 'cov'))
     gn.add(BooleanArg('is_std_string_view_supported', 'sv'))
     gn.add(StringArg('compiler_type', '')) \
@@ -372,8 +395,11 @@ if __name__ == '__main__':
     gn.add(BooleanArg('is_defined_JASL_FORCE_USE_MURMURHASH_HASH', 'mur'))
 
     # These filters exclude illegal variations
-    gn.filter_out(lambda x: x.compiler_type !=
-                  gn.compiler_type.clang and x.is_asan)
+    gn.filter_out(lambda x: is_sanitizer(
+        x) and x.compiler_type != gn.compiler_type.clang)
+    gn.filter_out(lambda x: x.is_lsan and not x.is_asan)
+    gn.filter_out(lambda x: x.is_asan and x.is_msan)
+    gn.filter_out(lambda x: x.is_msan and not x.is_debug)
     gn.filter_out(lambda x: x.compiler_type not in [
                   gn.compiler_type.clang, gn.compiler_type.gcc] and x.is_generate_test_coverage)
     gn.filter_out(lambda x: x.is_generate_test_coverage and not x.is_run_tests)
@@ -400,6 +426,8 @@ if __name__ == '__main__':
     elif is_win:
         gn.filter(lambda x: x.compiler_type in [gn.compiler_type.msvc])
 
+    if script_arg.travis_ci:
+        script_arg.install = True
     if script_arg.travis_ci or script_arg.appveyor:
         script_arg.gen = True
         script_arg.ninja = True
@@ -417,7 +445,7 @@ if __name__ == '__main__':
 
     for c in local_compiler:
         if c['type'] == 'msvc':
-            vs_arg.add(StringValue(c['instanceId'], c['vcvarsall']))
+            vs_arg.add(StringValue(c['instanceId'], c['vcvarsall'], data=c))
             gn.filter_out(lambda x, ii=c['instanceId']: x.visual_studio_path == getattr(
                 gn.visual_studio_path, ii) and x.compiler_type != gn.compiler_type.msvc)
             if not (c['version'][0] > 19 or (c['version'][0] == 19 and c['version'][1] >= 10)):
@@ -425,7 +453,8 @@ if __name__ == '__main__':
                     gn.visual_studio_path, ii) and x.is_std_string_view_supported)
         elif c['type'] == 'clang':
             comp_exec_name = os.path.basename(c['compiler_exec'])
-            comp_exec.add(StringValue(comp_exec_name, c['compiler_exec']))
+            comp_exec.add(StringValue(comp_exec_name,
+                                      c['compiler_exec'], data=c))
             gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
                 gn.compiler_exec, n) and x.compiler_type != gn.compiler_type.clang)
             # older mac clang hasn't c++17
@@ -440,7 +469,8 @@ if __name__ == '__main__':
                     gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
         elif c['type'] == 'gcc':
             comp_exec_name = os.path.basename(c['compiler_exec'])
-            comp_exec.add(StringValue(comp_exec_name, c['compiler_exec']))
+            comp_exec.add(StringValue(comp_exec_name,
+                                      c['compiler_exec'], data=c))
             gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
                 gn.compiler_exec, n) and x.compiler_type != gn.compiler_type.gcc)
             # older gcc hasn't c++17
@@ -471,25 +501,42 @@ if __name__ == '__main__':
 
     #
     if script_arg.compiler_type:
-        if script_arg.compiler_type == 'clang':
-            variants.filter(lambda x: x.compiler_type ==
-                            gn.compiler_type.clang)
-        elif script_arg.compiler_type == 'gcc':
-            variants.filter(lambda x: x.compiler_type == gn.compiler_type.gcc)
-        elif script_arg.compiler_type == 'msvc':
-            variants.filter(lambda x: x.compiler_type == gn.compiler_type.msvc)
+        ct = getattr(gn.compiler_type, script_arg.compiler_type)
+        variants.filter(lambda x: x.compiler_type == ct)
+
+    variants_to_gn = list(variants)
+
+    # Filter more, build less. These builds are not so importants
+    variants.filter_out(lambda x: x.is_run_performance_tests)
+
+    if script_arg.travis_ci:
+        if is_linux:
+            # clang: error: unsupported argument 'nullability' to option 'fsanitize='
+            variants.filter_out(lambda x: is_sanitizer(x) and (not x.is_debug or
+                                                               x.compiler_exec.data['version'][0] < 6))
+            # LeakSanitizer does not work under ptrace (strace, gdb, etc)
+            variants.filter_out(lambda x: x.is_lsan or x.is_asan)
         else:
-            assert(False)
+            variants.filter_out(lambda x: is_sanitizer(x))
+        variants.filter(lambda x: not x.is_generate_test_coverage)
+
+    assert(len(variants) > 0)
+
+    variants_to_ninja = list(variants)
+
+    # stat
+    print('# GN: ' + str(len(variants_to_gn)) + ' variants to generate.')
+    print('# ninja: ' + str(len(variants_to_gn)) + ' variants to build.')
 
     # gen
     if script_arg.gen:
         gn_exec = 'gn' + ('.exe' if is_win else '')
         succ_count = 0
         fail_count = 0
-        for v in variants:
+        for v in variants_to_gn:
             out_dir = os.path.join('out', v.as_dir())
             command = [gn_exec, 'gen', out_dir, '--args=' + v.as_args()]
-            print(' '.join(command))
+            print(str(succ_count + fail_count) + ': ' + ' '.join(command))
             sys.stdout.flush()
             try:
                 return_code = subprocess.call(command)
@@ -506,24 +553,17 @@ if __name__ == '__main__':
         if fail_count:
             raise Exception()
 
-    # Filter more, build less. These builds are not so importants
-    variants.filter_out(lambda x: x.is_run_performance_tests)
-
-    if script_arg.travis_ci:
-        variants.filter(lambda x: not x.is_asan)  # TODO why?
-        variants.filter(lambda x: not x.is_generate_test_coverage)
-
-    assert(len(variants) > 0)
-
     # ninja
     if script_arg.ninja:
         ninja_exec = 'ninja' + ('.exe' if is_win else '')
         succ_count = 0
         fail_count = 0
-        for v in variants:
+        for v in variants_to_ninja:
             out_dir = os.path.join('out', v.as_dir())
-            print('# ///////////////////')
-            print('# ' + v.as_args())
+            print('# ' + str(succ_count + fail_count) + '. gn args:')
+            args = v.as_dict()
+            for arg in args:
+                print('#   ' + arg + ' = ' + args[arg])
             command = [ninja_exec, '-C', out_dir]
             sys.stdout.flush()
             try:

@@ -52,28 +52,25 @@ config("compiler_clang") {
   #https://github.com/google/sanitizers
 
   #https://clang.llvm.org/docs/AddressSanitizer.html
-  if (is_asan) {
-    cflags += [
-      "-fsanitize=address",
-      "-fno-omit-frame-pointer",
-    ]
-    ldflags += [ "-fsanitize=address" ]
-  }
-
   #https://clang.llvm.org/docs/LeakSanitizer.html
-  if (is_lsan) {
-    ldflags += [ "-fsanitize=leak" ]
+  if (is_asan) {
+    common_flags_asan = [ "-fsanitize=address" ]
+    cflags += common_flags_asan + [ "-fno-omit-frame-pointer" ]
+    ldflags += common_flags_asan
   }
 
   #https://clang.llvm.org/docs/MemorySanitizer.html
   if (is_msan) {
-    cflags += [
-      "-fsanitize-memory-track-origins=1",
+    assert(is_debug)  #less than -O1
+    common_flags_msan = [
+      "-fno-optimize-sibling-calls",
       "-fno-omit-frame-pointer",
-
-      #"-fsanitize-memory-use-after-dtor", #experimental
+      "-fsanitize=memory",
+      "-fsanitize-memory-track-origins=1",
+      "-fsanitize-memory-use-after-dtor",  #experimental
     ]
-    ldflags += [ "-fsanitize=memory" ]
+    cflags += common_flags_msan
+    ldflags += common_flags_msan
   }
 
   #https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
@@ -82,6 +79,8 @@ config("compiler_clang") {
       "-fsanitize=undefined",
       "-fsanitize=integer",
       "-fsanitize=nullability",
+      "-g",
+      "-fno-omit-frame-pointer",
     ]
     cflags += common_flags_usan
     ldflags += common_flags_usan

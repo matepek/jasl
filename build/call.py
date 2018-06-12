@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     for p in args.environment_variable:
         kv_pair = p.split("=")
-        os.environ[kv_pair[0]] = kv_pair[1]
+        os.environ[kv_pair[0]] = '='.join(kv_pair[1:])
 
     output = sys.stdout
     if args.output:

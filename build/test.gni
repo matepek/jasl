@@ -25,6 +25,31 @@ template("test_with_base") {
 
       args = []
 
+      if (is_asan) {
+        asan_options = "ASAN_OPTIONS=allow_addr2line=1"
+        if (is_lsan) {
+          asan_options += ",detect_leaks=1"
+        }
+        args += [
+          "-e",
+          asan_options,
+        ]
+      }
+
+      if (is_msan) {
+        args += [
+          "-e",
+          "MSAN_OPTIONS=allow_addr2line=1",
+        ]
+      }
+
+      if (is_usan) {
+        args += [
+          "-e",
+          "UBSAN_OPTIONS=print_stacktrace=1",
+        ]
+      }
+
       if (is_generate_test_coverage) {
         args += [
           "-e",
@@ -163,7 +188,7 @@ template("test_build_err_with_base") {
     public_deps = [
       "//:include",
     ]
-    
+
     if (is_clang) {
       cflags = [ "-Wno-deprecated" ]
     }

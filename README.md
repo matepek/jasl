@@ -296,7 +296,6 @@ JASL library uses the [MIT](LICENSE) license.
  * https://github.com/Microsoft/vswhere
 
 # TODOs
- * lsan, msan
  * jasl::string_view could have more methods like [find_first, etc..](http://en.cppreference.com/w/cpp/header/string_view)
  * support for [literals](http://en.cppreference.com/w/cpp/language/user_literal)
  * std_string support (to_std_string, ?)
