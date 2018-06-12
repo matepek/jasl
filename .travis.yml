@@ -6,6 +6,12 @@ addons:
 
 matrix:
   include:
+    - os: osx
+      compiler: clang
+      env: 
+        - N=osx-clang
+      script:
+        - python ./build/build_helper.py --travis-ci --compiler-type clang
     - os: linux
       compiler: clang
       dist: precise
@@ -14,16 +20,40 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
-            - llvm-toolchain-precise-3.7
-            - llvm-toolchain-precise-3.8
           packages:
             - clang-3.6
+      env: 
+        - N=clang-3.6
+      script:
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-3.6
+    - os: linux
+      compiler: clang
+      dist: precise
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+          packages:
             - clang-3.7
+      env: 
+        - N=clang-3.7
+      script:
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-3.7
+    - os: linux
+      compiler: clang
+      dist: precise
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+          packages:
             - clang-3.8
       env: 
-        - N=clang 3.6, 3.7, 3.8
+        - N=clang-3.8
       script:
-        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-3
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-3.8
     - os: linux
       compiler: clang
       dist: trusty
@@ -32,16 +62,40 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-4.0
-            - llvm-toolchain-trusty-5.0
-            - llvm-toolchain-trusty-6.0
           packages:
             - clang-4.0
+      env: 
+        - N=clang++-4.0
+      script:
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-4
+    - os: linux
+      compiler: clang
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+          packages:
             - clang-5.0
+      env: 
+        - N=clang++-5.0
+      script:
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-5
+    - os: linux
+      compiler: clang
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+          packages:
             - clang-6.0
       env: 
-        - N=clang 4.0, 5.0, 6.0
+        - N=clang++-6.0
       script:
-        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-4 clang++-5 clang++-6
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-6
     - os: linux
       compiler: gcc
       dist: trusty
@@ -52,17 +106,24 @@ matrix:
           packages:
             - g++-4.8
             - g++-4.8-multilib
+      env: 
+        - N=g++-4.8
+      script:
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-4
+    - os: linux
+      compiler: gcc
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
             - g++-5
             - g++-5-multilib
       env: 
-        - N=g++ 4.8, 5
+        - N=g++-5
       script:
-        - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-4 g++-5
-      after_success:
-        - pip install --user cpp-coveralls
-        - gn gen out/coveralls --args="is_debug=true is_generate_test_coverage=true compiler_type=\"gcc\" std_version=\"c++11\""
-        - ninja -C out/coveralls
-        - coveralls -t $COVERALLS_REPO_TOKEN -e performance -e test -b out/coveralls
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-5
     - os: linux
       compiler: gcc
       dist: trusty
@@ -73,18 +134,29 @@ matrix:
           packages:
             - g++-6
             - g++-6-multilib
+      env: 
+        - N=g++-6
+      script:
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-6
+      after_success:
+        - pip install --user cpp-coveralls
+        - gn gen out/coveralls --args="is_debug=true is_generate_test_coverage=true compiler_type=\"gcc\" std_version=\"c++17\""
+        - ninja -C out/coveralls
+        - coveralls -t $COVERALLS_REPO_TOKEN -e performance -e test -b out/coveralls
+    - os: linux
+      compiler: gcc
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
             - g++-7
             - g++-7-multilib
       env: 
-        - N=g++ 6, 7
+        - N=g++-7
       script:
-        - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-6 g++-7
-    - os: osx
-      compiler: clang
-      env: 
-        - N=osx-clang
-      script:
-        - python ./build/build_helper.py --travis-ci --compiler-type clang
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-7
 
 before_install:
   - python --version
