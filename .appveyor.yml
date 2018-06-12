@@ -9,6 +9,7 @@ environment:
 install:
   - cinst python2
   - python.exe --version
+  - python -m pip install six
 
 build: off
 

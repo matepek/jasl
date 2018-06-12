@@ -45,11 +45,11 @@ def download_ninja_and_gn(target_dir):
             import importlib
             try:
                 importlib.import_module(package)
-            except ImportError:
+            except ImportError as e:
+                print(e, 'trying install it')
                 import pip
                 pip.main(['install', package])
-            finally:
-                globals()[package] = importlib.import_module(package)
+            globals()[package] = importlib.import_module(package)
         try:
             install_and_import('six')
             from six.moves import urllib
@@ -85,12 +85,12 @@ def download_ninja_and_gn(target_dir):
     assert(0 == subprocess.call([ninja_path, '--version']))
     # gn
     gn_path = os.path.join(target_dir, 'gn')
-    dl(links[platform.system()]['gn'], gn_path)
     if is_win:
         gn_path += '.exe'
-    else:
+    dl(links[platform.system()]['gn'], gn_path)
+    if not is_win:
         os.chmod(gn_path, 744)
-    assert(0 == subprocess.call(['gn', '--version']))
+    assert(0 == subprocess.call([gn_path, '--version']))
 
 
 def compiler_info(exec_file):
@@ -534,7 +534,7 @@ if __name__ == '__main__':
 
     # stat
     print('# GN: ' + str(len(variants_to_gn)) + ' variants to generate.')
-    print('# ninja: ' + str(len(variants_to_gn)) + ' variants to build.')
+    print('# ninja: ' + str(len(variants_to_ninja)) + ' variants to build.')
 
     # gen
     if script_arg.gen:
