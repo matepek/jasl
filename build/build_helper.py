@@ -386,8 +386,9 @@ if __name__ == '__main__':
     gn.add(BooleanArg('is_defined_JASL_FORCE_USE_MURMURHASH_HASH', 'mur'))
 
     # These filters exclude illegal variations
-    gn.filter_out(lambda x: x.compiler_type != gn.compiler_type.clang and is_sanitizer(x))
+    gn.filter_out(lambda x: is_sanitizer(x) and x.compiler_type != gn.compiler_type.clang)
     gn.filter_out(lambda x: x.is_asan and x.is_msan)
+    gn.filter_out(lambda x: x.is_msan and not x.is_debug)
     gn.filter_out(lambda x: x.compiler_type not in [
                   gn.compiler_type.clang, gn.compiler_type.gcc] and x.is_generate_test_coverage)
     gn.filter_out(lambda x: x.is_generate_test_coverage and not x.is_run_tests)
