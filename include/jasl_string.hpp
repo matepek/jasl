@@ -16,7 +16,8 @@
 
 namespace jasl {
 
-template <typename CharT, typename Traits = std::char_traits<CharT>,
+template <typename CharT,
+          typename Traits = std::char_traits<CharT>,
           typename AllocatorT = std::allocator<CharT>>
 class basic_string : public basic_string_view<CharT, Traits> {
  public:
@@ -62,12 +63,10 @@ class basic_string : public basic_string_view<CharT, Traits> {
     if (size == 0) {
       return;
     }
-    size_t constructed = 0;
     std::unique_ptr<CharT, std::function<void(CharT*)>> begin(
         alloc_traits::allocate(allocator, size), [&](CharT * ptd) noexcept {
           alloc_traits::deallocate(allocator, ptd, size);
         });
-    constructed = size;
     base_type::operator=(base_type(begin.get(), size));
     capacity = size;
     auto raw_begin = begin.release();
@@ -127,8 +126,9 @@ class basic_string : public basic_string_view<CharT, Traits> {
         capacity(0) {}
 
   basic_string(const basic_string& other)
-      : basic_string(other, alloc_traits::select_on_container_copy_construction(
-                                other.allocator)) {}
+      : basic_string(other,
+                     alloc_traits::select_on_container_copy_construction(
+                         other.allocator)) {}
 
   basic_string(const basic_string& other, const AllocatorT& alloc)
       : base_type(other), allocator(alloc), capacity(0) {
