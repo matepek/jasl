@@ -52,17 +52,11 @@ config("compiler_clang") {
   #https://github.com/google/sanitizers
 
   #https://clang.llvm.org/docs/AddressSanitizer.html
+  #https://clang.llvm.org/docs/LeakSanitizer.html
   if (is_asan) {
     common_flags_asan = [ "-fsanitize=address" ]
     cflags += common_flags_asan + ["-fno-omit-frame-pointer" ]
     ldflags += common_flags_asan
-  }
-
-  #https://clang.llvm.org/docs/LeakSanitizer.html
-  if (is_lsan) {
-    common_flags_lsan = [ "-g" ]
-    cflags += common_flags_lsan
-    ldflags += common_flags_lsan
   }
 
   #https://clang.llvm.org/docs/MemorySanitizer.html

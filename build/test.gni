@@ -25,10 +25,17 @@ template("test_with_base") {
 
       args = []
 
-      if (is_lsan) {
+      if (is_asan) {
         args += [
           "-e",
-          "ASAN_OPTIONS=detect_leaks=1",
+          "ASAN_OPTIONS=detect_leaks=1,allow_addr2line=1",
+        ]
+      }
+
+      if (is_msan) {
+        args += [
+          "-e",
+          "MSAN_OPTIONS=allow_addr2line=1",
         ]
       }
 

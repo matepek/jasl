@@ -57,21 +57,17 @@ class basic_string : public basic_string_view<CharT, Traits> {
 
   inline void init(const CharT* ptr, size_t size) {
     JASL_ASSERT(capacity == 0, "capacity == 0");
+    static_assert(std::is_integral<CharT>::value,
+                  "Unsupported CharT. Need construct and destruct.");
+    if (size == 0) {
+      return;
+    }
     size_t constructed = 0;
     std::unique_ptr<CharT, std::function<void(CharT*)>> begin(
         alloc_traits::allocate(allocator, size), [&](CharT * ptd) noexcept {
-          if (!std::is_integral<CharT>::value) {
-            for (; 0 < constructed; --constructed)
-              alloc_traits::destroy(allocator, ptd + constructed - 1);
-          }
           alloc_traits::deallocate(allocator, ptd, size);
         });
-    if (std::is_integral<CharT>::value) {
-      constructed = size;
-    } else {
-      for (; constructed < size; ++constructed)
-        alloc_traits::construct(allocator, begin.get() + constructed);
-    }
+    constructed = size;
     base_type::operator=(base_type(begin.get(), size));
     capacity = size;
     auto raw_begin = begin.release();
@@ -81,10 +77,6 @@ class basic_string : public basic_string_view<CharT, Traits> {
   inline void dispose() noexcept {
     if (capacity > 0) {
       const auto begin = const_cast<CharT*>(base_type::data());
-      if (!std::is_integral<CharT>::value) {
-        auto end = begin + capacity;
-        for (auto p = begin; p < end; ++p) alloc_traits::destroy(allocator, p);
-      }
       alloc_traits::deallocate(allocator, begin, capacity);
       capacity = 0;
     }

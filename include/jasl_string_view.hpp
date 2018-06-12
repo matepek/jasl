@@ -96,13 +96,17 @@ class basic_string_view {
   constexpr basic_string_view(const CharT* ptr, size_type size) noexcept
       : _ptr(ptr), _size(size) {}
 
-  constexpr basic_string_view(const basic_string_view& other) noexcept =
-      default;
+  constexpr basic_string_view(const basic_string_view& other) noexcept
+      : _ptr(other._ptr), _size(other._size) {}
 
   JASL_CONSTEXPR_FROM_14 basic_string_view& operator=(
-      const basic_string_view& other) noexcept = default;
+      const basic_string_view& other) noexcept {
+    _ptr = other._ptr;
+    _size = other._size;
+    return *this;
+  }
 
-  ~basic_string_view() noexcept = default;
+  ~basic_string_view() noexcept {}
 
   constexpr const_iterator begin() const noexcept { return cbegin(); }
   constexpr const_iterator end() const noexcept { return cend(); }

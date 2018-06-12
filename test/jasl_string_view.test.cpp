@@ -172,6 +172,7 @@ int main() {
     ASSERT_TRUE(s.count(empty) == 1);
     ASSERT_TRUE(s.count(small) == 1);
     ASSERT_TRUE(s.count(longg) == 1);
+
     ASSERT_TRUE(s.size() == 3);
   }
 

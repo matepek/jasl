@@ -94,6 +94,7 @@ JASL_DIAGNOSTIC_IGNORED_CLANG(JAS_WARNING_CAST_ALING)
 #define JASL_USAN_IGNORE(type) __attribute__((no_sanitize(#type)))
 #else
 #define JASL_USAN_IGNORE(type)
+#endif
 #else
 #define JASL_USAN_IGNORE(type)
 #endif
@@ -102,13 +103,9 @@ JASL_DIAGNOSTIC_IGNORED_CLANG(JAS_WARNING_CAST_ALING)
 // Block read - if your platform needs to do endian-swapping or can only
 // handle aligned reads, do the conversion here
 
-FORCE_INLINE uint32_t getblock32(const uint32_t* p, int i) {
-  return p[i];
-}
+FORCE_INLINE uint32_t getblock32(const uint32_t* p, int i) { return p[i]; }
 
-FORCE_INLINE uint64_t getblock64(const uint64_t* p, int i) {
-  return p[i];
-}
+FORCE_INLINE uint64_t getblock64(const uint64_t* p, int i) { return p[i]; }
 
 //-----------------------------------------------------------------------------
 // Finalization mix - force all bits of a hash block to avalanche
@@ -138,9 +135,7 @@ JASL_USAN_IGNORE(integer) FORCE_INLINE uint64_t fmix64(uint64_t k) {
 //-----------------------------------------------------------------------------
 
 JASL_USAN_IGNORE(integer)
-void MurmurHash3_x86_128(const void* key,
-                         const int len,
-                         uint32_t seed,
+void MurmurHash3_x86_128(const void* key, const int len, uint32_t seed,
                          void* out) {
   const uint8_t* data = (const uint8_t*)key;
   const int nblocks = len / 16;
@@ -301,9 +296,7 @@ void MurmurHash3_x86_128(const void* key,
 //-----------------------------------------------------------------------------
 
 JASL_USAN_IGNORE(integer)
-void MurmurHash3_x64_128(const void* key,
-                         const int len,
-                         const uint32_t seed,
+void MurmurHash3_x64_128(const void* key, const int len, const uint32_t seed,
                          void* out) {
   const uint8_t* data = (const uint8_t*)key;
   const int nblocks = len / 16;
