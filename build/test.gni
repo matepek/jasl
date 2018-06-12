@@ -26,9 +26,13 @@ template("test_with_base") {
       args = []
 
       if (is_asan) {
+        asan_options = "ASAN_OPTIONS=allow_addr2line=1"
+        if (is_lsan) {
+          asan_options += ",detect_leaks=1"
+        }
         args += [
           "-e",
-          "ASAN_OPTIONS=detect_leaks=1,allow_addr2line=1",
+          asan_options,
         ]
       }
 
@@ -184,7 +188,7 @@ template("test_build_err_with_base") {
     public_deps = [
       "//:include",
     ]
-    
+
     if (is_clang) {
       cflags = [ "-Wno-deprecated" ]
     }

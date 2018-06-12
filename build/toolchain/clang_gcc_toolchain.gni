@@ -13,7 +13,8 @@ template("clang_gcc_toolchain") {
       outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"
       rspfile_content = "{{inputs}} {{solibs}} {{libs}}"
-      command = "$current_compiler_exec {{ldflags}} -o \"$outfile\" @\"$rspfile\""
+      command =
+          "$current_compiler_exec {{ldflags}} -o \"$outfile\" @\"$rspfile\""
       description = "LINK $outfile"
       outputs = [
         outfile,

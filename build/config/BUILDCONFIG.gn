@@ -31,8 +31,10 @@ declare_args() {
   is_debug = false
 
   # Compile for Address Sanitizer to find memory bugs.
-  # Compile for Leak Sanitizer to find leaks.
   is_asan = false
+
+  # Compile for Leak Sanitizer to find leaks.
+  is_lsan = false
 
   # Compile for Memory Sanitizer to find uninitialized reads.
   is_msan = false
@@ -93,9 +95,10 @@ declare_args() {
 is_clang = compiler_type == "clang"
 is_gcc = compiler_type == "gcc"
 
-if (is_asan || is_msan || is_usan) {
+if (is_asan || is_lsan || is_msan || is_usan) {
   assert(is_clang, "These features requires clang!")
 }
+assert(!is_lsan || is_asan, "lsan => asan!")
 assert(!(is_asan && is_msan), "Exclsive flags!")
 
 if (is_generate_test_coverage) {

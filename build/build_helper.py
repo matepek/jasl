@@ -29,9 +29,9 @@ def download_ninja_and_gn(target_dir):
         'Linux': {'ninja': 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip',
                   'gn': 'https://storage.googleapis.com/chromium-gn/ed8b2bc0617fee4ebd1d1a35e8a5bc168c4ca874'},
         'Darwin': {'ninja': 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-mac.zip',
-                  'gn': 'https://storage.googleapis.com/chromium-gn/a14b089cbae9c29ecbc781686ada8babac8550af'},
+                   'gn': 'https://storage.googleapis.com/chromium-gn/a14b089cbae9c29ecbc781686ada8babac8550af'},
         'Windows': {'ninja': 'https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-win.zip',
-                  'gn': 'https://storage.googleapis.com/chromium-gn/e93779cab57d5f36100faa4d88524a1e33be7b0f'},
+                    'gn': 'https://storage.googleapis.com/chromium-gn/e93779cab57d5f36100faa4d88524a1e33be7b0f'},
     }
     target_dir = 'out/.bin'
     try:
@@ -39,11 +39,13 @@ def download_ninja_and_gn(target_dir):
     except OSError:
         pass
     os.environ["PATH"] += os.pathsep + os.path.join(os.getcwd(), target_dir)
+
     def dl(url, target_path):
         sys.stdout.write('Downloading: ' + url)
         sys.stdout.flush()
         try:
             from six.moves import urllib
+
             def hook(count_of_blocks, block_size, total_size):
                 sys.stdout.write('.')
                 sys.stdout.flush()
@@ -365,9 +367,12 @@ if __name__ == '__main__':
     gn.add(BooleanArg('is_run_tests', 't'))
     gn.add(BooleanArg('is_run_performance_tests', 'p'))
     gn.add(BooleanArg('is_asan', 'asan'))
+    gn.add(BooleanArg('is_lsan', 'lsan'))
     gn.add(BooleanArg('is_msan', 'msan'))
     gn.add(BooleanArg('is_usan', 'usan'))
-    def is_sanitizer(x): return x.is_asan or x.is_msan or x.is_usan
+
+    def is_sanitizer(
+        x): return x.is_asan or x.is_lsan or x.is_msan or x.is_usan
     gn.add(BooleanArg('is_generate_test_coverage', 'cov'))
     gn.add(BooleanArg('is_std_string_view_supported', 'sv'))
     gn.add(StringArg('compiler_type', '')) \
@@ -387,7 +392,9 @@ if __name__ == '__main__':
     gn.add(BooleanArg('is_defined_JASL_FORCE_USE_MURMURHASH_HASH', 'mur'))
 
     # These filters exclude illegal variations
-    gn.filter_out(lambda x: is_sanitizer(x) and x.compiler_type != gn.compiler_type.clang)
+    gn.filter_out(lambda x: is_sanitizer(
+        x) and x.compiler_type != gn.compiler_type.clang)
+    gn.filter_out(lambda x: x.is_lsan and not x.is_asan)
     gn.filter_out(lambda x: x.is_asan and x.is_msan)
     gn.filter_out(lambda x: x.is_msan and not x.is_debug)
     gn.filter_out(lambda x: x.compiler_type not in [
@@ -443,7 +450,8 @@ if __name__ == '__main__':
                     gn.visual_studio_path, ii) and x.is_std_string_view_supported)
         elif c['type'] == 'clang':
             comp_exec_name = os.path.basename(c['compiler_exec'])
-            comp_exec.add(StringValue(comp_exec_name, c['compiler_exec'], data=c))
+            comp_exec.add(StringValue(comp_exec_name,
+                                      c['compiler_exec'], data=c))
             gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
                 gn.compiler_exec, n) and x.compiler_type != gn.compiler_type.clang)
             # older mac clang hasn't c++17
@@ -458,7 +466,8 @@ if __name__ == '__main__':
                     gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
         elif c['type'] == 'gcc':
             comp_exec_name = os.path.basename(c['compiler_exec'])
-            comp_exec.add(StringValue(comp_exec_name, c['compiler_exec'], data=c))
+            comp_exec.add(StringValue(comp_exec_name,
+                                      c['compiler_exec'], data=c))
             gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
                 gn.compiler_exec, n) and x.compiler_type != gn.compiler_type.gcc)
             # older gcc hasn't c++17
@@ -524,7 +533,9 @@ if __name__ == '__main__':
         if is_linux:
             # clang: error: unsupported argument 'nullability' to option 'fsanitize='
             variants.filter_out(lambda x: is_sanitizer(x) and (not x.is_debug or
-                                x.compiler_exec.data['version'][0] < 6))
+                                                               x.compiler_exec.data['version'][0] < 6))
+            # LeakSanitizer does not work under ptrace (strace, gdb, etc)
+            variants.filter_out(lambda x: x.is_lsan)
         else:
             variants.filter_out(lambda x: is_sanitizer(x))
         variants.filter(lambda x: not x.is_generate_test_coverage)

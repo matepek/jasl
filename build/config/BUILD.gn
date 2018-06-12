@@ -55,19 +55,19 @@ config("compiler_clang") {
   #https://clang.llvm.org/docs/LeakSanitizer.html
   if (is_asan) {
     common_flags_asan = [ "-fsanitize=address" ]
-    cflags += common_flags_asan + ["-fno-omit-frame-pointer" ]
+    cflags += common_flags_asan + [ "-fno-omit-frame-pointer" ]
     ldflags += common_flags_asan
   }
 
   #https://clang.llvm.org/docs/MemorySanitizer.html
   if (is_msan) {
-    assert(is_debug) #less than -O1
+    assert(is_debug)  #less than -O1
     common_flags_msan = [
       "-fno-optimize-sibling-calls",
       "-fno-omit-frame-pointer",
       "-fsanitize=memory",
       "-fsanitize-memory-track-origins=1",
-      "-fsanitize-memory-use-after-dtor", #experimental
+      "-fsanitize-memory-use-after-dtor",  #experimental
     ]
     cflags += common_flags_msan
     ldflags += common_flags_msan

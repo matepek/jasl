@@ -2,7 +2,6 @@ template("msvc_toolchain") {
   forward_variables_from(invoker, [ "dummy  " ])
 
   toolchain(target_name) {
-
     assert(host_os == target_os)
     if (host_cpu == "x64" && target_cpu == "x86") {
       arch = "amd64_x86"
