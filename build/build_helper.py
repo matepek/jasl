@@ -525,7 +525,10 @@ if __name__ == '__main__':
     variants.filter_out(lambda x: x.is_run_performance_tests)
 
     if script_arg.travis_ci:
-        variants.filter(lambda x: not x.is_asan)  # TODO why?
+        if is_linux:
+            variants.filter_out(lambda x: x.is_asan and x.compiler_type != gn.compiler_type.clang and x.std_version != gn.std_version.cpp17)
+        else:
+            variants.filter_out(lambda x: x.is_asan)
         variants.filter(lambda x: not x.is_generate_test_coverage)
 
     assert(len(variants) > 0)

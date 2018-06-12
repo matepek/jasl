@@ -89,8 +89,11 @@ JASL_DIAGNOSTIC_IGNORED_CLANG(JASL_WARNING_IMPLICIT_FALLTHROUGH)
 JASL_DIAGNOSTIC_IGNORED_GCC_SINCE7(JASL_WARNING_IMPLICIT_FALLTHROUGH)
 JASL_DIAGNOSTIC_IGNORED_CLANG(JAS_WARNING_CAST_ALING)
 
-#if defined(__clang__) && __has_attribute(no_sanitize)
+#if defined(__clang__)
+#if __has_attribute(no_sanitize)
 #define JASL_USAN_IGNORE(type) __attribute__((no_sanitize(#type)))
+#else
+#define JASL_USAN_IGNORE(type)
 #else
 #define JASL_USAN_IGNORE(type)
 #endif

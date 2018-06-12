@@ -53,14 +53,17 @@ config("compiler_clang") {
 
   #https://clang.llvm.org/docs/AddressSanitizer.html
   if (is_asan) {
-    cflags += [
-      "-fsanitize=address",
-      "-fno-omit-frame-pointer",
-    ]
-    ldflags += [ "-fsanitize=address" ]
+    common_flags_asan = [ "-fsanitize=address" ]
+    cflags += common_flags_asan + ["-fno-omit-frame-pointer" ]
+    ldflags += common_flags_asan
   }
 
   #https://clang.llvm.org/docs/LeakSanitizer.html
+  if (is_lsan) {
+    common_flags_lsan = [ "-g" ]
+    cflags += common_flags_lsan
+    ldflags += common_flags_lsan
+  }
 
   #https://clang.llvm.org/docs/MemorySanitizer.html
   if (is_msan) {
