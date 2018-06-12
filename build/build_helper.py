@@ -41,14 +41,23 @@ def download_ninja_and_gn(target_dir):
     os.environ["PATH"] += os.pathsep + os.path.join(os.getcwd(), target_dir)
 
     def dl(url, target_path):
-        sys.stdout.write('Downloading: ' + url)
-        sys.stdout.flush()
+        def install_and_import(package):
+            import importlib
+            try:
+                importlib.import_module(package)
+            except ImportError as e:
+                print(e, 'trying install it')
+                import pip
+                pip.main(['install', package])
+            globals()[package] = importlib.import_module(package)
         try:
+            install_and_import('six')
             from six.moves import urllib
-
             def hook(count_of_blocks, block_size, total_size):
                 sys.stdout.write('.')
                 sys.stdout.flush()
+            print('Downloading: ' + url)
+            sys.stdout.flush()
             result = urllib.request.urlretrieve(url, target_path, hook)
             sys.stdout.flush()
         except Exception as e:
@@ -76,12 +85,12 @@ def download_ninja_and_gn(target_dir):
     assert(0 == subprocess.call([ninja_path, '--version']))
     # gn
     gn_path = os.path.join(target_dir, 'gn')
-    dl(links[platform.system()]['gn'], gn_path)
     if is_win:
         gn_path += '.exe'
-    else:
+    dl(links[platform.system()]['gn'], gn_path)
+    if not is_win:
         os.chmod(gn_path, 744)
-    subprocess.call(['gn', '--version'])
+    assert(0 == subprocess.call([gn_path, '--version']))
 
 
 def compiler_info(exec_file):
@@ -426,9 +435,8 @@ if __name__ == '__main__':
     elif is_win:
         gn.filter(lambda x: x.compiler_type in [gn.compiler_type.msvc])
 
-    if script_arg.travis_ci:
-        script_arg.install = True
     if script_arg.travis_ci or script_arg.appveyor:
+        script_arg.install = True
         script_arg.gen = True
         script_arg.ninja = True
         script_arg.stop_on_error = True
@@ -526,7 +534,7 @@ if __name__ == '__main__':
 
     # stat
     print('# GN: ' + str(len(variants_to_gn)) + ' variants to generate.')
-    print('# ninja: ' + str(len(variants_to_gn)) + ' variants to build.')
+    print('# ninja: ' + str(len(variants_to_ninja)) + ' variants to build.')
 
     # gen
     if script_arg.gen:
