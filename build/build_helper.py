@@ -286,6 +286,9 @@ class GN(object):
             def copy(self):
                 return Variant(self.arg_value_dict.copy())
 
+            def as_dict(self):
+                return {arg.name: self.arg_value_dict[arg].value for arg in self.arg_value_dict}
+
             def as_dir(self):
                 # warning: On windows path name has a limit. We should carefully generate directory names.
                 return '_'.join(sorted(arg.short + '' + self.arg_value_dict[arg].short.title() for arg in self.arg_value_dict))
@@ -501,30 +504,7 @@ if __name__ == '__main__':
         ct = getattr(gn.compiler_type, script_arg.compiler_type)
         variants.filter(lambda x: x.compiler_type == ct)
 
-    # gen
-    if script_arg.gen:
-        gn_exec = 'gn' + ('.exe' if is_win else '')
-        succ_count = 0
-        fail_count = 0
-        for v in variants:
-            out_dir = os.path.join('out', v.as_dir())
-            command = [gn_exec, 'gen', out_dir, '--args=' + v.as_args()]
-            print(' '.join(command))
-            sys.stdout.flush()
-            try:
-                return_code = subprocess.call(command)
-            except KeyboardInterrupt:
-                sys.exit(1)
-            if return_code != 0:
-                fail_count += 1
-                if script_arg.stop_on_error:
-                    raise Exception('stop-on-error', return_code, succ_count)
-                print('Error: ' + str(return_code))
-            else:
-                succ_count += 1
-        print('ok(' + str(succ_count) + '), failed(' + str(fail_count) + ')')
-        if fail_count:
-            raise Exception()
+    variants_to_gn = list(variants)
 
     # Filter more, build less. These builds are not so importants
     variants.filter_out(lambda x: x.is_run_performance_tests)
@@ -542,15 +522,48 @@ if __name__ == '__main__':
 
     assert(len(variants) > 0)
 
+    variants_to_ninja = list(variants)
+
+    # stat
+    print('# GN: ' + str(len(variants_to_gn)) + ' variants to generate.')
+    print('# ninja: ' + str(len(variants_to_gn)) + ' variants to build.')
+
+    # gen
+    if script_arg.gen:
+        gn_exec = 'gn' + ('.exe' if is_win else '')
+        succ_count = 0
+        fail_count = 0
+        for v in variants_to_gn:
+            out_dir = os.path.join('out', v.as_dir())
+            command = [gn_exec, 'gen', out_dir, '--args=' + v.as_args()]
+            print(str(succ_count + fail_count) + ': ' + ' '.join(command))
+            sys.stdout.flush()
+            try:
+                return_code = subprocess.call(command)
+            except KeyboardInterrupt:
+                sys.exit(1)
+            if return_code != 0:
+                fail_count += 1
+                if script_arg.stop_on_error:
+                    raise Exception('stop-on-error', return_code, succ_count)
+                print('Error: ' + str(return_code))
+            else:
+                succ_count += 1
+        print('ok(' + str(succ_count) + '), failed(' + str(fail_count) + ')')
+        if fail_count:
+            raise Exception()
+
     # ninja
     if script_arg.ninja:
         ninja_exec = 'ninja' + ('.exe' if is_win else '')
         succ_count = 0
         fail_count = 0
-        for v in variants:
+        for v in variants_to_ninja:
             out_dir = os.path.join('out', v.as_dir())
-            print('# ///////////////////')
-            print('# ' + v.as_args())
+            print('# ' + str(succ_count + fail_count) + '. gn args:')
+            args = v.as_dict()
+            for arg in args:
+                print('#   ' + arg + ' = ' + args[arg])
             command = [ninja_exec, '-C', out_dir]
             sys.stdout.flush()
             try:
