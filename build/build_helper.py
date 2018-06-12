@@ -41,8 +41,6 @@ def download_ninja_and_gn(target_dir):
     os.environ["PATH"] += os.pathsep + os.path.join(os.getcwd(), target_dir)
 
     def dl(url, target_path):
-        sys.stdout.write('Downloading: ' + url)
-        sys.stdout.flush()
         def install_and_import(package):
             import importlib
             try:
@@ -52,12 +50,14 @@ def download_ninja_and_gn(target_dir):
                 pip.main(['install', package])
             finally:
                 globals()[package] = importlib.import_module(package)
-        install_and_import(six)
         try:
+            install_and_import('six')
             from six.moves import urllib
             def hook(count_of_blocks, block_size, total_size):
                 sys.stdout.write('.')
                 sys.stdout.flush()
+            print('Downloading: ' + url)
+            sys.stdout.flush()
             result = urllib.request.urlretrieve(url, target_path, hook)
             sys.stdout.flush()
         except Exception as e:
@@ -90,7 +90,7 @@ def download_ninja_and_gn(target_dir):
         gn_path += '.exe'
     else:
         os.chmod(gn_path, 744)
-    subprocess.call(['gn', '--version'])
+    assert(0 == subprocess.call(['gn', '--version']))
 
 
 def compiler_info(exec_file):
