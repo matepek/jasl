@@ -522,8 +522,9 @@ if __name__ == '__main__':
 
     if script_arg.travis_ci:
         if is_linux:
+            # clang: error: unsupported argument 'nullability' to option 'fsanitize='
             variants.filter_out(lambda x: is_sanitizer(x) and (not x.is_debug or
-                                x.compiler_exec.data['version'][0] < 4))
+                                x.compiler_exec.data['version'][0] < 6))
         else:
             variants.filter_out(lambda x: is_sanitizer(x))
         variants.filter(lambda x: not x.is_generate_test_coverage)
