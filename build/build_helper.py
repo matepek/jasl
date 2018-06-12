@@ -364,7 +364,9 @@ if __name__ == '__main__':
     gn.add(BooleanArg('is_run_tests', 't'))
     gn.add(BooleanArg('is_run_performance_tests', 'p'))
     gn.add(BooleanArg('is_asan', 'asan'))
+    gn.add(BooleanArg('is_msan', 'msan'))
     gn.add(BooleanArg('is_usan', 'usan'))
+    def is_sanitizer(x): return x.is_asan or x.is_msan or x.is_usan
     gn.add(BooleanArg('is_generate_test_coverage', 'cov'))
     gn.add(BooleanArg('is_std_string_view_supported', 'sv'))
     gn.add(StringArg('compiler_type', '')) \
@@ -384,9 +386,8 @@ if __name__ == '__main__':
     gn.add(BooleanArg('is_defined_JASL_FORCE_USE_MURMURHASH_HASH', 'mur'))
 
     # These filters exclude illegal variations
-    gn.filter_out(lambda x: x.compiler_type !=
-                  gn.compiler_type.clang and x.is_asan)
-    gn.filter_out(lambda x: x.is_usan and not x.is_asan)
+    gn.filter_out(lambda x: x.compiler_type != gn.compiler_type.clang and is_sanitizer(x))
+    gn.filter_out(lambda x: x.is_asan and x.is_msan)
     gn.filter_out(lambda x: x.compiler_type not in [
                   gn.compiler_type.clang, gn.compiler_type.gcc] and x.is_generate_test_coverage)
     gn.filter_out(lambda x: x.is_generate_test_coverage and not x.is_run_tests)
@@ -526,9 +527,10 @@ if __name__ == '__main__':
 
     if script_arg.travis_ci:
         if is_linux:
-            variants.filter_out(lambda x: x.is_asan and x.compiler_type != gn.compiler_type.clang and x.std_version != gn.std_version.cpp17)
+            variants.filter_out(lambda x: x.std_version != gn.std_version.cpp17 
+                                          and not x.is_debug and is_sanitizer(x))
         else:
-            variants.filter_out(lambda x: x.is_asan)
+            variants.filter_out(lambda x: is_sanitizer(x))
         variants.filter(lambda x: not x.is_generate_test_coverage)
 
     assert(len(variants) > 0)
