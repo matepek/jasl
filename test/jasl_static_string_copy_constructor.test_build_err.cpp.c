@@ -11,4 +11,7 @@ int main() {
   jasl::static_string::base_type b("one", 3);
   // should cause compilation error
   jasl::static_string x(b);
+
+  ASSERT_TRUE(x == x);
+  return 0;
 }

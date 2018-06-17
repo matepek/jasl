@@ -73,8 +73,10 @@ static_assert(false, "Probably unsupported compiler version!");
 #endif
 #ifdef __cpp_lib_string_view
 #define JASL_cpp_lib_string_view __cpp_lib_string_view
-#else
+#elif __cplusplus >= 201703
 #define JASL_cpp_lib_string_view (__has_include(<string_view>) ? 201606L : 0L)
+#else
+#define JASL_cpp_lib_string_view 0L
 #endif
 
 #else
@@ -97,9 +99,9 @@ static_assert(false, "Unsupported compiler!");
  */
 #ifdef JASL_cpp_constexpr
 #if JASL_cpp_constexpr >= 201304L
-#define JASL_CONSTEXPR_FROM_14 constexpr
+#define JASL_CONSTEXPR_CXX14 constexpr
 #elif JASL_cpp_constexpr >= 200704L
-#define JASL_CONSTEXPR_FROM_14
+#define JASL_CONSTEXPR_CXX14
 #else
 // JASL_cpp_constexpr should not be defined.
 static_assert(false, "Something wrong with the defines.");

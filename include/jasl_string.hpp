@@ -13,30 +13,32 @@
 #include "jasl_common.hpp"
 #include "jasl_feature_test_macro.hpp"
 #include "jasl_string_view.hpp"
+#include "jasl_string_view_bridge.hpp"
 
 namespace jasl {
 
 template <typename CharT,
           typename Traits = std::char_traits<CharT>,
           typename AllocatorT = std::allocator<CharT>>
-class basic_string : public basic_string_view<CharT, Traits> {
+class basic_string
+    : public string_view_bridge<basic_string_view<CharT, Traits>> {
  public:
-  typedef basic_string_view<CharT, Traits> base_type;
+  typedef string_view_bridge<basic_string_view<CharT, Traits>> bridge_type;
+  typedef typename bridge_type::bridge_to_type base_type;
   typedef AllocatorT allocator_type;
 
  private:
   typedef std::allocator_traits<AllocatorT> alloc_traits;
-  constexpr static bool is_nothrow_constructible_base_type =
-      std::is_nothrow_constructible<base_type, const CharT*, size_t>::value;
+
   // https://stackoverflow.com/questions/12332772/why-arent-container-move-assignment-operators-noexcept
   constexpr static bool is_noexcept_assign_rvalue =
       alloc_traits::propagate_on_container_move_assignment::value &&
       std::is_nothrow_move_assignable<AllocatorT>::value &&
-      noexcept(std::declval<base_type&>().swap(std::declval<base_type&>()));
+      JASL_is_nothrow_swappable_value(bridge_type);
 
  private:
-  allocator_type allocator;
-  size_t capacity;
+  allocator_type _alloc;
+  size_t _cap;  // capacity
 
  private:
   struct ParamterWrapper {
@@ -57,100 +59,100 @@ class basic_string : public basic_string_view<CharT, Traits> {
   };
 
   inline void init(const CharT* ptr, size_t size) {
-    JASL_ASSERT(capacity == 0, "capacity == 0");
-    static_assert(std::is_integral<CharT>::value,
-                  "Unsupported CharT. Need construct and destruct.");
+    JASL_ASSERT(_cap == 0, "_cap == 0");
+    static_assert(
+        std::is_standard_layout<CharT>::value && std::is_trivial<CharT>::value,
+        "Unsupported CharT");
     if (size == 0) {
       return;
     }
     std::unique_ptr<CharT, std::function<void(CharT*)>> begin(
-        alloc_traits::allocate(allocator, size), [&](CharT * ptd) noexcept {
-          alloc_traits::deallocate(allocator, ptd, size);
+        alloc_traits::allocate(_alloc, size), [&](CharT * ptd) noexcept {
+          alloc_traits::deallocate(_alloc, ptd, size);
         });
-    base_type::operator=(base_type(begin.get(), size));
-    capacity = size;
+    bridge_type::set(begin.get(), size);
+    _cap = size;
     auto raw_begin = begin.release();
     Traits::copy(raw_begin, ptr, size);
   }
 
   inline void dispose() noexcept {
-    if (capacity > 0) {
-      const auto begin = const_cast<CharT*>(base_type::data());
-      alloc_traits::deallocate(allocator, begin, capacity);
-      capacity = 0;
+    if (_cap > 0) {
+      const auto begin = const_cast<CharT*>(bridge_type::data());
+      alloc_traits::deallocate(_alloc, begin, _cap);
+      _cap = 0;
     }
   }
 
-  basic_string(const base_type& other, const AllocatorT& alloc)
-      : base_type(), allocator(alloc), capacity(0) {
+  basic_string(const bridge_type& other, const AllocatorT& alloc)
+      : bridge_type(), _alloc(alloc), _cap(0) {
     init(other.data(), other.size());
   }
 
  public:
   ~basic_string() {
-    if (capacity > 0) {
-      alloc_traits::deallocate(allocator, const_cast<CharT*>(base_type::data()),
-                               capacity);
+    if (_cap > 0) {
+      alloc_traits::deallocate(_alloc, const_cast<CharT*>(bridge_type::data()),
+                               _cap);
     }
   }
 
   basic_string() noexcept(
-      is_nothrow_constructible_base_type&&
+      std::is_nothrow_constructible<bridge_type>::value&&
           std::is_nothrow_default_constructible<AllocatorT>::value)
       : basic_string(AllocatorT()) {}
 
   basic_string(const AllocatorT& a) noexcept(
-      is_nothrow_constructible_base_type&&
+      std::is_nothrow_constructible<bridge_type>::value&&
           std::is_nothrow_copy_constructible<AllocatorT>::value)
-      : base_type(), allocator(a), capacity(0) {}
+      : bridge_type(), _alloc(a), _cap(0) {}
 
   basic_string(const ParamterWrapper& paramW,
                const AllocatorT& alloc = AllocatorT())
-      : base_type(), allocator(alloc), capacity(0) {
+      : bridge_type(), _alloc(alloc), _cap(0) {
     JASL_ASSERT(paramW.ptr != nullptr, "paramW != nullptr");
     init(paramW.ptr, paramW.size);
   }
 
   template <size_t N>
   basic_string(const CharT (&str)[N]) noexcept(
-      is_nothrow_constructible_base_type&&
+      std::is_nothrow_constructible<bridge_type, const CharT*, size_t>::value&&
           std::is_nothrow_default_constructible<AllocatorT>::value)
-      : base_type(str, str[N - 1] == 0 ? N - 1 : N), allocator(), capacity(0) {}
+      : bridge_type(str, str[N - 1] == 0 ? N - 1 : N), _alloc(), _cap(0) {}
 
   template <size_t N>
   basic_string(const CharT (&str)[N], const AllocatorT& alloc) noexcept(
-      is_nothrow_constructible_base_type&&
+      std::is_nothrow_constructible<bridge_type, const CharT*, size_t>::value&&
           std::is_nothrow_copy_constructible<AllocatorT>::value)
-      : base_type(str, str[N - 1] == 0 ? N - 1 : N),
-        allocator(alloc),
-        capacity(0) {}
+      : bridge_type(str, str[N - 1] == 0 ? N - 1 : N), _alloc(alloc), _cap(0) {}
 
   basic_string(const basic_string& other)
-      : basic_string(other,
-                     alloc_traits::select_on_container_copy_construction(
-                         other.allocator)) {}
+      : basic_string(
+            other,
+            alloc_traits::select_on_container_copy_construction(other._alloc)) {
+  }
 
   basic_string(const basic_string& other, const AllocatorT& alloc)
-      : base_type(other), allocator(alloc), capacity(0) {
-    if (other.capacity > 0) {
+      : bridge_type(other), _alloc(alloc), _cap(0) {
+    if (other._cap > 0) {
       init(other.data(), other.size());
     }
   }
 
   basic_string(basic_string&& other) noexcept(
-      std::is_nothrow_move_constructible<base_type>::value&&
+      std::is_nothrow_move_constructible<bridge_type>::value&&
           std::is_nothrow_move_constructible<AllocatorT>::value)
-      : base_type(std::move(other)),
-        allocator(std::move(other.allocator)),
-        capacity(other.capacity) {
-    other.capacity = 0;
+      : bridge_type(std::move(other)),
+        _alloc(std::move(other._alloc)),
+        _cap(other._cap) {
+    other._cap = 0;
   }
 
   basic_string(basic_string&& other, const AllocatorT& alloc)
-      : base_type(nullptr), allocator(alloc), capacity(0) {
-    if (allocator == other.allocator) {
-      base_type::operator=(base_type(other.data(), other.size()));
-      std::swap(capacity, other.capacity);
+      : bridge_type(), _alloc(alloc), _cap(0) {
+    if (_alloc == other._alloc) {
+      bridge_type::set(other.data(), other.size());
+      std::swap(_cap, other._cap);
     } else {
       init(other.data(), other.size());
     }
@@ -159,7 +161,7 @@ class basic_string : public basic_string_view<CharT, Traits> {
   template <size_t N>
   basic_string& assign(const CharT (&str)[N]) noexcept {
     dispose();
-    base_type::operator=(base_type(str, str[N - 1] == 0 ? N - 1 : N));
+    bridge_type::set(str, str[N - 1] == 0 ? N - 1 : N);
     return *this;
   }
 
@@ -184,11 +186,11 @@ class basic_string : public basic_string_view<CharT, Traits> {
     dispose();
     // https://en.cppreference.com/w/cpp/concept/Allocator
     if (alloc_traits::propagate_on_container_copy_assignment::value ||
-        allocator != other.allocator) {
-      allocator = other.allocator;
+        _alloc != other._alloc) {
+      _alloc = other._alloc;
     }
-    if (other.capacity == 0) {
-      base_type::operator=(other);
+    if (other._cap == 0) {
+      bridge_type::operator=(other);
     } else {
       init(other.data(), other.size());
     }
@@ -210,13 +212,13 @@ class basic_string : public basic_string_view<CharT, Traits> {
      */
     dispose();
     if (alloc_traits::propagate_on_container_move_assignment::value) {
-      allocator = std::move(other.allocator);
-    } else if (allocator != other.allocator) {
+      _alloc = std::move(other._alloc);
+    } else if (_alloc != other._alloc) {
       init(other.data(), other.size());
       return *this;
     }
-    base_type::swap(other);
-    std::swap(capacity, other.capacity);
+    bridge_type::swap(other);
+    std::swap(_cap, other._cap);
     return *this;
   }
 
@@ -232,12 +234,16 @@ class basic_string : public basic_string_view<CharT, Traits> {
     return assign(std::move(other));
   }
 
-  constexpr bool is_static() const noexcept { return capacity == 0; }
+  constexpr bool is_static() const noexcept { return _cap == 0; }
+  AllocatorT get_alloc() const
+      noexcept(std::is_nothrow_copy_constructible<AllocatorT>::value) {
+    return _alloc;
+  }
 
   void swap(basic_string& other) noexcept(
       (!alloc_traits::propagate_on_container_swap::value ||
        JASL_is_nothrow_swappable_value(AllocatorT)) &&
-      noexcept(std::declval<base_type>().swap(other))) {
+      JASL_is_nothrow_swappable_value(bridge_type)) {
     using std::swap;
     /*propagate_on_container_swap
      * true if the allocators of type A need to be swapped when two containers
@@ -246,28 +252,34 @@ class basic_string : public basic_string_view<CharT, Traits> {
      * is undefined.
      */
     if (alloc_traits::propagate_on_container_swap::value) {
-      swap(allocator, other.allocator);
-    } else if (allocator != other.allocator) {
+      swap(_alloc, other._alloc);
+    } else if (_alloc != other._alloc) {
       JASL_ASSERT(false, "Undefined behaviour");
       std::terminate();
     }
-    base_type::swap(other);
-    swap(capacity, other.capacity);
+    bridge_type::swap(other);
+    swap(_cap, other._cap);
   }
 
-  basic_string substr(typename base_type::size_type pos) const {
-    if (capacity == 0) {
-      basic_string cpy(*this, allocator);
-      cpy.base_type::operator=(base_type::substr(pos));
+  basic_string substr(typename bridge_type::size_type pos) const {
+    if (_cap == 0) {
+      basic_string cpy(*this, _alloc);
+      cpy.bridge_type::operator=(bridge_type::substr(pos));
       return cpy;
     } else {
-      return basic_string(base_type::substr(pos), allocator);
+      return basic_string(bridge_type::substr(pos), _alloc);
     }
   }
 
-  constexpr base_type substr(typename base_type::size_type pos,
-                             typename base_type::size_type count) const {
-    return base_type::substr(pos, count);
+  basic_string substr(typename bridge_type::size_type pos,
+                      typename bridge_type::size_type count) const {
+    if (_cap == 0) {
+      basic_string cpy(*this);
+      cpy.bridge_type::operator=(bridge_type::substr(pos, count));
+      return cpy;
+    } else {
+      return basic_string(bridge_type::substr(pos, count), _alloc);
+    }
   }
 };
 

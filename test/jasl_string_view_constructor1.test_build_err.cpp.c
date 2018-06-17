@@ -4,12 +4,13 @@
 //
 // This code is licensed under the MIT License (MIT).
 
-#include "jasl_static_string.hpp"
+#include "jasl_string_view.hpp"
 #include "test_helper.hpp"
 
 int main() {
   // should cause compilation error
-  jasl::static_string x("", 0);
+  const char* ptr = "apple";
+  jasl::nonstd::basic_string_view<char> x(ptr);
 
   ASSERT_TRUE(x == x);
   return 0;

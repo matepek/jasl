@@ -1,51 +1,55 @@
 group("test") {
 }
 
+template("test_with_jasl_and_std_string_view") {
+  forward_variables_from(invoker, "*")
+
+  test_with_jasl_string_view(target_name) {
+  }
+  
+  if(is_std_string_view_supported) {
+    test_with_std_string_view(target_name) {
+    }
+  }
+}
+
+template("test_build_err_with_jasl_and_std_string_view") {
+  forward_variables_from(invoker, "*")
+  
+  test_build_err_with_jasl_string_view(target_name) {
+  }
+  
+  if(is_std_string_view_supported) {
+    test_build_err_with_std_string_view(target_name) {
+    }
+  }
+}
+
 test_with_jasl_string_view("jasl_murmurhash3") {
 }
 
-test_with_jasl_string_view("jasl_string_view") {
+test_with_jasl_and_std_string_view("jasl_string_view") {
 }
-test_with_jasl_string_view("jasl_static_string") {
+test_with_jasl_and_std_string_view("jasl_string_view_bridge_compare") {
 }
-test_with_jasl_string_view("jasl_string") {
+test_with_jasl_and_std_string_view("jasl_static_string") {
 }
-
-test_build_err_with_jasl_string_view("jasl_static_string_assignment") {
-}
-test_build_err_with_jasl_string_view("jasl_static_string_constructor1") {
-}
-test_build_err_with_jasl_string_view("jasl_static_string_constructor2") {
-}
-test_build_err_with_jasl_string_view("jasl_static_string_constructor3") {
-}
-test_build_err_with_jasl_string_view("jasl_static_string_copy_constructor") {
-}
-test_build_err_with_jasl_string_view("jasl_static_string_swap_with_base") {
-}
-test_build_err_with_jasl_string_view("jasl_string_assignment_cstr") {
+test_with_jasl_and_std_string_view("jasl_string") {
 }
 
-if (is_std_string_view_supported) {
-  test_with_std_string_view("jasl_string_view") {
-  }
-  test_with_std_string_view("jasl_static_string") {
-  }
-  test_with_std_string_view("jasl_string") {
-  }
-
-  test_build_err_with_std_string_view("jasl_static_string_assignment") {
-  }
-  test_build_err_with_std_string_view("jasl_static_string_constructor1") {
-  }
-  test_build_err_with_std_string_view("jasl_static_string_constructor2") {
-  }
-  test_build_err_with_std_string_view("jasl_static_string_constructor3") {
-  }
-  test_build_err_with_std_string_view("jasl_static_string_copy_constructor") {
-  }
-  test_build_err_with_std_string_view("jasl_static_string_swap_with_base") {
-  }
-  test_build_err_with_std_string_view("jasl_string_assignment_cstr") {
-  }
+test_build_err_with_jasl_and_std_string_view("jasl_string_view_constructor1") {
+}
+test_build_err_with_jasl_and_std_string_view("jasl_static_string_assignment") {
+}
+test_build_err_with_jasl_and_std_string_view("jasl_static_string_constructor1") {
+}
+test_build_err_with_jasl_and_std_string_view("jasl_static_string_constructor2") {
+}
+test_build_err_with_jasl_and_std_string_view("jasl_static_string_constructor3") {
+}
+test_build_err_with_jasl_and_std_string_view("jasl_static_string_copy_constructor") {
+}
+test_build_err_with_jasl_and_std_string_view("jasl_static_string_swap_with_base") {
+}
+test_build_err_with_jasl_and_std_string_view("jasl_string_assignment_cstr") {
 }

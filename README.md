@@ -300,3 +300,6 @@ JASL library uses the [MIT](LICENSE) license.
  * support for [literals](http://en.cppreference.com/w/cpp/language/user_literal)
  * std_string support (to_std_string, ?)
  * declaration - definition separation?
+ * test_build_err could be more error prone(python script?, Wno-all)
+ * Documentation.md <- doxygen
+ * jasl string view compare operator std
