@@ -427,103 +427,103 @@ class string_view_bridge {
   string_viewT _sv;
 
  public:
-  friend constexpr bool operator==(
+  friend JASL_CONSTEXPR_CXX14 bool operator==(
       const string_view_bridge<string_viewT>& x,
       const string_view_bridge<string_viewT>& y) noexcept(noexcept(x._sv ==
                                                                    y._sv)) {
     return x._sv == y._sv;
   }
-  friend constexpr bool operator!=(
+  friend JASL_CONSTEXPR_CXX14 bool operator!=(
       const string_view_bridge<string_viewT>& x,
       const string_view_bridge<string_viewT>& y) noexcept(noexcept(x._sv !=
                                                                    y._sv)) {
     return x._sv != y._sv;
   }
-  friend constexpr bool operator<(
+  friend JASL_CONSTEXPR_CXX14 bool operator<(
       const string_view_bridge<string_viewT>& x,
       const string_view_bridge<string_viewT>& y) noexcept(noexcept(x._sv <
                                                                    y._sv)) {
     return x._sv < y._sv;
   }
-  friend constexpr bool operator>(
+  friend JASL_CONSTEXPR_CXX14 bool operator>(
       const string_view_bridge<string_viewT>& x,
       const string_view_bridge<string_viewT>& y) noexcept(noexcept(x._sv >
                                                                    y._sv)) {
     return x._sv > y._sv;
   }
-  friend constexpr bool operator<=(
+  friend JASL_CONSTEXPR_CXX14 bool operator<=(
       const string_view_bridge<string_viewT>& x,
       const string_view_bridge<string_viewT>& y) noexcept(noexcept(x._sv <=
                                                                    y._sv)) {
     return x._sv <= y._sv;
   }
-  friend constexpr bool operator>=(
+  friend JASL_CONSTEXPR_CXX14 bool operator>=(
       const string_view_bridge<string_viewT>& x,
       const string_view_bridge<string_viewT>& y) noexcept(noexcept(x._sv >=
                                                                    y._sv)) {
     return x._sv >= y._sv;
   }
 
-  friend constexpr bool operator==(
+  friend JASL_CONSTEXPR_CXX14 bool operator==(
       const string_view_bridge<string_viewT>& x,
       const string_viewT& y) noexcept(noexcept(x._sv == y)) {
     return x._sv == y;
   }
-  friend constexpr bool operator!=(
+  friend JASL_CONSTEXPR_CXX14 bool operator!=(
       const string_view_bridge<string_viewT>& x,
       const string_viewT& y) noexcept(noexcept(x._sv != y)) {
     return x._sv != y;
   }
-  friend constexpr bool operator<(
+  friend JASL_CONSTEXPR_CXX14 bool operator<(
       const string_view_bridge<string_viewT>& x,
       const string_viewT& y) noexcept(noexcept(x._sv < y)) {
     return x._sv < y;
   }
-  friend constexpr bool operator>(
+  friend JASL_CONSTEXPR_CXX14 bool operator>(
       const string_view_bridge<string_viewT>& x,
       const string_viewT& y) noexcept(noexcept(x._sv > y)) {
     return x._sv > y;
   }
-  friend constexpr bool operator<=(
+  friend JASL_CONSTEXPR_CXX14 bool operator<=(
       const string_view_bridge<string_viewT>& x,
       const string_viewT& y) noexcept(noexcept(x._sv <= y)) {
     return x._sv <= y;
   }
-  friend constexpr bool operator>=(
+  friend JASL_CONSTEXPR_CXX14 bool operator>=(
       const string_view_bridge<string_viewT>& x,
       const string_viewT& y) noexcept(noexcept(x._sv >= y)) {
     return x._sv >= y;
   }
 
-  friend constexpr bool operator==(
+  friend JASL_CONSTEXPR_CXX14 bool operator==(
       const string_viewT& x,
       const string_view_bridge<string_viewT>& y) noexcept(noexcept(x ==
                                                                    y._sv)) {
     return x == y._sv;
   }
-  friend constexpr bool operator!=(
+  friend JASL_CONSTEXPR_CXX14 bool operator!=(
       const string_viewT& x,
       const string_view_bridge<string_viewT>& y) noexcept(noexcept(x !=
                                                                    y._sv)) {
     return x != y._sv;
   }
-  friend constexpr bool operator<(
+  friend JASL_CONSTEXPR_CXX14 bool operator<(
       const string_viewT& x,
       const string_view_bridge<string_viewT>& y) noexcept(noexcept(x < y._sv)) {
     return x < y._sv;
   }
-  friend constexpr bool operator>(
+  friend JASL_CONSTEXPR_CXX14 bool operator>(
       const string_viewT& x,
       const string_view_bridge<string_viewT>& y) noexcept(noexcept(x > y._sv)) {
     return x > y._sv;
   }
-  friend constexpr bool operator<=(
+  friend JASL_CONSTEXPR_CXX14 bool operator<=(
       const string_viewT& x,
       const string_view_bridge<string_viewT>& y) noexcept(noexcept(x <=
                                                                    y._sv)) {
     return x <= y._sv;
   }
-  friend constexpr bool operator>=(
+  friend JASL_CONSTEXPR_CXX14 bool operator>=(
       const string_viewT& x,
       const string_view_bridge<string_viewT>& y) noexcept(noexcept(x >=
                                                                    y._sv)) {

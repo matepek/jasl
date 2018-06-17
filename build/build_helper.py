@@ -398,6 +398,8 @@ if __name__ == '__main__':
     variants.filter_out(lambda x: x.is_run_performance_tests)
 
     if script_arg.travis_ci:
+        if is_mac:
+            variants.filter_out(lambda x: is_sanitizer(x))
         if is_linux:
             # clang: error: unsupported argument 'nullability' to option 'fsanitize='
             variants.filter_out(lambda x: is_sanitizer(x) and (not x.is_debug or
