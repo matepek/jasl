@@ -329,7 +329,7 @@ if __name__ == '__main__':
                 gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
                     gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17)
             if is_linux and not (c['version'][0] >= 6):
-                gn.filter_out(lambda x: n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and is_sanitizer(x))
+                gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and is_sanitizer(x))
             if not c['has_string_view']:
                 gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
                     gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
