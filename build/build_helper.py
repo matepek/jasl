@@ -16,12 +16,35 @@ import shutil
 import re
 import tempfile
 import json
+from gn import *
 
 
 is_win = platform.system() == 'Windows'
 is_mac = platform.system() == 'Darwin'
 is_linux = platform.system() == 'Linux'
 assert(is_win or is_mac or is_linux)
+
+
+def ninja_all_in_dir(dir_path, script_arg):
+    err_count = 0
+    succ_count = 0
+    for x in os.listdir(os.path.join(os.getcwd(), dir_path)):
+        if x[0] != '.' and os.path.isdir(os.path.join(os.getcwd(), dir_path, x)):
+            x_p = os.path.join(dir_path, x)
+            print('# ' + str(succ_count) + ' ############')
+            if os.path.isfile(os.path.join(dir_path, x, 'args.gn')):
+                l = open(os.path.join(dir_path, x, 'args.gn'), 'r').readlines()
+                l = [x.strip('\r\n') for x in l]
+                print('\n'.join(l))
+            result = subprocess.call(['ninja', '-C', x_p])
+            if result != 0:
+                err_count += 1
+                if script_arg.stop_on_error:
+                    raise Exception(result)
+            else:
+                succ_count += 1
+    if err_count > 0:
+        raise Exception(err_count)
 
 
 def download_ninja_and_gn(target_dir):
@@ -53,6 +76,7 @@ def download_ninja_and_gn(target_dir):
         try:
             install_and_import('six')
             from six.moves import urllib
+
             def hook(count_of_blocks, block_size, total_size):
                 sys.stdout.write('.')
                 sys.stdout.flush()
@@ -93,41 +117,39 @@ def download_ninja_and_gn(target_dir):
     assert(0 == subprocess.call([gn_path, '--version']))
 
 
-def compiler_info(exec_file):
-    compiler_info_program = '''
-    #include <iostream>
-    using namespace std;
-    int main() {
-        cout << '{' << "\\"has_string_view\\":";
-        #if defined(__has_include)
-        #if __has_include(<string_view>)
-        cout << "true";
-        #else
-        cout << "false";
-        #endif
-        #else
-        cout << "false";
-        #endif
-        cout << endl;
-        cout << '}';
-    }
-    '''
-    f = tempfile.NamedTemporaryFile(delete=False)
-    f.write(compiler_info_program)
-    f.close()
-    o = tempfile.NamedTemporaryFile(delete=False)
-    o.close()
-    res = subprocess.call(
-        [exec_file, '-x', 'c++', f.name, '-o', o.name])
-    if res != 0:
-        raise Exception(res)
-    output = subprocess.check_output([o.name])
-    os.remove(f.name)
-    os.remove(o.name)
-    return json.loads(output)
-
-
 def detect_compiler_version(vcvarsall=None):
+    def compiler_info(exec_file):
+        compiler_info_program = '''
+        #include <iostream>
+        using namespace std;
+        int main() {
+            cout << '{' << "\\"has_string_view\\":";
+            #if defined(__has_include)
+            #if __has_include(<string_view>)
+            cout << "true";
+            #else
+            cout << "false";
+            #endif
+            #else
+            cout << "false";
+            #endif
+            cout << endl;
+            cout << '}';
+        }
+        '''
+        f = tempfile.NamedTemporaryFile(delete=False)
+        f.write(compiler_info_program)
+        f.close()
+        o = tempfile.NamedTemporaryFile(delete=False)
+        o.close()
+        res = subprocess.call(
+            [exec_file, '-x', 'c++', f.name, '-o', o.name])
+        if res != 0:
+            raise Exception(res)
+        output = subprocess.check_output([o.name])
+        os.remove(f.name)
+        os.remove(o.name)
+        return json.loads(output)
     compiler = []
     version_re = re.compile(r'.*[ \t](\d+)\.(\d+)\.(\d+)[- \t\n].*')
     if is_mac or is_linux:
@@ -185,180 +207,18 @@ def detect_compiler_version(vcvarsall=None):
     return compiler
 
 
-class Value(object):
-
-    def __init__(self, name, value, short=None, data=None):
-        self.name = name
-        self.value = value
-        self.short = short if short else name
-        self.data = data
-
-    def __call__(self):
-        return self.value
-
-    def __eq__(self, other):
-        return self.value == other.value
-
-    def __repr__(self):
-        return 'Value(' + repr(self.name) + ', ' + repr(self.value) + ', ' + repr(self.short) + ')'
-
-    def __nonzero__(self):
-        asser(False)
-
-
-class StringValue(Value):
-
-    def __init__(self, name, value=None, short=None, data=None):
-        if value is None:
-            value = '"' + name + '"'
-        else:
-            assert(not value.startswith('"'))
-            assert(not value.endswith('"'))
-            value = '"' + value + '"'
-        super(StringValue, self).__init__(name, value, short, data)
-
-
-class TrueValue(Value):
-
-    def __nonzero__(self):
-        return True
-
-
-class FalseValue(Value):
-
-    def __nonzero__(self):
-        return False
-
-
-class BooleanArg(object):
-
-    def __init__(self, name, short):
-        self.name = name
-        self.short = short
-        self.true = TrueValue('true', 'true', 't')
-        self.false = FalseValue('false', 'false', 'f')
-        self.values = (self.true, self.false)
-
-    def __repr__(self):
-        return 'BooleanArg(' + repr(self.name) + ', ' + repr(self.short) + ')'
-
-
-class StringArg(object):
-
-    def __init__(self, name, short, values=[]):
-        self.name = name
-        self.short = short
-        self.values = []
-        for v in values:
-            self.add(v)
-
-    def add(self, value):
-        assert(value.name not in self.__dict__)
-        self.__dict__[value.name] = value
-        self.values.append(value)
-        return self
-
-    def __repr__(self):
-        return 'StringArg(' + repr(self.name) + ', ' + repr(self.short) + ', ' + repr(list(self.values)) + ')'
-
-
-class GN(object):
-
-    def __init__(self, args=[]):
-        self._args = dict()
-        self._filters = []
-        for a in args:
-            self.add(a)
-
-    def add(self, arg):
-        assert(arg.name not in self.__dict__)
-        assert(arg.name not in self._args)
-        self.__dict__[arg.name] = arg
-        self._args[arg.name] = arg
-        return arg
-
-    def __repr__(self):
-        return 'GN(' + repr(list(self._args[a] for a in self._args)) + ')'
-
-    def filter(self, func):
-        self._filters.append(func)
-
-    def filter_out(self, func):
-        self._filters.append(lambda x: not func(x))
-
-    def variants(self):
-        class Variant:
-
-            def __init__(self, arg_value_dict={}):
-                self.arg_value_dict = arg_value_dict
-
-            def copy(self):
-                return Variant(self.arg_value_dict.copy())
-
-            def as_dict(self):
-                return {arg.name: self.arg_value_dict[arg].value for arg in self.arg_value_dict}
-
-            def as_dir(self):
-                # warning: On windows path name has a limit. We should carefully generate directory names.
-                return '_'.join(sorted(arg.short + '' + self.arg_value_dict[arg].short.title() for arg in self.arg_value_dict))
-
-            def as_args(self):
-                return ' '.join(sorted(arg.name + '=' + self.arg_value_dict[arg].value for arg in self.arg_value_dict))
-
-            def __getattr__(self, key):
-                key_value = {
-                    k.name: self.arg_value_dict[k] for k in self.arg_value_dict}
-                assert(key in key_value)
-                return key_value[key]
-
-            def __repr__(self):
-                return repr({k.name: self.arg_value_dict[k].value for k in self.arg_value_dict})
-
-        variants = [Variant()]
-        for arg_name in self._args:
-            extended_variants = []
-            for variant in variants:
-                for value in self._args[arg_name].values:
-                    extended_variants.append(variant.copy())
-                    extended_variants[-1].arg_value_dict[self._args[arg_name]] = value
-            variants = extended_variants
-
-        class Variants:
-
-            def __init__(self, variants):
-                self.variants = variants
-
-            def filter(self, func):
-                self.variants = filter(func, self.variants)
-
-            def filter_out(self, func):
-                self.filter(lambda x: not func(x))
-
-            def __repr__(self):
-                self.variants = list(self.variants)
-                return repr(self.variants)
-
-            def __len__(self):
-                self.variants = list(self.variants)
-                return len(self.variants)
-
-            def __iter__(self):
-                return self.variants.__iter__()
-
-        return Variants(filter(lambda v: all(f(v) for f in self._filters), variants))
-
-
-########
-########
-########
+# ###############
 if __name__ == '__main__':
     os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    # a lot of things depends on this assert
     assert(os.getcwd().endswith('jasl'))
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--matepek', action='store_true')
+    parser.add_argument('--quick-ninja', '-q', action='store_true')
     parser.add_argument('--clean', '-c', action='store_true')
     parser.add_argument('--install', '-i', action='store_true')
-    parser.add_argument('--stop-on-error', '-e', action='store_true')
+    parser.add_argument('--stop-on-error', '-e', '-s', action='store_true')
     parser.add_argument('--gen', '--gn', '-g', action='store_true')
     parser.add_argument('--ninja', '-n', action='store_true')
     parser.add_argument('--travis-ci', action='store_true')
@@ -369,10 +229,9 @@ if __name__ == '__main__':
     parser.add_argument('--msvc-vcvarsall-path')
     script_arg = parser.parse_args()
 
-    if script_arg.appveyor:
-        assert(is_win)
-    if script_arg.travis_ci:
-        assert(is_mac or is_linux)
+    if script_arg.quick_ninja:
+        ninja_all_in_dir('./out', script_arg)
+        sys.exit(0)
 
     gn = GN()
     gn.add(BooleanArg('is_debug', 'd'))
@@ -385,6 +244,7 @@ if __name__ == '__main__':
 
     def is_sanitizer(
         x): return x.is_asan or x.is_lsan or x.is_msan or x.is_usan
+
     gn.add(BooleanArg('is_generate_test_coverage', 'cov'))
     gn.add(BooleanArg('is_std_string_view_supported', 'sv'))
     gn.add(StringArg('compiler_type', '')) \
@@ -425,16 +285,8 @@ if __name__ == '__main__':
     gn.filter_out(
         lambda x: x.is_defined_JASL_TERMINATE_ON_EXCEPTION_ON and x.is_run_tests)
 
-    # existing toolchain
-    if is_mac:
-        gn.filter(lambda x: x.compiler_type in [
-                  gn.compiler_type.clang] and x.target_cpu == gn.target_cpu.x64)
-    elif is_linux:
-        gn.filter(lambda x: x.compiler_type in [
-                  gn.compiler_type.gcc, gn.compiler_type.clang])
-    elif is_win:
-        gn.filter(lambda x: x.compiler_type in [gn.compiler_type.msvc])
-
+    assert(not script_arg.appveyor or is_win)
+    assert(not script_arg.travis_ci or is_mac or is_linux)
     if script_arg.travis_ci or script_arg.appveyor:
         script_arg.install = True
         script_arg.gen = True
@@ -444,15 +296,17 @@ if __name__ == '__main__':
     # remark: vswhere.exe somehow not working on appveyor
     local_compiler = detect_compiler_version(
         vcvarsall=script_arg.msvc_vcvarsall_path)
-    print('Detected compiler: ' + repr(local_compiler))
+    print('Detected compilers: ' + str(local_compiler))
 
-    if is_win:
-        vs_arg = gn.add(StringArg('visual_studio_path', 'vs'))
-    else:
-        comp_exec = gn.add(StringArg('compiler_exec', ''))
+    gn.filter(lambda x, lc=local_compiler: x.compiler_type in set(
+        getattr(gn.compiler_type, c['type']) for c in lc))
 
+    vs_arg = None
+    comp_exec = None
     for c in local_compiler:
         if c['type'] == 'msvc':
+            if not vs_arg:
+                vs_arg = gn.add(StringArg('visual_studio_path', 'vs'))
             vs_arg.add(StringValue(c['instanceId'], c['vcvarsall'], data=c))
             gn.filter_out(lambda x, ii=c['instanceId']: x.visual_studio_path == getattr(
                 gn.visual_studio_path, ii) and x.compiler_type != gn.compiler_type.msvc)
@@ -460,6 +314,8 @@ if __name__ == '__main__':
                 gn.filter_out(lambda x, ii=c['instanceId']: x.visual_studio_path == getattr(
                     gn.visual_studio_path, ii) and x.is_std_string_view_supported)
         elif c['type'] == 'clang':
+            if not comp_exec:
+                comp_exec = comp_exec = gn.add(StringArg('compiler_exec', ''))
             comp_exec_name = os.path.basename(c['compiler_exec'])
             comp_exec.add(StringValue(comp_exec_name,
                                       c['compiler_exec'], data=c))
@@ -472,10 +328,14 @@ if __name__ == '__main__':
             if is_linux and not (c['version'][0] > 4 or (c['version'][0] == 4 and c['version'][1] >= 8)):
                 gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
                     gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17)
+            if is_linux and not (c['version'][0] >= 6):
+                gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and is_sanitizer(x))
             if not c['has_string_view']:
                 gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
                     gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
         elif c['type'] == 'gcc':
+            if not comp_exec:
+                comp_exec = comp_exec = gn.add(StringArg('compiler_exec', ''))
             comp_exec_name = os.path.basename(c['compiler_exec'])
             comp_exec.add(StringValue(comp_exec_name,
                                       c['compiler_exec'], data=c))
@@ -490,6 +350,9 @@ if __name__ == '__main__':
                     gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
         else:
             assert(False)
+    del vs_arg
+    del comp_exec
+    del local_compiler
 
     # compiler-exec-like
     if script_arg.compiler_exec_like:
@@ -498,7 +361,7 @@ if __name__ == '__main__':
 
     # clean
     if script_arg.clean:
-        for item in filter(lambda x: x not in ['.clang-format'], os.listdir('out')):
+        for item in filter(lambda x: x not in ['.clang-format', '.bin'], os.listdir('out')):
             shutil.rmtree(os.path.join('out', item), ignore_errors=True)
 
     # install
@@ -512,25 +375,44 @@ if __name__ == '__main__':
         ct = getattr(gn.compiler_type, script_arg.compiler_type)
         variants.filter(lambda x: x.compiler_type == ct)
 
-    variants_to_gn = list(variants)
+    # matepek: for testing
+    if script_arg.matepek:
+        variants.filter(lambda x: x.std_version ==
+                        gn.std_version.cpp17 or x.std_version == gn.std_version.cpp11)
+        variants.filter_out(
+            lambda x: is_sanitizer(x))
+        variants.filter(
+            lambda x: x.is_debug and not x.is_generate_test_coverage)
+        variants.filter(
+            lambda x: not x.is_run_performance_tests and x.is_run_tests)
+        variants.filter(lambda x: x.is_defined_JASL_ASSERT_ON)
+        variants.filter(
+            lambda x: not x.is_defined_JASL_TERMINATE_ON_EXCEPTION_ON)
+        variants.filter(
+            lambda x: not x.is_defined_JASL_FORCE_USE_MURMURHASH_HASH)
+        variants.filter(lambda x: x.target_cpu == gn.target_cpu.x64)
 
-    # Filter more, build less. These builds are not so importants
+    #
+    variants_to_gn = list(variants)
+    assert(len(variants_to_gn) > 0)
+
+    variants.filter(lambda x: x.is_run_tests)
     variants.filter_out(lambda x: x.is_run_performance_tests)
 
     if script_arg.travis_ci:
+        if is_mac:
+            variants.filter_out(lambda x: is_sanitizer(x))
         if is_linux:
             # clang: error: unsupported argument 'nullability' to option 'fsanitize='
             variants.filter_out(lambda x: is_sanitizer(x) and (not x.is_debug or
                                                                x.compiler_exec.data['version'][0] < 6))
             # LeakSanitizer does not work under ptrace (strace, gdb, etc)
             variants.filter_out(lambda x: x.is_lsan or x.is_asan)
-        else:
-            variants.filter_out(lambda x: is_sanitizer(x))
         variants.filter(lambda x: not x.is_generate_test_coverage)
 
-    assert(len(variants) > 0)
-
+    #
     variants_to_ninja = list(variants)
+    assert(len(variants_to_ninja) > 0)
 
     # stat
     print('# GN: ' + str(len(variants_to_gn)) + ' variants to generate.')
@@ -570,7 +452,7 @@ if __name__ == '__main__':
             out_dir = os.path.join('out', v.as_dir())
             print('# ' + str(succ_count + fail_count) + '. gn args:')
             args = v.as_dict()
-            for arg in args:
+            for arg in sorted(args):
                 print('#   ' + arg + ' = ' + args[arg])
             command = [ninja_exec, '-C', out_dir]
             sys.stdout.flush()

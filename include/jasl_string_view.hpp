@@ -99,14 +99,14 @@ class basic_string_view {
   constexpr basic_string_view(const basic_string_view& other) noexcept
       : _ptr(other._ptr), _size(other._size) {}
 
-  JASL_CONSTEXPR_FROM_14 basic_string_view& operator=(
+  JASL_CONSTEXPR_CXX14 basic_string_view& operator=(
       const basic_string_view& other) noexcept {
     _ptr = other._ptr;
     _size = other._size;
     return *this;
   }
 
-  ~basic_string_view() noexcept {}
+  ~basic_string_view() noexcept = default;
 
   constexpr const_iterator begin() const noexcept { return cbegin(); }
   constexpr const_iterator end() const noexcept { return cend(); }
@@ -134,8 +134,9 @@ class basic_string_view {
     return _ptr[pos];
   }
 
-  JASL_CONSTEXPR_FROM_14 const_reference at(size_type pos) const {
-    if (pos >= size()) JASL_THROW(std::out_of_range("string_view::substr"));
+  JASL_CONSTEXPR_CXX14 const_reference at(size_type pos) const {
+    if (pos >= size())
+      JASL_THROW(std::out_of_range("string_view::substr"));
     return _ptr[pos];
   }
 
@@ -149,7 +150,7 @@ class basic_string_view {
     return _ptr[_size - 1];
   }
 
-  JASL_CONSTEXPR_FROM_14 void swap(basic_string_view& other) noexcept {
+  JASL_CONSTEXPR_CXX14 void swap(basic_string_view& other) noexcept {
     const value_type* p = _ptr;
     _ptr = other._ptr;
     other._ptr = p;
@@ -160,32 +161,33 @@ class basic_string_view {
   }
 
   size_type copy(CharT* s, size_type n, size_type pos = 0) const {
-    if (pos > size()) JASL_THROW(std::out_of_range("string_view::copy"));
+    if (pos > size())
+      JASL_THROW(std::out_of_range("string_view::copy"));
     size_type rlen = std::min(n, size() - pos);
     Traits::copy(s, data() + pos, rlen);
     return rlen;
   }
 
-  JASL_CONSTEXPR_FROM_14 basic_string_view
-  substr(size_type pos, size_type count = npos) const {
+  JASL_CONSTEXPR_CXX14 basic_string_view substr(size_type pos,
+                                                size_type count = npos) const {
     if (pos > size())
       JASL_THROW(std::out_of_range("basic_string_view::substr"));
     size_type rlen = std::min(count, size() - pos);
     return basic_string_view(data() + pos, rlen);
   }
 
-  JASL_CONSTEXPR_FROM_14 void remove_prefix(size_type n) noexcept {
+  JASL_CONSTEXPR_CXX14 void remove_prefix(size_type n) noexcept {
     JASL_ASSERT(n <= size(), "remove_prefix() can't remove more than size()");
     _ptr += n;
     _size -= n;
   }
 
-  JASL_CONSTEXPR_FROM_14 void remove_suffix(size_type n) noexcept {
+  JASL_CONSTEXPR_CXX14 void remove_suffix(size_type n) noexcept {
     JASL_ASSERT(n <= size(), "remove_suffix() can't remove more than size()");
     _size -= n;
   }
 
-  JASL_CONSTEXPR_FROM_14 int compare(const basic_string_view& right) const
+  JASL_CONSTEXPR_CXX14 int compare(const basic_string_view& right) const
       noexcept {
     size_type rlen = std::min(size(), right.size());
     int retval = Traits::compare(data(), right.data(), rlen);
@@ -194,7 +196,7 @@ class basic_string_view {
     return retval;
   }
 
-  JASL_CONSTEXPR_FROM_14
+  JASL_CONSTEXPR_CXX14
   size_type find(const basic_string_view& s) const noexcept {
     JASL_ASSERT(s.size() == 0 || s.data() != nullptr,
                 "string_view::find(): received nullptr");
@@ -223,7 +225,7 @@ class basic_string_view {
 // http://en.cppreference.com/w/cpp/algorithm/lexicographical_compare
 
 template <typename CharT, typename Traits>
-JASL_CONSTEXPR_FROM_14 bool operator==(
+JASL_CONSTEXPR_CXX14 bool operator==(
     const basic_string_view<CharT, Traits>& left,
     const basic_string_view<CharT, Traits>& right) {
   if (left.size() != right.size()) {
@@ -233,35 +235,35 @@ JASL_CONSTEXPR_FROM_14 bool operator==(
 }
 
 template <typename CharT, typename Traits>
-JASL_CONSTEXPR_FROM_14 bool operator!=(
+JASL_CONSTEXPR_CXX14 bool operator!=(
     const basic_string_view<CharT, Traits>& left,
     const basic_string_view<CharT, Traits>& right) {
   return left.compare(right) != 0;
 }
 
 template <typename CharT, typename Traits>
-JASL_CONSTEXPR_FROM_14 bool operator<(
+JASL_CONSTEXPR_CXX14 bool operator<(
     const basic_string_view<CharT, Traits>& left,
     const basic_string_view<CharT, Traits>& right) {
   return left.compare(right) < 0;
 }
 
 template <typename CharT, typename Traits>
-JASL_CONSTEXPR_FROM_14 bool operator<=(
+JASL_CONSTEXPR_CXX14 bool operator<=(
     const basic_string_view<CharT, Traits>& left,
     const basic_string_view<CharT, Traits>& right) {
   return left.compare(right) <= 0;
 }
 
 template <typename CharT, typename Traits>
-JASL_CONSTEXPR_FROM_14 bool operator>(
+JASL_CONSTEXPR_CXX14 bool operator>(
     const basic_string_view<CharT, Traits>& left,
     const basic_string_view<CharT, Traits>& right) {
   return left.compare(right) > 0;
 }
 
 template <typename CharT, typename Traits>
-JASL_CONSTEXPR_FROM_14 bool operator>=(
+JASL_CONSTEXPR_CXX14 bool operator>=(
     const basic_string_view<CharT, Traits>& left,
     const basic_string_view<CharT, Traits>& right) {
   return left.compare(right) >= 0;
@@ -269,7 +271,8 @@ JASL_CONSTEXPR_FROM_14 bool operator>=(
 
 template <class CharT, class Traits>
 std::basic_ostream<CharT, Traits>& operator<<(
-    std::basic_ostream<CharT, Traits>& os, basic_string_view<CharT, Traits> v) {
+    std::basic_ostream<CharT, Traits>& os,
+    basic_string_view<CharT, Traits> v) {
   os.write(v.data(), static_cast<std::make_signed<size_t>::type>(v.size()));
   return os;
 }

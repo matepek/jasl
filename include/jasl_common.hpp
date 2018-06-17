@@ -61,3 +61,13 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
 #else
 #define JASL_ASSERT(...)
 #endif
+
+/*
+ * JASL_TESTIFY_STD_STRING_VIEW_EXISTS
+ */
+#if defined(JASL_TESTIFY_STD_STRING_VIEW_EXISTS)
+#if !defined(JASL_cpp_lib_string_view)
+#define JASL_cpp_lib_string_view 201606L
+#include <string_view>
+#endif
+#endif

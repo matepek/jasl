@@ -190,7 +190,11 @@ template("test_build_err_with_base") {
     ]
 
     if (is_clang) {
-      cflags = [ "-Wno-deprecated" ]
+      common_flags = [
+        "-Wno-deprecated",
+      ]
+      cflags = common_flags
+      ldflags = common_flags
     }
   }
 }

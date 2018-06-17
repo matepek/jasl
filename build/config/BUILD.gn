@@ -12,7 +12,7 @@ config("default") {
   if (is_defined_JASL_FORCE_USE_MURMURHASH_HASH) {
     defines += [ "JASL_FORCE_USE_MURMURHASH_HASH" ]
   }
-
+  
   configs += [ ":compiler_$compiler_type" ]
 
   if (is_debug) {

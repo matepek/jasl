@@ -11,4 +11,7 @@ int main() {
   const char* oneStr = "one";
   // should cause compilation error
   jasl::static_string x(oneStr, 3);
+
+  ASSERT_TRUE(x == x);
+  return 0;
 }

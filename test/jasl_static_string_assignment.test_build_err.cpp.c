@@ -12,4 +12,7 @@ int main() {
   jasl::static_string x("");
   // should cause compilation error
   x = b;
+
+  ASSERT_TRUE(x == x);
+  return 0;
 }

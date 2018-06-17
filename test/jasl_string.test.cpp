@@ -231,14 +231,6 @@ int main(int, char* argv[]) {
     ASSERT_TRUE(*y.data() == 'b');
     ASSERT_TRUE(y.size() == 3);
     ASSERT_FALSE(y.is_static());
-
-    jasl::string::base_type z(x.substr(2, 1));
-    ASSERT_TRUE(*z.data() == 'b');
-    ASSERT_TRUE(z.size() == 1);
-
-    y = x.substr(x.size());
-    ASSERT_TRUE(y.size() == 0);
-    ASSERT_EXCEPTION(x.substr(x.size() + 1), std::out_of_range);
   }
 
   {
@@ -313,5 +305,45 @@ int main(int, char* argv[]) {
   // test only hash
   ASSERT_TRUE(std::set<jasl::string>().size() == 0);
 
+  // #ifdef JASL_cpp_lib_string_view
+  //   {
+  //     std::string_view s("apple");
+  //     jasl::string js(s);
+  //     ASSERT_TRUE(js.data() != nullptr);
+  //     ASSERT_TRUE(*js.data() == 'a');
+  //     ASSERT_TRUE(js.size() == 5);
+
+  //     std::string s2(js);
+  //     ASSERT_TRUE(s2 == "apple");
+
+  //     s = "peachh";
+  //     js = s;
+  //     ASSERT_TRUE(js.data() != nullptr);
+  //     ASSERT_TRUE(*js.data() == 'p');
+  //     ASSERT_TRUE(js.size() == 6);
+
+  //     s2 = js;
+  //     ASSERT_TRUE(s2 == "peachh");
+  //   }
+  // #endif
+  //   {
+  //     std::string s("apple");
+  //     jasl::string js(s);
+  //     ASSERT_TRUE(js.data() != nullptr);
+  //     ASSERT_TRUE(*js.data() == 'a');
+  //     ASSERT_TRUE(js.size() == 5);
+
+  //     std::string s2(js);
+  //     ASSERT_TRUE(s2 == "apple");
+
+  //     s = "peachh";
+  //     js = s;
+  //     ASSERT_TRUE(js.data() != nullptr);
+  //     ASSERT_TRUE(*js.data() == 'p');
+  //     ASSERT_TRUE(js.size() == 6);
+
+  //     s2 = js;
+  //     ASSERT_TRUE(s2 == "peachh");
+  //   }
   return 0;
 }
