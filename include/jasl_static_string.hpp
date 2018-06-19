@@ -45,9 +45,8 @@ class basic_static_string
       std::is_nothrow_destructible<bridge_type>::value) = default;
 
   template <size_t N>
-  JASL_CONSTEXPR_CXX14 basic_static_string&
-  operator=(const CharT (&str)[N]) noexcept(
-      std::is_nothrow_assignable<bridge_type, bridge_type>::value) {
+  JASL_CONSTEXPR_CXX14 basic_static_string& operator=(
+      const CharT (&str)[N]) noexcept(bridge_type::is_nothrow_settable) {
     bridge_type::set(str, str[N - 1] == 0 ? N - 1 : N);
     return *this;
   }

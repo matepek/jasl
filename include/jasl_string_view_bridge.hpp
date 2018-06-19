@@ -55,11 +55,14 @@ class string_view_bridge {
     _sv.swap(s._sv);
   }
 
-  JASL_CONSTEXPR_CXX14 void set(const value_type* str, size_type len) noexcept(
-      std::is_nothrow_assignable<string_viewT, string_viewT>::value&&
-          std::is_nothrow_constructible<string_viewT,
-                                        const value_type*,
-                                        size_type>::value) {
+  constexpr static bool is_nothrow_settable =
+      std::is_nothrow_assignable<string_viewT, string_viewT>::value &&
+      std::is_nothrow_constructible<string_viewT,
+                                    const value_type*,
+                                    size_type>::value;
+
+  JASL_CONSTEXPR_CXX14 void set(const value_type* str,
+                                size_type len) noexcept(is_nothrow_settable) {
     _sv = string_viewT(str, len);
   }
 
