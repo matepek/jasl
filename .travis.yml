@@ -124,6 +124,11 @@ matrix:
         - N=g++-5
       script:
         - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-5
+      after_success:
+        - pip install --user cpp-coveralls
+        - gn gen out/coveralls --args="is_debug=true is_generate_test_coverage=true compiler_type=\"gcc\" compiler_exec=\"g++6\" std_version=\"c++17\""
+        - ninja -C out/coveralls
+        - coveralls -t $COVERALLS_REPO_TOKEN -e performance -e test -b out/coveralls
     - os: linux
       compiler: gcc
       dist: trusty
@@ -138,11 +143,6 @@ matrix:
         - N=g++-6
       script:
         - python ./build/build_helper.py --travis-ci --compiler-exec-like g++-6
-      after_success:
-        - pip install --user cpp-coveralls
-        - gn gen out/coveralls --args="is_debug=true is_generate_test_coverage=true compiler_type=\"gcc\" compiler_exec=\"g++6\" std_version=\"c++17\""
-        - ninja -C out/coveralls
-        - coveralls -t $COVERALLS_REPO_TOKEN -e performance -e test -b out/coveralls
     - os: linux
       compiler: gcc
       dist: trusty
