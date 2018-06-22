@@ -180,13 +180,16 @@ def detect_compilers(vcvarsall=None):
             if compiler_type == 'clang':
                 # older mac clang hasn't c++17
                 if is_mac:
+                    compilers[-1]['has_cpp14'] = True
                     compilers[-1]['has_cpp17'] = compilers[-1]['version'][0] >= 9
                     compilers[-1]['has_good_sanitizer'] = True
                 if is_linux:
+                    compilers[-1]['has_cpp14'] = True
                     compilers[-1]['has_cpp17'] = compilers[-1]['version'][0] > 4 or (
                         compilers[-1]['version'][0] == 4 and compilers[-1]['version'][1] >= 8)
                     compilers[-1]['has_good_sanitizer'] = compilers[-1]['version'][0] >= 6
             elif compiler_type == 'gcc':
+                compilers[-1]['has_cpp14'] = compilers[-1]['version'][0] >= 5
                 compilers[-1]['has_cpp17'] = compilers[-1]['version'][0] >= 5
                 compilers[-1]['has_good_sanitizer'] = False
             else:
@@ -210,7 +213,10 @@ def detect_compilers(vcvarsall=None):
             compilers[-1]['instanceId'] = 'script_arg'
             compilers[-1]['has_string_view'] = has_string_view(
                 compilers[-1]['version'])
-            compilers[-1]['has_cpp17'] = True
+            compilers[-1]['has_cpp14'] = True
+            # this is not sure, but 19.0 definitely False
+            compilers[-1]['has_cpp17'] = compilers[-1]['version'][0] > 19 or (
+                compilers[-1]['version'][0] == 19 and compilers[-1]['version'][1] > 0)
             compilers[-1]['has_good_sanitizer'] = False
         else:
             vswhere_path = os.path.join(
@@ -225,11 +231,13 @@ def detect_compilers(vcvarsall=None):
                         vs['installationPath'], "VC\\Auxiliary\\Build\\vcvarsall.bat")
                     vs.update(get_msvc_version(vcvarsall))
                     vs['has_string_view'] = has_string_view(vs['version'])
+                    vs['has_cpp14'] = True
                     vs['has_cpp17'] = True
                     vs['has_good_sanitizer'] = False
                     compilers.append(vs)
     for c in compilers:
         assert('has_string_view' in c)
+        assert('has_cpp14' in c)
         assert('has_cpp17' in c)
         assert('has_good_sanitizer' in c)
         assert(c['type'] != 'msvc' or 'instanceId' in c)
@@ -361,6 +369,9 @@ if __name__ == '__main__':
             assert(False)
         gn.filter_out(lambda x, ct=getattr(
             gn.compiler_type, c['type']), cc=is_current_compiler: cc(x) and x.compiler_type != ct)
+        if not c['has_cpp14']:
+            gn.filter_out(lambda x, cc=is_current_compiler: cc(
+                x) and x.std_version == gn.std_version.cpp14)
         if not c['has_cpp17']:
             gn.filter_out(lambda x, cc=is_current_compiler: cc(
                 x) and x.std_version == gn.std_version.cpp17)
