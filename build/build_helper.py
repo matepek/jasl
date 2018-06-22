@@ -329,7 +329,8 @@ if __name__ == '__main__':
                 gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
                     gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17)
             if is_linux and not (c['version'][0] >= 6):
-                gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n) and is_sanitizer(x))
+                gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
+                    gn.compiler_exec, n) and is_sanitizer(x))
             if not c['has_string_view']:
                 gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
                     gn.compiler_exec, n) and x.std_version == gn.std_version.cpp17 and x.is_std_string_view_supported)
@@ -404,8 +405,8 @@ if __name__ == '__main__':
             variants.filter_out(lambda x: is_sanitizer(x))
         if is_linux:
             # clang: error: unsupported argument 'nullability' to option 'fsanitize='
-            variants.filter_out(lambda x: is_sanitizer(x) and (not x.is_debug or
-                                                               x.compiler_exec.data['version'][0] < 6))
+            variants.filter_out(lambda x: is_sanitizer(x) and x.compiler_type == gn.compiler_type.clang and (not x.is_debug or
+                                                                                                             x.compiler_exec.data['version'][0] < 6))
             # LeakSanitizer does not work under ptrace (strace, gdb, etc)
             variants.filter_out(lambda x: x.is_lsan or x.is_asan)
         variants.filter(lambda x: not x.is_generate_test_coverage)
