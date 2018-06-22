@@ -90,6 +90,8 @@ declare_args() {
   is_defined_JASL_ASSERT_ON = false
   is_defined_JASL_TERMINATE_ON_EXCEPTION_ON = false
   is_defined_JASL_FORCE_USE_MURMURHASH_HASH = false
+  is_defined_JASL_USE_JASL_STRING_VIEW_AS_BASE = false
+  is_defined_JASL_USE_STD_STRING_VIEW_AS_BASE = false
 }
 
 is_clang = compiler_type == "clang"
@@ -106,6 +108,8 @@ if (is_generate_test_coverage) {
   assert(is_debug)
   assert(is_run_tests)
 }
+
+assert(!is_defined_JASL_USE_STD_STRING_VIEW_AS_BASE || is_std_string_view_supported)
 
 set_default_toolchain("//build/toolchain/$target_os:$target_cpu$compiler_type")
 

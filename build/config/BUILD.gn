@@ -12,6 +12,12 @@ config("default") {
   if (is_defined_JASL_FORCE_USE_MURMURHASH_HASH) {
     defines += [ "JASL_FORCE_USE_MURMURHASH_HASH" ]
   }
+  if(is_defined_JASL_USE_JASL_STRING_VIEW_AS_BASE) {
+    defines += [ "JASL_USE_JASL_STRING_VIEW_AS_BASE" ]
+  }
+  if(is_defined_JASL_USE_STD_STRING_VIEW_AS_BASE) {
+    defines += [ "JASL_USE_STD_STRING_VIEW_AS_BASE" ]
+  }
   
   configs += [ ":compiler_$compiler_type" ]
 
