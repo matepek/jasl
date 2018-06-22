@@ -175,16 +175,20 @@ def detect_compilers(vcvarsall=None):
                 assert(e.returncode == 2)
             m = version_re.match(output.decode())
             compilers.append({'type': compiler_type, 'compiler_exec': c,
-                             'version': tuple(int(v) for v in m.groups())})
+                              'version': tuple(int(v) for v in m.groups())})
             compilers[-1].update(compiler_info(c))
             if compiler_type == 'clang':
                 # older mac clang hasn't c++17
                 if is_mac:
                     compilers[-1]['has_cpp17'] = compilers[-1]['version'][0] >= 9
+                    compilers[-1]['has_good_sanitizer'] = True
                 if is_linux:
-                    compilers[-1]['has_cpp17'] = c['version'][0] > 4 or (c['version'][0] == 4 and c['version'][1] >= 8)
+                    compilers[-1]['has_cpp17'] = compilers[-1]['version'][0] > 4 or (
+                        compilers[-1]['version'][0] == 4 and compilers[-1]['version'][1] >= 8)
+                    compilers[-1]['has_good_sanitizer'] = compilers[-1]['version'][0] >= 6
             elif compiler_type == 'gcc':
                 compilers[-1]['has_cpp17'] = compilers[-1]['version'][0] >= 5
+                compilers[-1]['has_good_sanitizer'] = False
             else:
                 assert(False)
     elif is_win:
@@ -197,14 +201,17 @@ def detect_compilers(vcvarsall=None):
                 r'Compiler Version[^\n\d]+(\d+)\.(\d+)\.(\d+)', output)
             # for x86 could be parsed
             return {'type': 'msvc', 'version': tuple(int(v) for v in m.groups()), 'vcvarsall': vcvarsall}
+
         def has_string_view(ver):
             return ver[0] > 19 or (ver[0] == 19 and ver[1] >= 10)
         if vcvarsall:
             assert(os.path.exists(vcvarsall))
             compilers.append(get_msvc_version(vcvarsall))
             compilers[-1]['instanceId'] = 'script_arg'
-            compilers[-1]['has_string_view'] = has_string_view(compilers[-1]['version'])
+            compilers[-1]['has_string_view'] = has_string_view(
+                compilers[-1]['version'])
             compilers[-1]['has_cpp17'] = True
+            compilers[-1]['has_good_sanitizer'] = False
         else:
             vswhere_path = os.path.join(
                 os.path.dirname(__file__), 'win', 'vswhere.exe')
@@ -219,7 +226,15 @@ def detect_compilers(vcvarsall=None):
                     vs.update(get_msvc_version(vcvarsall))
                     vs['has_string_view'] = has_string_view(vs['version'])
                     vs['has_cpp17'] = True
+                    vs['has_good_sanitizer'] = False
                     compilers.append(vs)
+    for c in compilers:
+        assert('has_string_view' in c)
+        assert('has_cpp17' in c)
+        assert('has_good_sanitizer' in c)
+        assert(c['type'] != 'msvc' or 'instanceId' in c)
+        assert(c['type'] != 'msvc' or 'vcvarsall' in c)
+        assert(c['type'] not in ['clang', 'gcc'] or 'compiler_exec' in c)
     return compilers
 
 
@@ -324,30 +339,37 @@ if __name__ == '__main__':
             if not vs_arg:
                 vs_arg = gn.add(StringArg('visual_studio_path', 'vs'))
             vs_arg.add(StringValue(c['instanceId'], c['vcvarsall'], data=c))
-            is_current_compiler = lambda x, ii=c['instanceId']: x.visual_studio_path == getattr(gn.visual_studio_path, ii)
+            is_current_compiler = lambda x, ii=c['instanceId']: x.visual_studio_path == getattr(
+                gn.visual_studio_path, ii)
         elif c['type'] == 'clang':
             if not comp_exec:
                 comp_exec = comp_exec = gn.add(StringArg('compiler_exec', ''))
             comp_exec_name = os.path.basename(c['compiler_exec'])
-            comp_exec.add(StringValue(comp_exec_name, c['compiler_exec'], data=c))
-            is_current_compiler = lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n)
-            if is_linux and not (c['version'][0] >= 6):
-                gn.filter_out(lambda x, n=comp_exec_name: x.compiler_exec == getattr(
-                    gn.compiler_exec, n) and is_sanitizer(x))
+            comp_exec.add(StringValue(comp_exec_name,
+                                      c['compiler_exec'], data=c))
+            is_current_compiler = lambda x, n=comp_exec_name: x.compiler_exec == getattr(
+                gn.compiler_exec, n)
         elif c['type'] == 'gcc':
             if not comp_exec:
                 comp_exec = comp_exec = gn.add(StringArg('compiler_exec', ''))
             comp_exec_name = os.path.basename(c['compiler_exec'])
             comp_exec.add(StringValue(comp_exec_name,
                                       c['compiler_exec'], data=c))
-            is_current_compiler = lambda x, n=comp_exec_name: x.compiler_exec == getattr(gn.compiler_exec, n)
+            is_current_compiler = lambda x, n=comp_exec_name: x.compiler_exec == getattr(
+                gn.compiler_exec, n)
         else:
             assert(False)
-        gn.filter_out(lambda x, ct=getattr(gn.compiler_type, c['type']), cc=is_current_compiler: cc(x) and x.compiler_type != ct)
+        gn.filter_out(lambda x, ct=getattr(
+            gn.compiler_type, c['type']), cc=is_current_compiler: cc(x) and x.compiler_type != ct)
         if not c['has_cpp17']:
-            gn.filter_out(lambda x, cc=is_current_compiler: cc(x) and x.std_version == gn.std_version.cpp17)
+            gn.filter_out(lambda x, cc=is_current_compiler: cc(
+                x) and x.std_version == gn.std_version.cpp17)
         if not c['has_string_view']:
-            gn.filter_out(lambda x, cc=is_current_compiler: cc(x) and x.is_std_string_view_supported)
+            gn.filter_out(lambda x, cc=is_current_compiler: cc(x)
+                          and x.is_std_string_view_supported)
+        if not c['has_good_sanitizer']:
+            gn.filter_out(lambda x, cc=is_current_compiler: cc(x)
+                          and is_sanitizer(x))
     del vs_arg
     del comp_exec
     del local_compilers
