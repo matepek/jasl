@@ -78,8 +78,8 @@ template("test") {
 
     if (is_generate_test_coverage) {
       if (is_clang) {
-        profdata_name = invoker.test_name + ".profdata"
-        html_name = invoker.test_name + ".coverage"
+        profdata_name = invoker.target_name + ".profdata"
+        html_name = invoker.target_name + ".coverage"
 
         if (host_os == "mac") {
           llvm_profdata_platfrom_dependent_args_prefix = [
