@@ -105,8 +105,11 @@ config("compiler_clang") {
 }
 
 config("compiler_gcc") {
-  common_flags = [
+  cflags = [
     "-std=" + std_version,
+  ]
+
+  cflags_cc = [
     "-Wall",
     "-Werror",
     "-Wextra",
@@ -114,9 +117,9 @@ config("compiler_gcc") {
   ]
 
   if (host_cpu == "x64" && current_cpu == "x86") {
-    common_flags += [ "-m32" ]
+    cflags += [ "-m32" ]
   } else if (host_cpu == "x86" && current_cpu == "x64") {
-    common_flags += [ "-m64" ]
+    cflags += [ "-m64" ]
   } else {
     assert(host_cpu == current_cpu)
   }
@@ -124,25 +127,21 @@ config("compiler_gcc") {
   if (is_generate_test_coverage) {
     # https://gcc.gnu.org/onlinedocs/gcc/Gcov-and-Optimization.html#Gcov-and-Optimization
     # https://gcc.gnu.org/onlinedocs/gcc/Invoking-Gcov.html#Invoking-Gcov
-    common_flags += [
+    cflags += [
       "-fprofile-arcs",
       "-ftest-coverage",
       "-lgcov",
     ]
   }
-
-  cflags = common_flags + []
-  ldflags = common_flags + []
 }
 
 config("compiler_msvc") {
-  common_flags = []
-  cflags = common_flags + [
+  cflags = [
              "/std:" + std_version,
              "/TP",  # https://msdn.microsoft.com/en-us/library/032xwy55.aspx
              "/EHsc",
            ]
-  ldflags = common_flags
+  ldflags = []
 }
 
 config("debug") {

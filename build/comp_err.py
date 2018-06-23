@@ -40,10 +40,12 @@ if __name__ == '__main__':
     lines = ''.join(open(args.touch_on_success, 'r').readlines())
 
     if return_code == 0:
+        print('----')
         print(lines)
         raise Exception('Compiled, but error was expected.')
 
     if re.search(error_regex, lines, re.MULTILINE) is None:
+        print('----')
         print(lines)
         raise Exception('Error output should contains:', error_regex)
 

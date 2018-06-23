@@ -18,7 +18,7 @@ test_build_err("jasl_string_view_constructor1") {
   } else if(is_gcc) {
     error_regex = "TODO"
   } else if(is_msvc) {
-    msvc_error_regex = "TODO"
+    error_regex = "\(13\): error C2664:"
   }
 }
 test_build_err("jasl_static_string_assignment") {
@@ -27,7 +27,7 @@ test_build_err("jasl_static_string_assignment") {
   } else if(is_gcc) {
     error_regex = "TODO"
   } else if(is_msvc) {
-    msvc_error_regex = "TODO"
+    error_regex = "\(14\): error C2679: binary '='"
   }
 }
 test_build_err("jasl_static_string_constructor1") {
@@ -36,7 +36,7 @@ test_build_err("jasl_static_string_constructor1") {
   } else if(is_gcc) {
     error_regex = "TODO"
   } else if(is_msvc) {
-    msvc_error_regex = "TODO"
+    error_regex = "\(12\): error C2661:"
   }
 }
 test_build_err("jasl_static_string_constructor2") {
@@ -45,7 +45,7 @@ test_build_err("jasl_static_string_constructor2") {
   } else if(is_gcc) {
     error_regex = "TODO"
   } else if(is_msvc) {
-    msvc_error_regex = "TODO"
+    error_regex = "\(13\): error C2661:"
   }
 }
 test_build_err("jasl_static_string_constructor3") {
@@ -54,7 +54,7 @@ test_build_err("jasl_static_string_constructor3") {
   } else if(is_gcc) {
     error_regex = "TODO"
   } else if(is_msvc) {
-    msvc_error_regex = "TODO"
+    error_regex = "\(13\): error C2664:"
   }
 }
 test_build_err("jasl_static_string_copy_constructor") {
@@ -63,7 +63,7 @@ test_build_err("jasl_static_string_copy_constructor") {
   } else if(is_gcc) {
     error_regex = "TODO"
   } else if(is_msvc) {
-    msvc_error_regex = "TODO"
+    error_regex = "\(13\): error C2664:"
   }
 }
 test_build_err("jasl_static_string_swap_with_base") {
@@ -72,7 +72,7 @@ test_build_err("jasl_static_string_swap_with_base") {
   } else if(is_gcc) {
     error_regex = "TODO"
   } else if(is_msvc) {
-    msvc_error_regex = "TODO"
+    error_regex = "\(14\): error C2664:"
   }
 }
 test_build_err("jasl_string_assignment_cstr") {
@@ -81,6 +81,6 @@ test_build_err("jasl_string_assignment_cstr") {
   } else if(is_gcc) {
     error_regex = "TODO"
   } else if(is_msvc) {
-    msvc_error_regex = "TODO"
+    error_regex = "\(14\): error C2679: binary '='"
   }
 }

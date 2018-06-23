@@ -71,10 +71,8 @@ template("msvc_toolchain") {
       outputs = [
         "$output_subdir/{{source_name_part}}.obj",
       ]
-      rspfile = "{{output}}.rsp"
-      rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}}"
 
-      command = "python ..\\..\\build\\comp_err.py -l alma -t \"{{output}}\" -- ninja -t msvc -e \"$env\" -- \"$cl\" /nologo /showIncludes @\"$rspfile\" /Fo\"{{output}}.out\" /Fd\"$pdbname\" /c \"{{source}}\""
+      command = "python ..\\..\\build\\comp_err.py -t \"{{output}}\" -- ninja -t msvc -e \"$env\" -- \"$cl\" /nologo /showIncludes {{defines}} {{include_dirs}} {{cflags}} /Fo\"{{output}}.out\" /Fd\"$pdbname\" /c \"{{source}}\""
     }
 
     tool("cxx") {
