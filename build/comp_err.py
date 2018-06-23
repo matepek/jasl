@@ -8,6 +8,12 @@ import subprocess
 import argparse
 import re
 
+class CompiledButErrorWasExpectedError(Exception):
+    pass
+
+class RegexDoesNotMatchError(Exception):
+    pass
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--touch-on-success', required=True)
@@ -40,14 +46,12 @@ if __name__ == '__main__':
     lines = ''.join(open(args.touch_on_success, 'r').readlines())
 
     if return_code == 0:
-        print('----')
         print(lines)
-        raise Exception('Compiled, but error was expected.')
+        raise CompiledButErrorWasExpectedError(lines)
 
     if re.search(error_regex, lines, re.MULTILINE) is None:
-        print('----')
         print(lines)
-        raise Exception('Error output should contains:', error_regex)
+        raise RegexDoesNotMatchError('jasl-error-regex="' + error_regex + '"', lines)
 
     open(args.touch_on_success, 'w').close()
     sys.exit(0)
