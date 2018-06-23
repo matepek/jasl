@@ -171,12 +171,15 @@ template("test_build_err") {
       "//:include",
     ]
 
+    common_flags = [
+      "jasl-error-regex=" + error_regex,
+    ]
     if (is_clang) {
-      common_flags = [
+      common_flags += [
         "-Wno-deprecated",
       ]
-      cflags = common_flags
-      ldflags = common_flags
     }
+    cflags = common_flags
+    ldflags = common_flags
   }
 }

@@ -96,6 +96,8 @@ declare_args() {
 
 is_clang = compiler_type == "clang"
 is_gcc = compiler_type == "gcc"
+is_msvc = compiler_type == "msvc"
+assert(is_clang || is_gcc || is_msvc)
 
 if (is_asan || is_lsan || is_msan || is_usan) {
   assert(is_clang, "These features requires clang!")

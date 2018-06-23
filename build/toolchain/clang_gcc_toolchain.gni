@@ -34,7 +34,7 @@ template("clang_gcc_toolchain") {
 
     # It is a hack to test compile errors. The project has no C file.
     tool("cc") {
-      command = "($current_compiler_exec {{defines}} {{include_dirs}} {{cflags}} -c {{source}} -o {{output}}" + " > /dev/null 2>&1); if test \$? -eq 0;" + "then rm {{output}}; echo Error: Compilation error was expected, but not occured: {{source}}!;" + "else touch {{output}}; fi;"
+      command = "python ../../build/comp_err.py -t {{output}} -- $current_compiler_exec {{defines}} {{include_dirs}} {{cflags}} -c {{source}} -o {{output}}.out"
       description = "COMPILE_AND_EXPECT_ERROR {{output}}"
       outputs = [
         "$output_subdir/{{source_name_part}}.err_ok",

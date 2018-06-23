@@ -1,5 +1,5 @@
 template("msvc_toolchain") {
-  forward_variables_from(invoker, [ "dummy  " ])
+  forward_variables_from(invoker, "*")
 
   toolchain(target_name) {
     assert(host_os == target_os)
@@ -74,7 +74,7 @@ template("msvc_toolchain") {
       rspfile = "{{output}}.rsp"
       rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}}"
 
-      command = "..\..\build\toolchain\win\compile_and_expect_error.bat " + "\"{{output}}\" ninja -t msvc -e \"$env\" -- \"$cl\" /nologo /showIncludes @\"$rspfile\" /Fo\"{{output}}\" /Fd\"$pdbname\" /c \"{{source}}\""
+      command = "python ..\\..\\build\\comp_err.py -l alma -t \"{{output}}\" -- ninja -t msvc -e \"$env\" -- \"$cl\" /nologo /showIncludes @\"$rspfile\" /Fo\"{{output}}.out\" /Fd\"$pdbname\" /c \"{{source}}\""
     }
 
     tool("cxx") {

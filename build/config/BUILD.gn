@@ -43,17 +43,21 @@ config("compiler_clang") {
   }
 
   cflags = common_flags + [
-             "-fcolor-diagnostics",
-             "-ferror-limit=100",
-             "-Wall",
-             "-Werror",
-             "-Weverything",
-             "-Wno-c++98-compat",
              "-Wno-c++98-compat-pedantic",
              "-Wno-missing-prototypes",
              "-Wno-padded",
            ]
   ldflags = common_flags + []
+
+  # This distinguish between c and c++ files.
+  cflags_cc = [
+             "-fcolor-diagnostics",
+             "-ferror-limit=10",
+             "-Wall",
+             "-Werror",
+             "-Weverything",
+             "-Wno-c++98-compat",
+  ]
 
   #https://github.com/google/sanitizers
 
