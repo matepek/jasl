@@ -4,7 +4,7 @@ template("test") {
   test_name = invoker.target_name + ".test"
 
   if (is_generate_test_coverage) {
-    profraw_name = invoker.test_name + ".profraw"
+    profraw_name = invoker.target_name + ".profraw"
   }
 
   executable(test_name) {

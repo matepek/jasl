@@ -105,21 +105,14 @@ config("compiler_clang") {
 }
 
 config("compiler_gcc") {
-  cflags = [
+  common_flags = [
     "-std=" + std_version,
   ]
 
-  cflags_cc = [
-    "-Wall",
-    "-Werror",
-    "-Wextra",
-    "-Wpedantic",
-  ]
-
   if (host_cpu == "x64" && current_cpu == "x86") {
-    cflags += [ "-m32" ]
+    common_flags += [ "-m32" ]
   } else if (host_cpu == "x86" && current_cpu == "x64") {
-    cflags += [ "-m64" ]
+    common_flags += [ "-m64" ]
   } else {
     assert(host_cpu == current_cpu)
   }
@@ -127,12 +120,21 @@ config("compiler_gcc") {
   if (is_generate_test_coverage) {
     # https://gcc.gnu.org/onlinedocs/gcc/Gcov-and-Optimization.html#Gcov-and-Optimization
     # https://gcc.gnu.org/onlinedocs/gcc/Invoking-Gcov.html#Invoking-Gcov
-    cflags += [
+    common_flags += [
       "-fprofile-arcs",
       "-ftest-coverage",
       "-lgcov",
     ]
   }
+
+  cflags = common_flags + []
+  cflags_cc = [
+    "-Wall",
+    "-Werror",
+    "-Wextra",
+    "-Wpedantic",
+  ]
+  ldflags = common_flags + []
 }
 
 config("compiler_msvc") {

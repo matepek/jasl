@@ -14,72 +14,72 @@ test("jasl_string") {
 
 test_build_err("jasl_string_view_constructor1") {
   if(is_clang) {
-    error_regex = "13:41: error: no matching constructor for initialization of 'jasl::nonstd::basic_string_view<char>'"
+    error_regex = ":13:41: error: no matching constructor for initialization of 'jasl::nonstd::basic_string_view<char>'"
   } else if(is_gcc) {
-    error_regex = "TODO"
+    error_regex = ":13:46: error: no matching function for call to"
   } else if(is_msvc) {
     error_regex = "\(13\): error C2664:"
   }
 }
 test_build_err("jasl_static_string_assignment") {
   if(is_clang) {
-    error_regex = "14:5: error: no viable overloaded '='"
+    error_regex = ":14:5: error: no viable overloaded '='"
   } else if(is_gcc) {
-    error_regex = "TODO"
+    error_regex = ":14:5: error: no match for ‘operator=’"
   } else if(is_msvc) {
     error_regex = "\(14\): error C2679: binary '='"
   }
 }
 test_build_err("jasl_static_string_constructor1") {
   if(is_clang) {
-    error_regex = "12:23: error: no matching constructor for initialization of 'jasl::static_string'"
+    error_regex = ":12:23: error: no matching constructor for initialization of 'jasl::static_string'"
   } else if(is_gcc) {
-    error_regex = "TODO"
+    error_regex = ":12:30: error: no matching function for call"
   } else if(is_msvc) {
     error_regex = "\(12\): error C2661:"
   }
 }
 test_build_err("jasl_static_string_constructor2") {
   if(is_clang) {
-    error_regex = "13:23: error: no matching constructor for initialization of 'jasl::static_string'"
+    error_regex = ":13:23: error: no matching constructor for initialization of 'jasl::static_string'"
   } else if(is_gcc) {
-    error_regex = "TODO"
+    error_regex = ":13:34: error: no matching function for call to"
   } else if(is_msvc) {
     error_regex = "\(13\): error C2661:"
   }
 }
 test_build_err("jasl_static_string_constructor3") {
   if(is_clang) {
-    error_regex = "13:23: error: no matching constructor for initialization of 'jasl::static_string'"
+    error_regex = ":13:23: error: no matching constructor for initialization of 'jasl::static_string'"
   } else if(is_gcc) {
-    error_regex = "TODO"
+    error_regex = ":13:31: error: no matching function for call to"
   } else if(is_msvc) {
     error_regex = "\(13\): error C2664:"
   }
 }
 test_build_err("jasl_static_string_copy_constructor") {
   if(is_clang) {
-    error_regex = ".cpp.c:13:23: error: no matching constructor for initialization of 'jasl::static_string'"
+    error_regex = ":13:23: error: no matching constructor for initialization of 'jasl::static_string'"
   } else if(is_gcc) {
-    error_regex = "TODO"
+    error_regex = ":13:26: error: no matching function for call to"
   } else if(is_msvc) {
     error_regex = "\(13\): error C2664:"
   }
 }
 test_build_err("jasl_static_string_swap_with_base") {
   if(is_clang) {
-    error_regex = "14:10: error: non-const lvalue reference to type 'jasl::basic_static_string<char, std::__1::char_traits<char> >' cannot bind to a value of unrelated type 'jasl::static_string::base_type'"
+    error_regex = ":14:10: error: non-const lvalue reference to type 'jasl::basic_static_string"
   } else if(is_gcc) {
-    error_regex = "TODO"
+    error_regex = ":14:11: error: no matching function for call to"
   } else if(is_msvc) {
     error_regex = "\(14\): error C2664:"
   }
 }
 test_build_err("jasl_string_assignment_cstr") {
   if(is_clang) {
-    error_regex = "14:5: error: no viable overloaded '='"
+    error_regex = ":14:5: error: no viable overloaded '='"
   } else if(is_gcc) {
-    error_regex = "TODO"
+    error_regex = ":14:5: error: no match for ‘operator=’"
   } else if(is_msvc) {
     error_regex = "\(14\): error C2679: binary '='"
   }
