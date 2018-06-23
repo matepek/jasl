@@ -64,6 +64,7 @@ class basic_string
         std::is_standard_layout<CharT>::value && std::is_trivial<CharT>::value,
         "Unsupported CharT");
     if (size == 0) {
+      bridge_type::set(nullptr, 0);
       return;
     }
     std::unique_ptr<CharT, std::function<void(CharT*)>> begin(
@@ -159,7 +160,8 @@ class basic_string
   }
 
   template <size_t N>
-  basic_string& assign(const CharT (&str)[N]) noexcept {
+  basic_string& assign(const CharT (&str)[N]) noexcept(
+      bridge_type::is_nothrow_settable) {
     dispose();
     bridge_type::set(str, str[N - 1] == 0 ? N - 1 : N);
     return *this;

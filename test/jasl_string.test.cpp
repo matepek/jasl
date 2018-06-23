@@ -9,42 +9,21 @@
 #include "jasl_string.hpp"
 #include "test_helper.hpp"
 
-// struct CustomAllocator {
-//  public:
-//   using namespace std;
-//   typedef size_t size_type;
-//   typedef ptrdiff_t difference_type;
-//   typedef char* pointer;
-//   typedef const char* const_pointer;
-//   typedef char& reference;
-//   typedef const char& const_reference;
-//   typedef char value_type;
+struct different_alloc : public std::allocator<char> {
+  typedef std::false_type propagate_on_container_move_assignment;
+};
+bool operator==(const different_alloc&, const different_alloc&) {
+  return false;
+}
+bool operator!=(const different_alloc&, const different_alloc&) {
+  return true;
+}
 
-//   typedef true_type propagate_on_container_move_assignment;
-
-//   CustomAllocator() noexcept {}
-//   template <class _Up>
-//   CustomAllocator(const CustomAllocator&) noexcept {}
-//   pointer address(reference __x) const noexcept {
-//     return _VSTD::addressof(__x);
-//   }
-//   const_pointer address(const_reference __x) const noexcept {
-//     return _VSTD::addressof(__x);
-//   }
-//   pointer allocate(size_type __n, CustomAllocator::const_pointer = 0) {
-//     return static_cast<pointer>(new char[__n * sizeof(char)]);
-//   }
-//   void deallocate(pointer __p, size_type) noexcept { delete __p; }
-//   size_type max_size() const noexcept { return size_type(~0) / sizeof(char);
-//   } template <class _Up, class... _Args> void construct(_Up* __p, _Args&&...
-//   __args) {
-//     ::new ((void*)__p) _Up(_VSTD::forward<_Args>(__args)...);
-//   }
-
-//   void destroy(pointer __p) {}
-// };
+typedef jasl::basic_string<char, std::char_traits<char>, different_alloc>
+    jasl_diffalloc_string;
 
 int main(int, char* argv[]) {
+  std::allocator<char> alloc1, alloc2;
   {
     // pretty sure it isn't constexpr
     jasl::string x(argv[0]);
@@ -76,7 +55,7 @@ int main(int, char* argv[]) {
   }
   {
     const char* onePtr = "one";
-    jasl::string x(onePtr);
+    const jasl::string x(onePtr);
     ASSERT_TRUE(x.data() != nullptr);
     ASSERT_TRUE(x.data() != onePtr);
     ASSERT_TRUE(*x.data() == 'o');
@@ -94,12 +73,38 @@ int main(int, char* argv[]) {
       ASSERT_TRUE(y.size() == 3);
       ASSERT_FALSE(y.is_static());
     }
+    {
+      jasl::string y = x;
+      jasl::string z = std::move(y);
+      ASSERT_TRUE(z.data() != x.data());
+      ASSERT_TRUE(z.size() == 3);
+      ASSERT_FALSE(z.is_static());
+    }
+    {
+      jasl::string y = x;
+      jasl::string z(std::move(y), alloc1);
+      ASSERT_TRUE(z.data() != x.data());
+      ASSERT_TRUE(z.size() == 3);
+      ASSERT_FALSE(z.is_static());
+    }
+    /*{
+      jasl_diffalloc_string y(jasl_diffalloc_string("apple"),
+                              different_alloc());
+      ASSERT_TRUE(y.size() == 5);
+      ASSERT_FALSE(y.is_static());
+      jasl_diffalloc_string z;
+      z.assign(y);
+      z.assign(jasl_diffalloc_string());
+    }*/
     const char* twoPtr = "twoo";
     {
       jasl::string y(twoPtr);
       ASSERT_FALSE(y.is_static());
       y = x;
       ASSERT_FALSE(y.is_static());
+      const char* emptyPtr = "";
+      y.assign(emptyPtr);
+      ASSERT_TRUE(y.size() == 0);
     }
     {
       jasl::string y("onestatic");
@@ -132,7 +137,7 @@ int main(int, char* argv[]) {
   }
   {
     const char oneStr[] = "one";
-    jasl::string x(oneStr);
+    const jasl::string x(oneStr);
     ASSERT_TRUE(x.data() == oneStr);
     ASSERT_TRUE(*x.data() == 'o');
     ASSERT_TRUE(x.size() == 3);
@@ -143,12 +148,18 @@ int main(int, char* argv[]) {
       ASSERT_TRUE(y.size() == 3);
       ASSERT_TRUE(y.is_static());
     }
-
     {
       jasl::string y = x;
       ASSERT_TRUE(y.data() == oneStr);
       ASSERT_TRUE(y.size() == 3);
       ASSERT_TRUE(y.is_static());
+    }
+    {
+      jasl::string y = x;
+      jasl::string z = std::move(y);
+      ASSERT_TRUE(z.data() == x.data());
+      ASSERT_TRUE(z.size() == 3);
+      ASSERT_TRUE(z.is_static());
     }
     const char twoStr[] = "twoo";
     {
@@ -169,7 +180,7 @@ int main(int, char* argv[]) {
   }
   {
     const char oneStr[] = {'o', 'n', 'e'};
-    jasl::string x(oneStr);
+    const jasl::string x(oneStr);
     ASSERT_TRUE(x.data() == oneStr);
     ASSERT_TRUE(*x.data() == 'o');
     ASSERT_TRUE(x.size() == 3);
@@ -205,11 +216,19 @@ int main(int, char* argv[]) {
   {
     jasl::string x("a"), y("bb");
     x.swap(y);
-    ASSERT_TRUE(*x.data() == 'b');
     ASSERT_TRUE(x.size() == 2);
-    ASSERT_TRUE(*y.data() == 'a');
+    ASSERT_TRUE(*x.data() == 'b');
+    ASSERT_TRUE(x.is_static());
     ASSERT_TRUE(y.size() == 1);
+    ASSERT_TRUE(*y.data() == 'a');
     ASSERT_TRUE(y.is_static());
+    swap(x, y);
+    ASSERT_TRUE(y.size() == 2);
+    ASSERT_TRUE(*y.data() == 'b');
+    ASSERT_TRUE(y.is_static());
+    ASSERT_TRUE(x.size() == 1);
+    ASSERT_TRUE(*x.data() == 'a');
+    ASSERT_TRUE(x.is_static());
   }
   {
     jasl::string x("apble"), y;

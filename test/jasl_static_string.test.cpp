@@ -88,10 +88,15 @@ int main() {
   {
     jasl::static_string x("a"), y("bb");
     x.swap(y);
-    ASSERT_TRUE(*x.data() == 'b');
     ASSERT_TRUE(x.size() == 2);
-    ASSERT_TRUE(*y.data() == 'a');
+    ASSERT_TRUE(*x.data() == 'b');
     ASSERT_TRUE(y.size() == 1);
+    ASSERT_TRUE(*y.data() == 'a');
+    swap(x, y);
+    ASSERT_TRUE(y.size() == 2);
+    ASSERT_TRUE(*y.data() == 'b');
+    ASSERT_TRUE(x.size() == 1);
+    ASSERT_TRUE(*x.data() == 'a');
   }
   {
     jasl::static_string x("apble"), y;

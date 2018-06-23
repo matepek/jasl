@@ -53,10 +53,15 @@ int main() {
   {
     jasl::string_view x("a", 1), y("bb", 2);
     x.swap(y);
-    ASSERT_TRUE(*x.data() == 'b');
     ASSERT_TRUE(x.size() == 2);
-    ASSERT_TRUE(*y.data() == 'a');
+    ASSERT_TRUE(*x.data() == 'b');
     ASSERT_TRUE(y.size() == 1);
+    ASSERT_TRUE(*y.data() == 'a');
+    swap(x, y);
+    ASSERT_TRUE(y.size() == 2);
+    ASSERT_TRUE(*y.data() == 'b');
+    ASSERT_TRUE(x.size() == 1);
+    ASSERT_TRUE(*x.data() == 'a');
   }
   {
     jasl::string_view x("apble", 5), y;
