@@ -301,6 +301,8 @@ if __name__ == '__main__':
     gn.add(BooleanArg('is_defined_JASL_ASSERT_ON', 'as'))
     gn.add(BooleanArg('is_defined_JASL_TERMINATE_ON_EXCEPTION_ON', 'term'))
     gn.add(BooleanArg('is_defined_JASL_FORCE_USE_MURMURHASH_HASH', 'mur'))
+    gn.add(BooleanArg('is_defined_JASL_USE_JASL_STRING_VIEW_AS_BASE', 'jsv'))
+    gn.add(BooleanArg('is_defined_JASL_USE_STD_STRING_VIEW_AS_BASE', 'ssv'))
 
     # These filters exclude illegal variations
     gn.filter_out(lambda x: is_sanitizer(
@@ -323,6 +325,10 @@ if __name__ == '__main__':
                   gn.target_cpu.x86 and x.compiler_type != gn.compiler_type.msvc)
     gn.filter_out(
         lambda x: x.is_defined_JASL_TERMINATE_ON_EXCEPTION_ON and x.is_run_tests)
+    gn.filter_out(
+        lambda x: x.is_defined_JASL_USE_STD_STRING_VIEW_AS_BASE and x.is_defined_JASL_USE_JASL_STRING_VIEW_AS_BASE)
+    gn.filter_out(
+        lambda x: x.is_defined_JASL_USE_STD_STRING_VIEW_AS_BASE and not x.is_std_string_view_supported)
 
     assert(not script_arg.appveyor or is_win)
     assert(not script_arg.travis_ci or is_mac or is_linux)

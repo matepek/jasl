@@ -12,6 +12,12 @@ config("default") {
   if (is_defined_JASL_FORCE_USE_MURMURHASH_HASH) {
     defines += [ "JASL_FORCE_USE_MURMURHASH_HASH" ]
   }
+  if(is_defined_JASL_USE_JASL_STRING_VIEW_AS_BASE) {
+    defines += [ "JASL_USE_JASL_STRING_VIEW_AS_BASE" ]
+  }
+  if(is_defined_JASL_USE_STD_STRING_VIEW_AS_BASE) {
+    defines += [ "JASL_USE_STD_STRING_VIEW_AS_BASE" ]
+  }
   
   configs += [ ":compiler_$compiler_type" ]
 
@@ -37,17 +43,21 @@ config("compiler_clang") {
   }
 
   cflags = common_flags + [
-             "-fcolor-diagnostics",
-             "-ferror-limit=100",
-             "-Wall",
-             "-Werror",
-             "-Weverything",
-             "-Wno-c++98-compat",
              "-Wno-c++98-compat-pedantic",
              "-Wno-missing-prototypes",
              "-Wno-padded",
            ]
   ldflags = common_flags + []
+
+  # This distinguish between c and c++ files.
+  cflags_cc = [
+             "-fcolor-diagnostics",
+             "-ferror-limit=10",
+             "-Wall",
+             "-Werror",
+             "-Weverything",
+             "-Wno-c++98-compat",
+  ]
 
   #https://github.com/google/sanitizers
 
@@ -97,10 +107,6 @@ config("compiler_clang") {
 config("compiler_gcc") {
   common_flags = [
     "-std=" + std_version,
-    "-Wall",
-    "-Werror",
-    "-Wextra",
-    "-Wpedantic",
   ]
 
   if (host_cpu == "x64" && current_cpu == "x86") {
@@ -122,17 +128,22 @@ config("compiler_gcc") {
   }
 
   cflags = common_flags + []
+  cflags_cc = [
+    "-Wall",
+    "-Werror",
+    "-Wextra",
+    "-Wpedantic",
+  ]
   ldflags = common_flags + []
 }
 
 config("compiler_msvc") {
-  common_flags = []
-  cflags = common_flags + [
+  cflags = [
              "/std:" + std_version,
              "/TP",  # https://msdn.microsoft.com/en-us/library/032xwy55.aspx
              "/EHsc",
            ]
-  ldflags = common_flags
+  ldflags = []
 }
 
 config("debug") {

@@ -8,7 +8,7 @@
 #include "test_helper.hpp"
 
 int main() {
-  jasl::simple_string x("onestatic");
+  jasl::string x("onestatic");
   const char* dynPtr = "dynamic";
   // should cause compilation error
   x = dynPtr;
