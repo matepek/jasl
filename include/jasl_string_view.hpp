@@ -108,6 +108,57 @@ class basic_string_view {
 
   ~basic_string_view() noexcept = default;
 
+#if defined(JASL_SUPPORT_STD_TO_JASL)
+#if defined(JASL_cpp_lib_string_view)
+  constexpr basic_string_view(const std::basic_string_view<CharT, Traits>&
+                                  s) noexcept(noexcept(s.data()) &&
+                                              noexcept(s.size()))
+      : _ptr(s.data()), _size(s.size()) {}
+
+  JASL_CONSTEXPR_CXX14 basic_string_view&
+  operator=(const std::basic_string_view<CharT, Traits>& s) noexcept(
+      noexcept(s.data()) && noexcept(s.size())) {
+    _ptr = s.data();
+    _size = s.size();
+    return *this;
+  }
+#else
+  template <typename AllocatorT>
+  constexpr basic_string_view(
+      const std::basic_string<CharT, Traits, AllocatorT>&
+          s) noexcept(noexcept(s.data()) && noexcept(s.size()))
+      : _ptr(s.data()), _size(s.size()) {}
+
+  template <typename AllocatorT>
+  JASL_CONSTEXPR_CXX14 basic_string_view&
+  operator=(const std::basic_string<CharT, Traits, AllocatorT>& s) noexcept(
+      noexcept(s.data()) && noexcept(s.size())) {
+    _ptr = s.data();
+    _size = s.size();
+    return *this;
+  }
+#endif
+#endif
+
+#if defined(JASL_SUPPORT_JASL_TO_STD)
+#if defined(JASL_cpp_lib_string_view)
+  operator std::basic_string_view<CharT, Traits>() const noexcept(
+      std::is_nothrow_constructible<std::basic_string_view<CharT, Traits>,
+                                    const CharT*,
+                                    size_t>::value) {
+    return std::basic_string_view<CharT, Traits>(_data, _size);
+  }
+#else
+  template <typename AllocatorT>
+  operator std::basic_string<CharT, Traits, AllocatorT>() const
+      noexcept(std::is_nothrow_constructible<std::basic_string<CharT, Traits>,
+                                             const CharT*,
+                                             size_t>::value) {
+    return std::basic_string_view<CharT, Traits, AllocatorT>(_data, _size);
+  }
+#endif
+#endif
+
   constexpr const_iterator begin() const noexcept { return cbegin(); }
   constexpr const_iterator end() const noexcept { return cend(); }
   constexpr const_iterator cbegin() const noexcept { return _ptr; }
