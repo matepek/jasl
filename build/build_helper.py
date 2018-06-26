@@ -303,6 +303,8 @@ if __name__ == '__main__':
     gn.add(BooleanArg('is_defined_JASL_FORCE_USE_MURMURHASH_HASH', 'mur'))
     gn.add(BooleanArg('is_defined_JASL_USE_JASL_STRING_VIEW_AS_BASE', 'jsv'))
     gn.add(BooleanArg('is_defined_JASL_USE_STD_STRING_VIEW_AS_BASE', 'ssv'))
+    gn.add(BooleanArg('is_defined_JASL_SUPPORT_STD_TO_JASL', 's2j'))
+    gn.add(BooleanArg('is_defined_JASL_SUPPORT_JASL_TO_STD', 'j2s'))
 
     # These filters exclude illegal variations
     gn.filter_out(lambda x: is_sanitizer(

@@ -58,6 +58,28 @@ class basic_static_string
     return *this;
   }
 
+#if defined(JASL_SUPPORT_JASL_TO_STD)
+#if defined(JASL_cpp_lib_string_view)
+  operator std::basic_string_view<CharT, Traits>() const noexcept(
+      std::is_nothrow_constructible<std::basic_string_view<CharT, Traits>,
+                                    const CharT*,
+                                    size_t>::value) {
+    return std::basic_string_view<CharT, Traits>(bridge_type::data(),
+                                                 bridge_type::size());
+  }
+#else
+  template <typename AllocatorT>
+  operator std::basic_string<CharT, Traits, AllocatorT>() const
+      noexcept(std::is_nothrow_constructible<
+               std::basic_string<CharT, Traits, AllocatorT>,
+               const CharT*,
+               size_t>::value) {
+    return std::basic_string<CharT, Traits, AllocatorT>(bridge_type::data(),
+                                                        bridge_type::size());
+  }
+#endif
+#endif
+
   JASL_CONSTEXPR_CXX14 void swap(basic_static_string& other) noexcept(
       JASL_is_nothrow_swappable_value(bridge_type)) {
     bridge_type::swap(other);

@@ -18,6 +18,11 @@ namespace jasl {
 namespace nonstd {
 template <typename CharT, typename Traits = std::char_traits<CharT>>
 class basic_string_view;
+
+typedef basic_string_view<char> string_view;
+typedef basic_string_view<wchar_t> wstring_view;
+typedef basic_string_view<char16_t> u16string_view;
+typedef basic_string_view<char32_t> u32string_view;
 }  // namespace nonstd
 }  // namespace jasl
 
@@ -110,10 +115,18 @@ class basic_string_view {
 
 #if defined(JASL_SUPPORT_STD_TO_JASL)
 #if defined(JASL_cpp_lib_string_view)
-  constexpr basic_string_view(const std::basic_string_view<CharT, Traits>&
-                                  s) noexcept(noexcept(s.data()) &&
-                                              noexcept(s.size()))
-      : _ptr(s.data()), _size(s.size()) {}
+  template <
+      typename T,
+      typename = typename std::enable_if<
+          std::is_convertible<const T&,
+                              std::basic_string_view<CharT, Traits>>::value &&
+          !std::is_convertible<const T&, const CharT*>::value>::type>
+  explicit constexpr basic_string_view(const T& s) noexcept(
+      noexcept(s.data()) && noexcept(s.size())) {
+    std::basic_string_view<CharT, Traits> sv(s);
+    _ptr = sv.data();
+    _size = sv.size();
+  }
 
   JASL_CONSTEXPR_CXX14 basic_string_view&
   operator=(const std::basic_string_view<CharT, Traits>& s) noexcept(
@@ -146,15 +159,16 @@ class basic_string_view {
       std::is_nothrow_constructible<std::basic_string_view<CharT, Traits>,
                                     const CharT*,
                                     size_t>::value) {
-    return std::basic_string_view<CharT, Traits>(_data, _size);
+    return std::basic_string_view<CharT, Traits>(_ptr, _size);
   }
 #else
   template <typename AllocatorT>
   operator std::basic_string<CharT, Traits, AllocatorT>() const
-      noexcept(std::is_nothrow_constructible<std::basic_string<CharT, Traits>,
-                                             const CharT*,
-                                             size_t>::value) {
-    return std::basic_string_view<CharT, Traits, AllocatorT>(_data, _size);
+      noexcept(std::is_nothrow_constructible<
+               std::basic_string<CharT, Traits, AllocatorT>,
+               const CharT*,
+               size_t>::value) {
+    return std::basic_string<CharT, Traits, AllocatorT>(_ptr, _size);
   }
 #endif
 #endif

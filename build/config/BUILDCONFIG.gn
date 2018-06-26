@@ -92,6 +92,8 @@ declare_args() {
   is_defined_JASL_FORCE_USE_MURMURHASH_HASH = false
   is_defined_JASL_USE_JASL_STRING_VIEW_AS_BASE = false
   is_defined_JASL_USE_STD_STRING_VIEW_AS_BASE = false
+  is_defined_JASL_SUPPORT_STD_TO_JASL = false
+  is_defined_JASL_SUPPORT_JASL_TO_STD = false
 }
 
 is_clang = compiler_type == "clang"

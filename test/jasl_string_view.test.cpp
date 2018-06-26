@@ -272,49 +272,67 @@ int main() {
                 jasl::string_view::npos);
   }
 
-  // #ifdef JASL_cpp_lib_string_view
-  //   {
-  //     std::string_view s("apple");
-  //     jasl::string_view jsv(s);
-  //     ASSERT_TRUE(jsv.data() != nullptr);
-  //     ASSERT_TRUE(*jsv.data() == 'a');
-  //     ASSERT_TRUE(jsv.size() == 5);
-  //     ASSERT_TRUE(s == jsv);
-  //     ASSERT_TRUE(jsv == s);
+#if defined(JASL_SUPPORT_STD_TO_JASL)
+#if defined(JASL_cpp_lib_string_view)
+  {
+    std::string_view ssv("apple", 5);
+    jasl::nonstd::string_view jsv(ssv);
+    ASSERT_TRUE(jsv.size() == 5);
+    ASSERT_TRUE(*jsv.data() == 'a');
+  }
+  {
+    std::string_view ssv("apple", 5);
+    jasl::nonstd::string_view jsv;
+    jsv = ssv;
+    ASSERT_TRUE(jsv.size() == 5);
+    ASSERT_TRUE(*jsv.data() == 'a');
+  }
+#endif
+  {
+    std::string ss("apple");
+    jasl::nonstd::string_view jsv(ss);
+    ASSERT_TRUE(jsv.size() == 5);
+    ASSERT_TRUE(*jsv.data() == 'a');
+  }
+  {
+    std::string ss("apple", 5);
+    jasl::nonstd::string_view jsv;
+    jsv = ss;
+    ASSERT_TRUE(jsv.size() == 5);
+    ASSERT_TRUE(*jsv.data() == 'a');
+  }
+#endif
 
-  //     std::string s2(jsv);
-  //     // ASSERT_TRUE(jsv == s2); TODO
-  //     // ASSERT_TRUE(s2 == jsv); TODO
-
-  //     s = "peachh";
-  //     jsv = s;
-  //     ASSERT_TRUE(jsv.data() != nullptr);
-  //     ASSERT_TRUE(*jsv.data() == 'p');
-  //     ASSERT_TRUE(jsv.size() == 6);
-
-  //     s2 = jsv;
-  //     ASSERT_TRUE(s2 == "peachh");
-  //   }
-  // #endif
-  //   {
-  //     std::string s("apple");
-  //     jasl::string_view sv(s);
-  //     ASSERT_TRUE(sv.data() != nullptr);
-  //     ASSERT_TRUE(*sv.data() == 'a');
-  //     ASSERT_TRUE(sv.size() == 5);
-
-  //     std::string s2(sv);
-  //     ASSERT_TRUE(s2 == "apple");
-
-  //     s = "peachh";
-  //     sv = s;
-  //     ASSERT_TRUE(sv.data() != nullptr);
-  //     ASSERT_TRUE(*sv.data() == 'p');
-  //     ASSERT_TRUE(sv.size() == 6);
-
-  //     s2 = sv;
-  //     ASSERT_TRUE(s2 == "peachh");
-  //   }
+#if defined(JASL_SUPPORT_JASL_TO_STD)
+#if defined(JASL_cpp_lib_string_view)
+  {
+    jasl::nonstd::string_view jsv("apple", 5);
+    std::string_view ssv(jsv);
+    ASSERT_TRUE(ssv.size() == 5);
+    ASSERT_TRUE(*ssv.data() == 'a');
+  }
+  {
+    jasl::nonstd::string_view jsv("apple", 5);
+    std::string_view ssv;
+    ssv = jsv;
+    ASSERT_TRUE(ssv.size() == 5);
+    ASSERT_TRUE(*ssv.data() == 'a');
+  }
+#endif
+  {
+    jasl::nonstd::string_view jsv("apple", 5);
+    std::string ss(jsv);
+    ASSERT_TRUE(ss.size() == 5);
+    ASSERT_TRUE(*ss.data() == 'a');
+  }
+  {
+    jasl::nonstd::string_view jsv("apple", 5);
+    std::string ss;
+    ss = jsv;
+    ASSERT_TRUE(ss.size() == 5);
+    ASSERT_TRUE(*ss.data() == 'a');
+  }
+#endif
 
   return 0;
 }

@@ -128,5 +128,36 @@ int main() {
   // test only hash
   ASSERT_TRUE(std::set<jasl::static_string>().size() == 0);
 
+#if defined(JASL_SUPPORT_JASL_TO_STD)
+#if defined(JASL_cpp_lib_string_view)
+  {
+    jasl::static_string jss("apple");
+    std::string_view ssv(jss);
+    ASSERT_TRUE(ssv.size() == 5);
+    ASSERT_TRUE(*ssv.data() == 'a');
+  }
+  {
+    jasl::static_string jss("apple");
+    std::string_view ssv;
+    ssv = jss;
+    ASSERT_TRUE(ssv.size() == 5);
+    ASSERT_TRUE(*ssv.data() == 'a');
+  }
+#endif
+  {
+    jasl::static_string jss("apple");
+    std::string ss(jss);
+    ASSERT_TRUE(ss.size() == 5);
+    ASSERT_TRUE(*ss.data() == 'a');
+  }
+  {
+    jasl::static_string jss("apple");
+    std::string ss;
+    ss = jss;
+    ASSERT_TRUE(ss.size() == 5);
+    ASSERT_TRUE(*ss.data() == 'a');
+  }
+#endif
+
   return 0;
 }

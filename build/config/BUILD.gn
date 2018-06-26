@@ -18,6 +18,12 @@ config("default") {
   if(is_defined_JASL_USE_STD_STRING_VIEW_AS_BASE) {
     defines += [ "JASL_USE_STD_STRING_VIEW_AS_BASE" ]
   }
+  if(is_defined_JASL_SUPPORT_STD_TO_JASL) {
+    defines += [ "JASL_SUPPORT_STD_TO_JASL" ]
+  }
+  if(is_defined_JASL_SUPPORT_JASL_TO_STD) {
+    defines += [ "JASL_SUPPORT_JASL_TO_STD" ]
+  }
   
   configs += [ ":compiler_$compiler_type" ]
 

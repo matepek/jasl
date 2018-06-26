@@ -115,6 +115,14 @@ class basic_string
     init(paramW.ptr, paramW.size);
   }
 
+  basic_string(const CharT* ptr,
+               size_t size,
+               const AllocatorT& alloc = AllocatorT())
+      : bridge_type(), _alloc(alloc), _cap(0) {
+    JASL_ASSERT(ptr != nullptr, "ptr != nullptr");
+    init(ptr, size);
+  }
+
   template <size_t N>
   basic_string(const CharT (&str)[N]) noexcept(
       std::is_nothrow_constructible<bridge_type, const CharT*, size_t>::value&&
@@ -158,6 +166,60 @@ class basic_string
       init(other.data(), other.size());
     }
   }
+
+  // #if defined(JASL_SUPPORT_STD_TO_JASL)
+  // #if defined(JASL_cpp_lib_string_view)
+  //   template <
+  //       typename T,
+  //       typename = typename std::enable_if<
+  //           std::is_convertible<const T&,
+  //                               std::basic_string_view<CharT, Traits>>::value
+  //                               &&
+  //           !std::is_convertible<const T&, const CharT*>::value>::type>
+  //   explicit constexpr basic_string(const T& s) : basic_string() {
+  //     std::basic_string_view<CharT, Traits> sv(s);
+  //     init(sv.data(), sv.size());
+  //   }
+
+  //   JASL_CONSTEXPR_CXX14 basic_string_view& operator=(
+  //       const std::basic_string_view<CharT, Traits>& s) {
+  //     dispose();
+  //     init(s.data(), s.size());
+  //     return *this;
+  //   }
+  // #else
+  //   constexpr basic_string(const std::basic_string<CharT, Traits,
+  //   AllocatorT>& s)
+  //       : basic_string(s.data, s.size()) {}
+
+  //   JASL_CONSTEXPR_CXX14 basic_string& operator=(
+  //       const std::basic_string<CharT, Traits, AllocatorT>& s) {
+  //     dispose();
+  //     init(s.data(), s.size());
+  //     return *this;
+  //   }
+  // #endif
+  // #endif
+
+  // #if defined(JASL_SUPPORT_JASL_TO_STD)
+  // #if defined(JASL_cpp_lib_string_view)
+  //   operator std::basic_string_view<CharT, Traits>() const noexcept(
+  //       std::is_nothrow_constructible<std::basic_string_view<CharT, Traits>,
+  //                                     const CharT*,
+  //                                     size_t>::value) {
+  //     return std::basic_string_view<CharT, Traits>(_ptr, _size);
+  //   }
+  // #else
+  //   template <typename AllocatorT>
+  //   operator std::basic_string<CharT, Traits, AllocatorT>() const
+  //       noexcept(std::is_nothrow_constructible<std::basic_string<CharT,
+  //       Traits>,
+  //                                              const CharT*,
+  //                                              size_t>::value) {
+  //     return std::basic_string<CharT, Traits, AllocatorT>(_ptr, _size);
+  //   }
+  // #endif
+  // #endif
 
   template <size_t N>
   basic_string& assign(const CharT (&str)[N]) noexcept(
