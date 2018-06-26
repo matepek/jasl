@@ -33,7 +33,7 @@ def ninja_all_in_dir(dir_path, script_arg):
             x_p = os.path.join(dir_path, x)
             print('# ' + str(succ_count) + ' ############')
             if os.path.isfile(os.path.join(dir_path, x, 'args.gn')):
-                l = open(os.path.join(dir_path, x, 'args.gn'), 'r').readlines()
+                l = sorted(open(os.path.join(dir_path, x, 'args.gn'), 'r').readlines())
                 l = [x.strip('\r\n') for x in l]
                 print('\n'.join(l))
             result = subprocess.call(['ninja', '-C', x_p])
