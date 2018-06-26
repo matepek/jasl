@@ -12,6 +12,7 @@
 
 #include "jasl_common.hpp"
 #include "jasl_feature_test_macro.hpp"
+#include "jasl_static_string.hpp"
 #include "jasl_string_view.hpp"
 #include "jasl_string_view_bridge.hpp"
 
@@ -167,6 +168,20 @@ class basic_string
     }
   }
 
+  basic_string(const basic_static_string<CharT, Traits>& ss) noexcept(
+      std::is_nothrow_constructible<bridge_type, const CharT*, size_t>::value&&
+          std::is_nothrow_default_constructible<AllocatorT>::value)
+      : bridge_type(ss.data(), ss.size()), _alloc(), _cap(0) {}
+
+  basic_string(
+      const basic_static_string<CharT, Traits>& ss,
+      const AllocatorT&
+          alloc) noexcept(std::is_nothrow_constructible<bridge_type,
+                                                        const CharT*,
+                                                        size_t>::value&& std::
+                              is_nothrow_copy_constructible<AllocatorT>::value)
+      : bridge_type(ss.data(), ss.size()), _alloc(alloc), _cap(0) {}
+
   // #if defined(JASL_SUPPORT_STD_TO_JASL)
   // #if defined(JASL_cpp_lib_string_view)
   //   template <
@@ -286,6 +301,13 @@ class basic_string
     return *this;
   }
 
+  basic_string& assing(const basic_static_string<CharT, Traits>& ss) noexcept(
+      bridge_type::is_nothrow_settable) {
+    dispose();
+    bridge_type::set(ss.data(), ss.size());
+    return *this;
+  }
+
   template <size_t N>
   basic_string& operator=(const CharT (&str)[N]) noexcept {
     return assign<N>(str);
@@ -296,6 +318,12 @@ class basic_string
   basic_string& operator=(basic_string&& other) noexcept(
       is_noexcept_assign_rvalue) {
     return assign(std::move(other));
+  }
+
+  basic_string&
+  operator=(const basic_static_string<CharT, Traits>& other) noexcept(
+      bridge_type::is_nothrow_settable) {
+    return assign(other);
   }
 
   constexpr bool is_static() const noexcept { return _cap == 0; }

@@ -259,6 +259,22 @@ int main(int, char* argv[]) {
   }
 
   {
+    jasl::static_string ss("apble");
+    jasl::string js(ss);
+    ASSERT_TRUE(js.is_static());
+    ASSERT_TRUE(js.size() == 5);
+    ASSERT_TRUE(*js.data() == 'a');
+  }
+  {
+    jasl::static_string ss("apble");
+    jasl::string js("else");
+    js = ss;
+    ASSERT_TRUE(js.is_static());
+    ASSERT_TRUE(js.size() == 5);
+    ASSERT_TRUE(*js.data() == 'a');
+  }
+
+  {
     jasl::string x("apble");
     [](jasl::string::base_type) {}(x);
     [](const jasl::string::base_type&) {}(x);
@@ -269,15 +285,6 @@ int main(int, char* argv[]) {
     jasl::string s1("a", a1), s2("b", a2);
     s1.assign(s2);
   }
-
-  // typedef jasl::basic_string<char, std::char_traits<char>, CustomAllocator>
-  //     cus_string;
-  // {
-  //   CustomAllocator a1, a2;
-  //   cus_string s1("a", a1);
-  //   cus_string s2("b", a2);
-  //   // s1.assign(s2);
-  // }
 
   ASSERT_TRUE(jasl::string("") == jasl::string(""));
   ASSERT_FALSE(jasl::string("") != jasl::string(""));
