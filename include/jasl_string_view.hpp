@@ -93,7 +93,7 @@ class basic_string_view {
   typedef const_reverse_iterator reverse_iterator;
   typedef size_t size_type;
   typedef std::ptrdiff_t difference_type;
-  static constexpr const size_type npos = static_cast<size_type>(-1);
+  static constexpr size_type npos = static_cast<size_type>(-1);
 
  public:
   constexpr basic_string_view() noexcept : _ptr(nullptr), _size(0) {}
