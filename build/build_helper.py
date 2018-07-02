@@ -28,14 +28,23 @@ assert(is_win or is_mac or is_linux)
 def ninja_all_in_dir(dir_path, script_arg):
     err_count = 0
     succ_count = 0
+    last_args_gn = None
     for x in os.listdir(os.path.join(os.getcwd(), dir_path)):
         if x[0] != '.' and os.path.isdir(os.path.join(os.getcwd(), dir_path, x)):
             x_p = os.path.join(dir_path, x)
             print('# ' + str(succ_count) + ' ############')
             if os.path.isfile(os.path.join(dir_path, x, 'args.gn')):
-                l = sorted(open(os.path.join(dir_path, x, 'args.gn'), 'r').readlines())
-                l = [x.strip('\r\n') for x in l]
-                print('\n'.join(l))
+                arg_lines = sorted(open(os.path.join(dir_path, x, 'args.gn'), 'r').readlines())
+                arg_lines = [x.strip('\r\n') for x in arg_lines]
+                max_len = max(map(lambda x: len(x), arg_lines))
+                augmented_arg_lines = []
+                for l in arg_lines:
+                    if last_args_gn and l not in last_args_gn:
+                        augmented_arg_lines.append(l + '  <-' + '-' * (max_len - len(l)))
+                    else:
+                        augmented_arg_lines.append(l)
+                last_args_gn = arg_lines
+                print('\n'.join(augmented_arg_lines))
             result = subprocess.call(['ninja', '-C', x_p])
             if result != 0:
                 err_count += 1
@@ -272,7 +281,7 @@ if __name__ == '__main__':
         ninja_all_in_dir('./out', script_arg)
         sys.exit(0)
 
-    gn = GN()
+    gn = Args()
     gn.add(BooleanArg('is_debug', 'd'))
     gn.add(BooleanArg('is_run_tests', 't'))
     gn.add(BooleanArg('is_run_performance_tests', 'p'))

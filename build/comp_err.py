@@ -43,15 +43,15 @@ if __name__ == '__main__':
     return_code = subprocess.call(args.parameters, stdout=output, stderr=output)
 
     output.close()
-    lines = ''.join(open(args.touch_on_success, 'r').readlines())
+    compiler_output = ''.join(open(args.touch_on_success, 'r').readlines())
 
     if return_code == 0:
-        print(lines)
-        raise CompiledButErrorWasExpectedError(lines)
+        print(compiler_output)
+        raise CompiledButErrorWasExpectedError(error_regex, compiler_output)
 
-    if re.search(error_regex, lines, re.MULTILINE) is None:
-        print(lines)
-        raise RegexDoesNotMatchError('jasl-error-regex="' + error_regex + '"', lines)
+    if re.search(error_regex, compiler_output, re.MULTILINE) is None:
+        print(compiler_output)
+        raise RegexDoesNotMatchError(error_regex, compiler_output)
 
     open(args.touch_on_success, 'w').close()
     sys.exit(0)

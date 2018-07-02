@@ -56,6 +56,7 @@ config("compiler_clang") {
   ldflags = common_flags + []
 
   # This distinguish between c and c++ files.
+  # And c files used to test build errors.
   cflags_cc = [
              "-fcolor-diagnostics",
              "-ferror-limit=10",
