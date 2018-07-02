@@ -18,6 +18,7 @@
  * https://docs.microsoft.com/en-us/cpp/visual-cpp-language-conformance
  */
 
+#ifndef JASL_cpp_constexpr
 #ifndef __cpp_constexpr
 #define JASL_cpp_constexpr                           \
   (_MSC_VER >= 1911L && _MSVC_LANG >= 201703L        \
@@ -28,6 +29,8 @@
 #else
 static_assert(false, "Compiler behaviour has been changed. Review the change!");
 #endif  // __cpp_constexpr
+#endif  // JASL_cpp_constexpr
+#ifndef JASL_cpp_lib_string_view
 #ifndef __cpp_lib_string_view
 #define JASL_cpp_lib_string_view                                       \
   (__cplusplus >= 201703 && _MSC_VER >= 1910L && _MSVC_LANG >= 201703L \
@@ -36,6 +39,7 @@ static_assert(false, "Compiler behaviour has been changed. Review the change!");
 #else
 static_assert(false, "Compiler behaviour has been changed. Review the change!");
 #endif  // __cpp_lib_string_view
+#endif  // JASL_cpp_lib_string_view
 
 #elif defined(__GNUG__) && !defined(__clang__)  // gcc
 /*
@@ -44,6 +48,7 @@ static_assert(false, "Compiler behaviour has been changed. Review the change!");
  * http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
  */
 
+#ifndef JASL_cpp_constexpr
 #ifdef __cpp_constexpr
 #define JASL_cpp_constexpr __cpp_constexpr
 #else
@@ -54,6 +59,8 @@ static_assert(false, "Compiler behaviour has been changed. Review the change!");
               ? 201304L    \
               : (__GNUC__ == 4L && __GNUC_MINOR__ >= 6L ? 200704L : 0L)))
 #endif  // __cpp_constexpr
+#endif  // JASL_cpp_constexpr
+#ifndef JASL_cpp_lib_string_view
 #ifdef __cpp_lib_string_view
 #define JASL_cpp_lib_string_view __cpp_lib_string_view
 #else
@@ -63,14 +70,18 @@ static_assert(false, "Compiler behaviour has been changed. Review the change!");
        ? 201606L                                                       \
        : 0L)
 #endif  // __cpp_lib_string_view
+#endif  // JASL_cpp_lib_string_view
 
 #elif defined(__clang__)  // clang
 
+#ifndef JASL_cpp_constexpr
 #ifdef __cpp_constexpr
 #define JASL_cpp_constexpr __cpp_constexpr
 #else
 static_assert(false, "Probably unsupported compiler version!");
 #endif
+#endif  // JASL_cpp_constexpr
+#ifndef JASL_cpp_lib_string_view
 #ifdef __cpp_lib_string_view
 #define JASL_cpp_lib_string_view __cpp_lib_string_view
 #elif __cplusplus >= 201703
@@ -78,10 +89,17 @@ static_assert(false, "Probably unsupported compiler version!");
 #else
 #define JASL_cpp_lib_string_view 0L
 #endif
+#endif  // JASL_cpp_lib_string_view
 
 #else
 
-static_assert(false, "Unsupported compiler!");
+#if !defined(JASL_cpp_constexpr) || !defined(JASL_cpp_lib_string_view)
+static_assert(false,
+              "Unsupported compiler! In case of an unsupported compiler "
+              "JASL_cpp_constexpr and JASL_cpp_lib_string_view macros should "
+              "be defined manually according to the used compiler (constexpr) "
+              "and the used std library (std::string_view).");
+#endif
 
 #endif  // <compiler types>
 
