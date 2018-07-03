@@ -190,7 +190,8 @@ class basic_string
           std::is_convertible<const T&,
                               std::basic_string_view<CharT, Traits>>::value &&
           !std::is_convertible<const T&, const CharT*>::value>::type>
-  explicit constexpr basic_string(const T& s) : basic_string() {
+  explicit basic_string(const T& s, const AllocatorT& alloc = AllocatorT())
+      : bridge_type(), _alloc(alloc), _cap(0) {
     std::basic_string_view<CharT, Traits> sv(s);
     init(sv.data(), sv.size());
   }
@@ -213,8 +214,10 @@ class basic_string
       typename = typename std::enable_if<std::is_same<
           const T&,
           const std::basic_string<CharT, Traits, AllocatorT>&>::value>::type>
-  explicit constexpr basic_string(const T& s)
-      : basic_string(s.data(), s.size()) {}
+  explicit basic_string(const T& s, const AllocatorT& alloc = AllocatorT())
+      : bridge_type(), _alloc(alloc), _cap(0) {
+    init(s.data(), s.size());
+  }
 
   template <
       typename T,
