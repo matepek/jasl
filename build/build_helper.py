@@ -278,6 +278,8 @@ if __name__ == '__main__':
     parser.add_argument('--msvc-vcvarsall-path')
     script_arg = parser.parse_args()
 
+    is_ci = script_arg.travis_ci or script_arg.appveyor
+
     if script_arg.quick_ninja:
         ninja_all_in_dir('./out', script_arg)
         sys.exit(0)
@@ -344,11 +346,6 @@ if __name__ == '__main__':
 
     assert(not script_arg.appveyor or is_win)
     assert(not script_arg.travis_ci or is_mac or is_linux)
-    if script_arg.travis_ci or script_arg.appveyor:
-        script_arg.install = True
-        script_arg.gen = True
-        script_arg.ninja = True
-        script_arg.stop_on_error = True
 
     # remark: vswhere.exe somehow not working on appveyor
     local_compilers = detect_compilers(
@@ -414,7 +411,7 @@ if __name__ == '__main__':
             shutil.rmtree(os.path.join('out', item), ignore_errors=True)
 
     # install
-    if script_arg.install:
+    if script_arg.install or is_ci:
         download_ninja_and_gn('out/.bin')
 
     variants = gn.variants()
@@ -474,7 +471,7 @@ if __name__ == '__main__':
     print('# ninja: ' + str(len(variants_to_ninja)) + ' variants to build.')
 
     # gen
-    if script_arg.gen:
+    if script_arg.gen or is_ci:
         gn_exec = 'gn' + ('.exe' if is_win else '')
         succ_count = 0
         fail_count = 0
@@ -490,7 +487,7 @@ if __name__ == '__main__':
                 print(str(succ_count + fail_count) + ': ' + ' '.join(command))
                 sys.stdout.flush()
                 fail_count += 1
-                if script_arg.stop_on_error:
+                if script_arg.stop_on_error or is_ci:
                     raise Exception('stop-on-error', return_code, succ_count)
                 print('Error: ' + str(return_code))
             else:
@@ -500,7 +497,7 @@ if __name__ == '__main__':
             raise Exception()
 
     # ninja
-    if script_arg.ninja:
+    if script_arg.ninja or is_ci:
         ninja_exec = 'ninja' + ('.exe' if is_win else '')
         succ_count = 0
         fail_count = 0
@@ -518,7 +515,7 @@ if __name__ == '__main__':
                     print('#   ' + arg + ' = ' + args[arg])
                 sys.stdout.flush()
                 fail_count += 1
-                if script_arg.stop_on_error:
+                if script_arg.stop_on_error or is_ci:
                     raise Exception('stop-on-error', return_code, succ_count)
                 print('Error: ' + str(return_code))
             else:
