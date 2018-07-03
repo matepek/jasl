@@ -195,10 +195,16 @@ class basic_string
     init(sv.data(), sv.size());
   }
 
-  JASL_CONSTEXPR_CXX14 basic_string& operator=(
-      const std::basic_string_view<CharT, Traits>& s) {
+  template <
+      typename T,
+      typename = typename std::enable_if<
+          std::is_convertible<const T&,
+                              std::basic_string_view<CharT, Traits>>::value &&
+          !std::is_convertible<const T&, const CharT*>::value>::type>
+  basic_string& operator=(const T& s) {
     dispose();
-    init(s.data(), s.size());
+    std::basic_string_view<CharT, Traits> sv(s);
+    init(sv.data(), sv.size());
     return *this;
   }
 #else
@@ -210,8 +216,12 @@ class basic_string
   explicit constexpr basic_string(const T& s)
       : basic_string(s.data(), s.size()) {}
 
-  JASL_CONSTEXPR_CXX14 basic_string& operator=(
-      const std::basic_string<CharT, Traits, AllocatorT>& s) {
+  template <
+      typename T,
+      typename = typename std::enable_if<std::is_same<
+          const T&,
+          const std::basic_string<CharT, Traits, AllocatorT>&>::value>::type>
+  basic_string& operator=(const T& s) {
     dispose();
     init(s.data(), s.size());
     return *this;
