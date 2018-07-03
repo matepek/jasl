@@ -451,9 +451,7 @@ if __name__ == '__main__':
         if is_mac:
             variants.filter_out(lambda x: is_sanitizer(x))
         if is_linux:
-            # clang: error: unsupported argument 'nullability' to option 'fsanitize='
-            variants.filter_out(lambda x: is_sanitizer(x) and x.compiler_type == gn.compiler_type.clang and (not x.is_debug or
-                                                                                                             x.compiler_exec.data['version'][0] < 6))
+            variants.filter_out(lambda x: is_sanitizer(x) and (not x.is_debug or x.std_version != gn.std_version.cpp17))
             # LeakSanitizer does not work under ptrace (strace, gdb, etc)
             variants.filter_out(lambda x: x.is_lsan or x.is_asan)
         variants.filter(lambda x: not x.is_generate_test_coverage)
