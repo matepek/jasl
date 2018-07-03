@@ -41,7 +41,14 @@ class StringValue(Value):
         super(StringValue, self).__init__(name, value, short, data)
 
 
-class TrueValue(Value):
+class BoolValue(Value):
+
+    def __eq__(self, other):
+        return bool(self) == bool(other)
+
+
+class TrueValue(BoolValue):
+
     def __init__(self):
         super(TrueValue, self).__init__(name='true', value='true', short='t')
 
@@ -49,7 +56,8 @@ class TrueValue(Value):
         return True
 
 
-class FalseValue(Value):
+class FalseValue(BoolValue):
+
     def __init__(self):
         super(FalseValue, self).__init__(name='false', value='false', short='f')
 
