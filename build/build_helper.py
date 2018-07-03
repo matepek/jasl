@@ -273,6 +273,7 @@ if __name__ == '__main__':
     parser.add_argument('--appveyor', action='store_true')
     parser.add_argument('--compiler-type',
                         choices=['msvc', 'clang', 'gcc'])
+    parser.add_argument('--sanitizer', choices=['yes', 'no'])
     parser.add_argument('--compiler-exec-like', nargs='+')
     parser.add_argument('--msvc-vcvarsall-path')
     script_arg = parser.parse_args()
@@ -423,6 +424,9 @@ if __name__ == '__main__':
         ct = getattr(gn.compiler_type, script_arg.compiler_type)
         variants.filter(lambda x: x.compiler_type == ct)
 
+    if script_arg.sanitizer:
+        variants.filter(lambda x: is_sanitizer(x) == (script_arg.sanitizer == 'yes'))
+
     # matepek: for testing
     if script_arg.matepek:
         variants.filter(lambda x: x.std_version ==
@@ -451,7 +455,7 @@ if __name__ == '__main__':
         if is_mac:
             variants.filter_out(lambda x: is_sanitizer(x))
         if is_linux:
-            variants.filter_out(lambda x: is_sanitizer(x) and (not x.is_debug or x.std_version != gn.std_version.cpp17))
+            variants.filter_out(lambda x: is_sanitizer(x) and x.std_version != gn.std_version.cpp17)
             # LeakSanitizer does not work under ptrace (strace, gdb, etc)
             variants.filter_out(lambda x: x.is_lsan or x.is_asan)
         variants.filter(lambda x: not x.is_generate_test_coverage)

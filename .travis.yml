@@ -93,9 +93,23 @@ matrix:
           packages:
             - clang-6.0
       env: 
-        - N=clang++-6.0
+        - N=clang++-6.0 sanitizer-no
       script:
-        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-6
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-6 --sanitizer no
+    - os: linux
+      compiler: clang
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+          packages:
+            - clang-6.0
+      env: 
+        - N=clang++-6.0 sanitizer-yes
+      script:
+        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-6 --sanitizer yes
     - os: linux
       compiler: gcc
       dist: trusty
