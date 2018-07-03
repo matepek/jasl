@@ -444,6 +444,11 @@ if __name__ == '__main__':
             lambda x: not x.is_defined_JASL_FORCE_USE_MURMURHASH_HASH)
         variants.filter(lambda x: x.target_cpu == gn.target_cpu.x64)
 
+    if script_arg.appveyor:
+        #gn gen is slow with msvc
+        variants.filter(lambda x: x.is_run_tests)
+        variants.filter_out(lambda x: x.is_run_performance_tests)
+
     #
     variants_to_gn = list(variants)
     assert(len(variants_to_gn) > 0)
