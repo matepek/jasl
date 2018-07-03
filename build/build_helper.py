@@ -474,13 +474,14 @@ if __name__ == '__main__':
         for v in variants_to_gn:
             out_dir = os.path.join('out', v.as_dir())
             command = [gn_exec, 'gen', out_dir, '--args=' + v.as_args()]
-            print(str(succ_count + fail_count) + ': ' + ' '.join(command))
             sys.stdout.flush()
             try:
                 return_code = subprocess.call(command)
             except KeyboardInterrupt:
                 sys.exit(1)
             if return_code != 0:
+                print(str(succ_count + fail_count) + ': ' + ' '.join(command))
+                sys.stdout.flush()
                 fail_count += 1
                 if script_arg.stop_on_error:
                     raise Exception('stop-on-error', return_code, succ_count)
@@ -498,17 +499,17 @@ if __name__ == '__main__':
         fail_count = 0
         for v in variants_to_ninja:
             out_dir = os.path.join('out', v.as_dir())
-            print('# ' + str(succ_count + fail_count) + '. gn args:')
-            args = v.as_dict()
-            for arg in sorted(args):
-                print('#   ' + arg + ' = ' + args[arg])
             command = [ninja_exec, '-C', out_dir]
-            sys.stdout.flush()
             try:
                 return_code = subprocess.call(command)
             except KeyboardInterrupt:
                 sys.exit(1)
             if return_code != 0:
+                print('# ' + str(succ_count + fail_count) + '. gn args:')
+                args = v.as_dict()
+                for arg in sorted(args):
+                    print('#   ' + arg + ' = ' + args[arg])
+                sys.stdout.flush()
                 fail_count += 1
                 if script_arg.stop_on_error:
                     raise Exception('stop-on-error', return_code, succ_count)
