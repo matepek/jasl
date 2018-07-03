@@ -214,7 +214,7 @@ class basic_string
           const T&,
           const std::basic_string<CharT, Traits, AllocatorT>&>::value>::type>
   explicit constexpr basic_string(const T& s)
-      : basic_string(s.data(), s.size()) {}
+      : basic_string(s.data(), s.size()), _alloc(), _cap(0) {}
 
   template <
       typename T,
