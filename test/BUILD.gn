@@ -18,7 +18,7 @@ test_build_err("jasl_string_view_constructor1") {
   } else if(is_gcc) {
     error_regex = ":13:46: error: no matching function for call to"
   } else if(is_msvc) {
-    error_regex = "\(13\): error C2664:"
+    error_regex = "\(13\): error C2665:"
   }
 }
 test_build_err("jasl_static_string_assignment") {
