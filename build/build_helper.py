@@ -23,6 +23,8 @@ is_win = platform.system() == 'Windows'
 is_mac = platform.system() == 'Darwin'
 is_linux = platform.system() == 'Linux'
 assert(is_win or is_mac or is_linux)
+gn_exec = 'gn' + ('.exe' if is_win else '')
+ninja_exec = 'ninja' + ('.exe' if is_win else '')
 
 
 def ninja_all_in_dir(dir_path, script_arg):
@@ -47,7 +49,7 @@ def ninja_all_in_dir(dir_path, script_arg):
                         augmented_arg_lines.append(l)
                 last_args_gn = arg_lines
                 print('\n'.join(augmented_arg_lines))
-            result = subprocess.call(['ninja', '-C', x_p])
+            result = subprocess.call([ninja_exec, '-C', x_p])
             if result != 0:
                 err_count += 1
                 if script_arg.stop_on_error:
@@ -213,7 +215,6 @@ def detect_compilers(vcvarsall=None):
                 params, stderr=subprocess.STDOUT, shell=True)
             m = re.search(
                 r'Compiler Version[^\n\d]+(\d+)\.(\d+)\.(\d+)', output)
-            # for x86 could be parsed
             return {'type': 'msvc', 'version': tuple(int(v) for v in m.groups()), 'vcvarsall': vcvarsall}
 
         def has_string_view(ver):
@@ -339,8 +340,8 @@ if __name__ == '__main__':
                   gn.compiler_type.msvc and x.std_version == gn.std_version.cpp11)
     gn.filter_out(lambda x: x.compiler_type !=
                   gn.compiler_type.msvc and x.std_version == gn.std_version.cpplatest)
-    gn.filter_out(lambda x: x.target_cpu ==
-                  gn.target_cpu.x86 and x.compiler_type != gn.compiler_type.msvc)
+    gn.filter_out(lambda x: is_mac and x.target_cpu ==
+                  gn.target_cpu.x86 and x.compiler_type == gn.compiler_type.clang)
     gn.filter_out(
         lambda x: x.is_defined_JASL_TERMINATE_ON_EXCEPTION_ON and x.is_run_tests)
     gn.filter_out(
@@ -460,7 +461,7 @@ if __name__ == '__main__':
     variants.filter(lambda x: x.is_run_tests)
     variants.filter_out(lambda x: x.is_run_performance_tests)
 
-    if script_arg.travis_ci:
+    if is_ci:
         if is_mac:
             variants.filter_out(lambda x: is_sanitizer(x))
         if is_linux:
@@ -469,6 +470,8 @@ if __name__ == '__main__':
             # LeakSanitizer does not work under ptrace (strace, gdb, etc)
             variants.filter_out(lambda x: x.is_lsan or x.is_asan)
         variants.filter(lambda x: not x.is_generate_test_coverage)
+        variants.filter_out(lambda x: x.target_cpu ==
+            gn.target_cpu.x86 and x.compiler_type != gn.compiler_type.msvc)
 
     #
     variants_to_ninja = list(variants)
@@ -480,7 +483,6 @@ if __name__ == '__main__':
 
     # gen
     if script_arg.gen or is_ci:
-        gn_exec = 'gn' + ('.exe' if is_win else '')
         succ_count = 0
         fail_count = 0
         for v in variants_to_gn:
@@ -506,7 +508,6 @@ if __name__ == '__main__':
 
     # ninja
     if script_arg.ninja or is_ci:
-        ninja_exec = 'ninja' + ('.exe' if is_win else '')
         succ_count = 0
         fail_count = 0
         for v in variants_to_ninja:
@@ -528,6 +529,9 @@ if __name__ == '__main__':
                 print('Error: ' + str(return_code))
             else:
                 succ_count += 1
+                # appveyor complains about quota
+                if is_ci:
+                    shutil.rmtree(out_dir, ignore_errors=True)
         print('ok(' + str(succ_count) + '), failed(' + str(fail_count) + ')')
         if fail_count:
             raise Exception()
