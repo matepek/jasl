@@ -262,20 +262,21 @@ if __name__ == '__main__':
     assert(os.getcwd().endswith('jasl'))
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--matepek', action='store_true')
     parser.add_argument('--quick-ninja', '-q', action='store_true')
     parser.add_argument('--clean', '-c', action='store_true')
     parser.add_argument('--install', '-i', action='store_true')
     parser.add_argument('--stop-on-error', '-e', '-s', action='store_true')
     parser.add_argument('--gen', '--gn', '-g', action='store_true')
     parser.add_argument('--ninja', '-n', action='store_true')
-    parser.add_argument('--travis-ci', action='store_true')
-    parser.add_argument('--appveyor', action='store_true')
+    parser.add_argument('--msvc-vcvarsall-path')
     parser.add_argument('--compiler-type',
                         choices=['msvc', 'clang', 'gcc'])
-    parser.add_argument('--sanitizer', choices=['yes', 'no'])
     parser.add_argument('--compiler-exec-like', nargs='+')
-    parser.add_argument('--msvc-vcvarsall-path')
+    parser.add_argument('--sanitizer', choices=['yes', 'no'])
+    parser.add_argument('--debug', choices=['yes', 'no'])
+    parser.add_argument('--travis-ci', action='store_true')
+    parser.add_argument('--appveyor', action='store_true')
+    parser.add_argument('--matepek', action='store_true')
     script_arg = parser.parse_args()
 
     is_ci = script_arg.travis_ci or script_arg.appveyor
@@ -400,11 +401,6 @@ if __name__ == '__main__':
     del comp_exec
     del local_compilers
 
-    # compiler-exec-like
-    if script_arg.compiler_exec_like:
-        gn.filter(lambda x, likes=script_arg.compiler_exec_like: any(
-            l in x.compiler_exec.value for l in likes))
-
     # clean
     if script_arg.clean:
         for item in filter(lambda x: x not in ['.clang-format', '.bin'], os.listdir('out')):
@@ -416,13 +412,22 @@ if __name__ == '__main__':
 
     variants = gn.variants()
 
-    #
+    # filtered by arguments
     if script_arg.compiler_type:
         ct = getattr(gn.compiler_type, script_arg.compiler_type)
         variants.filter(lambda x: x.compiler_type == ct)
-
+    if script_arg.compiler_exec_like:
+        variants.filter(lambda x, likes=script_arg.compiler_exec_like: any(
+            l in x.compiler_exec.value for l in likes))
     if script_arg.sanitizer:
         variants.filter(lambda x: is_sanitizer(x) == (script_arg.sanitizer == 'yes'))
+    if script_arg.debug:
+        variants.filter(lambda x: x.is_debug == (script_arg.debug == 'yes'))
+
+    # gn gen is slow with msvc so we are filtering before gn gen
+    if script_arg.appveyor:
+        variants.filter(lambda x: x.is_run_tests)
+        variants.filter_out(lambda x: x.is_run_performance_tests)
 
     # matepek: for testing
     if script_arg.matepek:
@@ -440,11 +445,6 @@ if __name__ == '__main__':
         variants.filter(
             lambda x: not x.is_defined_JASL_FORCE_USE_MURMURHASH_HASH)
         variants.filter(lambda x: x.target_cpu == gn.target_cpu.x64)
-
-    if script_arg.appveyor:
-        #gn gen is slow with msvc
-        variants.filter(lambda x: x.is_run_tests)
-        variants.filter_out(lambda x: x.is_run_performance_tests)
 
     #
     variants_to_gn = list(variants)

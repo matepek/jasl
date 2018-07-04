@@ -3,8 +3,16 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
+      JASL_DEBUG: yes
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
+      JASL_DEBUG: no
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
+      JASL_DEBUG: yes
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
+      JASL_DEBUG: no
 
 install:
   - cinst python2
@@ -14,4 +22,4 @@ install:
 build: off
 
 test_script:
-  - python .\build\build_helper.py --appveyor --msvc-vcvarsall-path "%JASL_VS%"
+  - python .\build\build_helper.py --appveyor --msvc-vcvarsall-path "%JASL_VS%" --debug "%JASL_DEBUG%"
