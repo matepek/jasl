@@ -34,13 +34,15 @@ def ninja_all_in_dir(dir_path, script_arg):
             x_p = os.path.join(dir_path, x)
             print('# ' + str(succ_count) + ' ############')
             if os.path.isfile(os.path.join(dir_path, x, 'args.gn')):
-                arg_lines = sorted(open(os.path.join(dir_path, x, 'args.gn'), 'r').readlines())
+                arg_lines = sorted(
+                    open(os.path.join(dir_path, x, 'args.gn'), 'r').readlines())
                 arg_lines = [x.strip('\r\n') for x in arg_lines]
                 max_len = max(map(lambda x: len(x), arg_lines))
                 augmented_arg_lines = []
                 for l in arg_lines:
                     if last_args_gn and l not in last_args_gn:
-                        augmented_arg_lines.append(l + '  <-' + '-' * (max_len - len(l)))
+                        augmented_arg_lines.append(
+                            l + '  <-' + '-' * (max_len - len(l)))
                     else:
                         augmented_arg_lines.append(l)
                 last_args_gn = arg_lines
@@ -274,6 +276,7 @@ if __name__ == '__main__':
     parser.add_argument('--compiler-exec-like', nargs='+')
     parser.add_argument('--sanitizer', choices=['yes', 'no'])
     parser.add_argument('--debug', choices=['yes', 'no'])
+    parser.add_argument('--target-cpu', choices=['x86', 'x64'])
     parser.add_argument('--travis-ci', action='store_true')
     parser.add_argument('--appveyor', action='store_true')
     parser.add_argument('--matepek', action='store_true')
@@ -420,9 +423,13 @@ if __name__ == '__main__':
         variants.filter(lambda x, likes=script_arg.compiler_exec_like: any(
             l in x.compiler_exec.value for l in likes))
     if script_arg.sanitizer:
-        variants.filter(lambda x: is_sanitizer(x) == (script_arg.sanitizer == 'yes'))
+        variants.filter(lambda x: is_sanitizer(
+            x) == (script_arg.sanitizer == 'yes'))
     if script_arg.debug:
         variants.filter(lambda x: x.is_debug == (script_arg.debug == 'yes'))
+    if script_arg.target_cpu:
+        variants.filter(lambda x: x.target_cpu == (
+            gn.target_cpu.x86 if script_arg.target_cpu == 'x86' else gn.target_cpu.x64))
 
     # gn gen is slow with msvc so we are filtering before gn gen
     if script_arg.appveyor:
@@ -457,7 +464,8 @@ if __name__ == '__main__':
         if is_mac:
             variants.filter_out(lambda x: is_sanitizer(x))
         if is_linux:
-            variants.filter_out(lambda x: is_sanitizer(x) and x.std_version != gn.std_version.cpp17)
+            variants.filter_out(lambda x: is_sanitizer(
+                x) and x.std_version != gn.std_version.cpp17)
             # LeakSanitizer does not work under ptrace (strace, gdb, etc)
             variants.filter_out(lambda x: x.is_lsan or x.is_asan)
         variants.filter(lambda x: not x.is_generate_test_coverage)
