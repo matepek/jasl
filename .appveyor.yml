@@ -1,38 +1,38 @@
 # https://www.appveyor.com/docs/lang/cpp/
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-      JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
-      JASL_DEBUG: yes
+    - JASL_DEBUG: yes
       JASL_TARGET_CPU: x86
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
-      JASL_DEBUG: no
+    - JASL_DEBUG: no
       JASL_TARGET_CPU: x86
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
-      JASL_DEBUG: yes
+    - JASL_DEBUG: yes
       JASL_TARGET_CPU: x64
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
-      JASL_DEBUG: no
+    - JASL_DEBUG: no
       JASL_TARGET_CPU: x64
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
-      JASL_DEBUG: yes
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
+    - JASL_DEBUG: yes
       JASL_TARGET_CPU: x86
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
-      JASL_DEBUG: no
+    - JASL_DEBUG: no
       JASL_TARGET_CPU: x86
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
-      JASL_DEBUG: yes
+    - JASL_DEBUG: yes
       JASL_TARGET_CPU: x64
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
-      JASL_DEBUG: no
+    - JASL_DEBUG: no
       JASL_TARGET_CPU: x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
 
 install:
   - cinst python2
