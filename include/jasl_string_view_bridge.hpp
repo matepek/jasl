@@ -11,6 +11,7 @@
 #include <iterator>
 
 namespace jasl {
+namespace inner {
 
 template <typename string_viewT>
 class string_view_bridge {
@@ -539,15 +540,16 @@ class string_view_bridge {
     return os << str._sv;
   }
 
-  friend struct std::hash<string_view_bridge>;
+  friend struct ::std::hash<string_view_bridge>;
 };
 
+}  // namespace inner
 }  // namespace jasl
 
 namespace std {
 template <typename string_viewT>
-struct hash<jasl::string_view_bridge<string_viewT>> {
-  size_t operator()(jasl::string_view_bridge<string_viewT> x) const
+struct hash<jasl::inner::string_view_bridge<string_viewT>> {
+  size_t operator()(jasl::inner::string_view_bridge<string_viewT> x) const
       noexcept(noexcept(std::hash<string_viewT>{}(x._sv))) {
     return std::hash<string_viewT>{}(x._sv);
   }

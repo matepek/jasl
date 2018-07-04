@@ -17,9 +17,10 @@ namespace jasl {
 
 template <typename CharT, class Traits = std::char_traits<CharT>>
 class basic_static_string
-    : public string_view_bridge<basic_string_view<CharT, Traits>> {
+    : public inner::string_view_bridge<basic_string_view<CharT, Traits>> {
  public:
-  typedef string_view_bridge<basic_string_view<CharT, Traits>> bridge_type;
+  typedef inner::string_view_bridge<basic_string_view<CharT, Traits>>
+      bridge_type;
   typedef typename bridge_type::bridge_to_type base_type;
 
  private:
