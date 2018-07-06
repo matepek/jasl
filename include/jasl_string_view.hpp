@@ -27,8 +27,17 @@ typedef basic_string_view<char32_t> u32string_view;
 }  // namespace jasl
 
 /*
- * check
+ * JASL_USE_JASL_STRING_VIEW_AS_BASE
+ * jasl::nonstd::string_view vill be used as jasl::string_view
+ * The result of this that jasl::static_string and jasl::string will use it.
  */
+
+/*
+ * JASL_USE_STD_STRING_VIEW_AS_BASE
+ * std::string_view vill be used as jasl::string_view
+ * The result of this that jasl::static_string and jasl::string will use it.
+ */
+
 #if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
     defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
 static_assert(false, "Both defines cannot be used at the same time.");

@@ -6,10 +6,19 @@
 
 #pragma once
 
-// MSVC doesn't use __cplusplus well.
-#if !defined(_MSC_VER) && (__cplusplus < 201103L)
-#error "This library needs at least a C++11 compliant compiler."
-#endif
+/*
+ * JASL_cpp_constexpr
+ * JASL library will try to figure out the correct value of __cpp_constexpr and
+ * will define JASL_cpp_constexpr to it. JASL_cpp_constexpr also can be manually
+ * defined.
+ */
+
+/*
+ * JASL_cpp_lib_string_view
+ * JASL library will try to figure out the correct value of
+ * __cpp_lib_string_view and will define JASL_cpp_lib_string_view to it.
+ * JASL_cpp_lib_string_view also can be manually defined.
+ */
 
 #ifdef _MSC_VER  // msvc
 /*
