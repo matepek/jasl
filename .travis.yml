@@ -19,20 +19,6 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
-          packages:
-            - clang-3.6
-      env: 
-        - N=clang-3.6
-      script:
-        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-3.6
-    - os: linux
-      compiler: clang
-      dist: precise
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.7
           packages:
             - clang-3.7
