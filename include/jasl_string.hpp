@@ -43,7 +43,7 @@ class basic_string
   size_t _cap;  // capacity
 
  private:
-  struct ParamterWrapper {
+  struct CStr {
     size_t size;
     const CharT* ptr;
 
@@ -55,7 +55,7 @@ class basic_string
 #else
 #define JASL_TEMP_CONSTEXPR_FOR_PW constexpr
 #endif
-    JASL_TEMP_CONSTEXPR_FOR_PW ParamterWrapper(const CharT* p) noexcept
+    JASL_TEMP_CONSTEXPR_FOR_PW CStr(const CharT* p) noexcept
         : size(Traits::length(p)), ptr(p) {}
 #undef JASL_TEMP_CONSTEXPR_FOR_PW
   };
@@ -110,11 +110,10 @@ class basic_string
           std::is_nothrow_copy_constructible<AllocatorT>::value)
       : bridge_type(), _alloc(a), _cap(0) {}
 
-  basic_string(const ParamterWrapper& paramW,
-               const AllocatorT& alloc = AllocatorT())
+  basic_string(const CStr& cstr, const AllocatorT& alloc = AllocatorT())
       : bridge_type(), _alloc(alloc), _cap(0) {
-    JASL_ASSERT(paramW.ptr != nullptr, "paramW != nullptr");
-    init(paramW.ptr, paramW.size);
+    JASL_ASSERT(cstr.ptr != nullptr, "cstr != nullptr");
+    init(cstr.ptr, cstr.size);
   }
 
   basic_string(const CharT* ptr,
@@ -262,9 +261,9 @@ class basic_string
     return *this;
   }
 
-  basic_string& assign(const ParamterWrapper& paramW) {
+  basic_string& assign(const CStr& cstr) {
     dispose();
-    init(paramW.ptr, paramW.size);
+    init(cstr.ptr, cstr.size);
     return *this;
   }
 
