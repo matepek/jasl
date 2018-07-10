@@ -18,12 +18,26 @@ namespace jasl {
 namespace nonstd {
 template <typename CharT, typename Traits = std::char_traits<CharT>>
 class basic_string_view;
+
+typedef basic_string_view<char> string_view;
+typedef basic_string_view<wchar_t> wstring_view;
+typedef basic_string_view<char16_t> u16string_view;
+typedef basic_string_view<char32_t> u32string_view;
 }  // namespace nonstd
 }  // namespace jasl
 
 /*
- * check
+ * JASL_USE_JASL_STRING_VIEW_AS_BASE
+ * jasl::nonstd::string_view vill be used as jasl::string_view
+ * The result of this that jasl::static_string and jasl::string will use it.
  */
+
+/*
+ * JASL_USE_STD_STRING_VIEW_AS_BASE
+ * std::string_view vill be used as jasl::string_view
+ * The result of this that jasl::static_string and jasl::string will use it.
+ */
+
 #if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
     defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
 static_assert(false, "Both defines cannot be used at the same time.");
@@ -88,7 +102,7 @@ class basic_string_view {
   typedef const_reverse_iterator reverse_iterator;
   typedef size_t size_type;
   typedef std::ptrdiff_t difference_type;
-  static constexpr const size_type npos = static_cast<size_type>(-1);
+  static constexpr size_type npos = static_cast<size_type>(-1);
 
  public:
   constexpr basic_string_view() noexcept : _ptr(nullptr), _size(0) {}
@@ -107,6 +121,66 @@ class basic_string_view {
   }
 
   ~basic_string_view() noexcept = default;
+
+#if defined(JASL_SUPPORT_STD_TO_JASL)
+#if defined(JASL_cpp_lib_string_view)
+  template <
+      typename T,
+      typename = typename std::enable_if<
+          std::is_convertible<const T&,
+                              std::basic_string_view<CharT, Traits>>::value &&
+          !std::is_convertible<const T&, const CharT*>::value>::type>
+  explicit constexpr basic_string_view(const T& s) noexcept(
+      noexcept(s.data()) && noexcept(s.size())) {
+    std::basic_string_view<CharT, Traits> sv(s);
+    _ptr = sv.data();
+    _size = sv.size();
+  }
+
+  JASL_CONSTEXPR_CXX14 basic_string_view&
+  operator=(const std::basic_string_view<CharT, Traits>& s) noexcept(
+      noexcept(s.data()) && noexcept(s.size())) {
+    _ptr = s.data();
+    _size = s.size();
+    return *this;
+  }
+#else
+  template <typename AllocatorT>
+  constexpr basic_string_view(
+      const std::basic_string<CharT, Traits, AllocatorT>&
+          s) noexcept(noexcept(s.data()) && noexcept(s.size()))
+      : _ptr(s.data()), _size(s.size()) {}
+
+  template <typename AllocatorT>
+  JASL_CONSTEXPR_CXX14 basic_string_view&
+  operator=(const std::basic_string<CharT, Traits, AllocatorT>& s) noexcept(
+      noexcept(s.data()) && noexcept(s.size())) {
+    _ptr = s.data();
+    _size = s.size();
+    return *this;
+  }
+#endif
+#endif
+
+#if defined(JASL_SUPPORT_JASL_TO_STD)
+#if defined(JASL_cpp_lib_string_view)
+  operator std::basic_string_view<CharT, Traits>() const noexcept(
+      std::is_nothrow_constructible<std::basic_string_view<CharT, Traits>,
+                                    const CharT*,
+                                    size_t>::value) {
+    return std::basic_string_view<CharT, Traits>(_ptr, _size);
+  }
+#else
+  template <typename AllocatorT>
+  operator std::basic_string<CharT, Traits, AllocatorT>() const
+      noexcept(std::is_nothrow_constructible<
+               std::basic_string<CharT, Traits, AllocatorT>,
+               const CharT*,
+               size_t>::value) {
+    return std::basic_string<CharT, Traits, AllocatorT>(_ptr, _size);
+  }
+#endif
+#endif
 
   constexpr const_iterator begin() const noexcept { return cbegin(); }
   constexpr const_iterator end() const noexcept { return cend(); }

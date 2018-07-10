@@ -148,7 +148,7 @@ template("test") {
         }
       } else if (is_gcc) {
         # we could generate a more readable output here.
-        # maybe later
+        # maybe later. now works for coverall.io.
       } else {
         assert(false)
       }

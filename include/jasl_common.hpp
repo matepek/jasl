@@ -64,6 +64,10 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
 
 /*
  * JASL_TESTIFY_STD_STRING_VIEW_EXISTS
+ * This macro can be useful, if the compiler couldn't recognise the the existing
+ * std::string_view. Remarks: This macro defines JASL_cpp_lib_string_view to
+ * 201606. This result can be achieved with defining JASL_cpp_lib_string_view
+ * manually.
  */
 #if defined(JASL_TESTIFY_STD_STRING_VIEW_EXISTS)
 #if !defined(JASL_cpp_lib_string_view)

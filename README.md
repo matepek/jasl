@@ -298,8 +298,7 @@ JASL library uses the [MIT](LICENSE) license.
 # TODOs
  * jasl::string_view could have more methods like [find_first, etc..](http://en.cppreference.com/w/cpp/header/string_view)
  * support for [literals](http://en.cppreference.com/w/cpp/language/user_literal)
- * std_string support (to_std_string, ?)
- * declaration - definition separation?
- * test_build_err could be more error prone(python script?, Wno-all)
+ * std_string support (to_std_string, jasl string view compare operator std, ?)
  * Documentation.md <- doxygen
- * jasl string view compare operator std
+ * restructure project
+ * refresh readme, new defines and build helper install flag.

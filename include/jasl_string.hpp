@@ -12,6 +12,7 @@
 
 #include "jasl_common.hpp"
 #include "jasl_feature_test_macro.hpp"
+#include "jasl_static_string.hpp"
 #include "jasl_string_view.hpp"
 #include "jasl_string_view_bridge.hpp"
 
@@ -21,9 +22,10 @@ template <typename CharT,
           typename Traits = std::char_traits<CharT>,
           typename AllocatorT = std::allocator<CharT>>
 class basic_string
-    : public string_view_bridge<basic_string_view<CharT, Traits>> {
+    : public inner::string_view_bridge<basic_string_view<CharT, Traits>> {
  public:
-  typedef string_view_bridge<basic_string_view<CharT, Traits>> bridge_type;
+  typedef inner::string_view_bridge<basic_string_view<CharT, Traits>>
+      bridge_type;
   typedef typename bridge_type::bridge_to_type base_type;
   typedef AllocatorT allocator_type;
 
@@ -41,7 +43,7 @@ class basic_string
   size_t _cap;  // capacity
 
  private:
-  struct ParamterWrapper {
+  struct CStr {
     size_t size;
     const CharT* ptr;
 
@@ -53,7 +55,7 @@ class basic_string
 #else
 #define JASL_TEMP_CONSTEXPR_FOR_PW constexpr
 #endif
-    JASL_TEMP_CONSTEXPR_FOR_PW ParamterWrapper(const CharT* p) noexcept
+    JASL_TEMP_CONSTEXPR_FOR_PW CStr(const CharT* p) noexcept
         : size(Traits::length(p)), ptr(p) {}
 #undef JASL_TEMP_CONSTEXPR_FOR_PW
   };
@@ -108,11 +110,18 @@ class basic_string
           std::is_nothrow_copy_constructible<AllocatorT>::value)
       : bridge_type(), _alloc(a), _cap(0) {}
 
-  basic_string(const ParamterWrapper& paramW,
+  basic_string(const CStr& cstr, const AllocatorT& alloc = AllocatorT())
+      : bridge_type(), _alloc(alloc), _cap(0) {
+    JASL_ASSERT(cstr.ptr != nullptr, "cstr != nullptr");
+    init(cstr.ptr, cstr.size);
+  }
+
+  basic_string(const CharT* ptr,
+               size_t size,
                const AllocatorT& alloc = AllocatorT())
       : bridge_type(), _alloc(alloc), _cap(0) {
-    JASL_ASSERT(paramW.ptr != nullptr, "paramW != nullptr");
-    init(paramW.ptr, paramW.size);
+    JASL_ASSERT(ptr != nullptr, "ptr != nullptr");
+    init(ptr, size);
   }
 
   template <size_t N>
@@ -159,6 +168,91 @@ class basic_string
     }
   }
 
+  basic_string(const basic_static_string<CharT, Traits>& ss) noexcept(
+      std::is_nothrow_constructible<bridge_type, const CharT*, size_t>::value&&
+          std::is_nothrow_default_constructible<AllocatorT>::value)
+      : bridge_type(ss.data(), ss.size()), _alloc(), _cap(0) {}
+
+  basic_string(
+      const basic_static_string<CharT, Traits>& ss,
+      const AllocatorT&
+          alloc) noexcept(std::is_nothrow_constructible<bridge_type,
+                                                        const CharT*,
+                                                        size_t>::value&& std::
+                              is_nothrow_copy_constructible<AllocatorT>::value)
+      : bridge_type(ss.data(), ss.size()), _alloc(alloc), _cap(0) {}
+
+#if defined(JASL_SUPPORT_STD_TO_JASL)
+#if defined(JASL_cpp_lib_string_view)
+  template <
+      typename T,
+      typename = typename std::enable_if<
+          std::is_convertible<const T&,
+                              std::basic_string_view<CharT, Traits>>::value &&
+          !std::is_convertible<const T&, const CharT*>::value>::type>
+  explicit basic_string(const T& s, const AllocatorT& alloc = AllocatorT())
+      : bridge_type(), _alloc(alloc), _cap(0) {
+    std::basic_string_view<CharT, Traits> sv(s);
+    init(sv.data(), sv.size());
+  }
+
+  template <
+      typename T,
+      typename = typename std::enable_if<
+          std::is_convertible<const T&,
+                              std::basic_string_view<CharT, Traits>>::value &&
+          !std::is_convertible<const T&, const CharT*>::value>::type>
+  basic_string& operator=(const T& s) {
+    dispose();
+    std::basic_string_view<CharT, Traits> sv(s);
+    init(sv.data(), sv.size());
+    return *this;
+  }
+#else
+  template <
+      typename T,
+      typename = typename std::enable_if<std::is_same<
+          const T&,
+          const std::basic_string<CharT, Traits, AllocatorT>&>::value>::type>
+  explicit basic_string(const T& s, const AllocatorT& alloc = AllocatorT())
+      : bridge_type(), _alloc(alloc), _cap(0) {
+    init(s.data(), s.size());
+  }
+
+  template <
+      typename T,
+      typename = typename std::enable_if<std::is_same<
+          const T&,
+          const std::basic_string<CharT, Traits, AllocatorT>&>::value>::type>
+  basic_string& operator=(const T& s) {
+    dispose();
+    init(s.data(), s.size());
+    return *this;
+  }
+#endif
+#endif
+
+#if defined(JASL_SUPPORT_JASL_TO_STD)
+#if defined(JASL_cpp_lib_string_view)
+  operator std::basic_string_view<CharT, Traits>() const noexcept(
+      std::is_nothrow_constructible<std::basic_string_view<CharT, Traits>,
+                                    const CharT*,
+                                    size_t>::value) {
+    return std::basic_string_view<CharT, Traits>(bridge_type::data(),
+                                                 bridge_type::size());
+  }
+#else
+  operator std::basic_string<CharT, Traits, AllocatorT>() const
+      noexcept(std::is_nothrow_constructible<
+               std::basic_string<CharT, Traits, AllocatorT>,
+               const CharT*,
+               size_t>::value) {
+    return std::basic_string<CharT, Traits, AllocatorT>(bridge_type::data(),
+                                                        bridge_type::size());
+  }
+#endif
+#endif
+
   template <size_t N>
   basic_string& assign(const CharT (&str)[N]) noexcept(
       bridge_type::is_nothrow_settable) {
@@ -167,9 +261,9 @@ class basic_string
     return *this;
   }
 
-  basic_string& assign(const ParamterWrapper& paramW) {
+  basic_string& assign(const CStr& cstr) {
     dispose();
-    init(paramW.ptr, paramW.size);
+    init(cstr.ptr, cstr.size);
     return *this;
   }
 
@@ -224,6 +318,13 @@ class basic_string
     return *this;
   }
 
+  basic_string& assing(const basic_static_string<CharT, Traits>& ss) noexcept(
+      bridge_type::is_nothrow_settable) {
+    dispose();
+    bridge_type::set(ss.data(), ss.size());
+    return *this;
+  }
+
   template <size_t N>
   basic_string& operator=(const CharT (&str)[N]) noexcept {
     return assign<N>(str);
@@ -234,6 +335,12 @@ class basic_string
   basic_string& operator=(basic_string&& other) noexcept(
       is_noexcept_assign_rvalue) {
     return assign(std::move(other));
+  }
+
+  basic_string&
+  operator=(const basic_static_string<CharT, Traits>& other) noexcept(
+      bridge_type::is_nothrow_settable) {
+    return assign(other);
   }
 
   constexpr bool is_static() const noexcept { return _cap == 0; }

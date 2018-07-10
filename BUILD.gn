@@ -31,6 +31,8 @@ action("version-consistency.check") {
     rebase_path("//CHANGELOG.md"),
     "--jasl_common",
     rebase_path("//include/jasl_common.hpp"),
+    "--doxygen_config",
+    rebase_path("//doxygen.cfg"),
     "--output",
     target_name,
   ]
@@ -40,6 +42,7 @@ action("version-consistency.check") {
   ]
   sources = [
     "//CHANGELOG.md",
+    "//doxygen.cfg",
     "//include/jasl_common.hpp",
   ]
   outputs = [

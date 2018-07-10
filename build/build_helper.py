@@ -23,20 +23,33 @@ is_win = platform.system() == 'Windows'
 is_mac = platform.system() == 'Darwin'
 is_linux = platform.system() == 'Linux'
 assert(is_win or is_mac or is_linux)
+gn_exec = 'gn' + ('.exe' if is_win else '')
+ninja_exec = 'ninja' + ('.exe' if is_win else '')
 
 
 def ninja_all_in_dir(dir_path, script_arg):
     err_count = 0
     succ_count = 0
+    last_args_gn = None
     for x in os.listdir(os.path.join(os.getcwd(), dir_path)):
         if x[0] != '.' and os.path.isdir(os.path.join(os.getcwd(), dir_path, x)):
             x_p = os.path.join(dir_path, x)
             print('# ' + str(succ_count) + ' ############')
             if os.path.isfile(os.path.join(dir_path, x, 'args.gn')):
-                l = open(os.path.join(dir_path, x, 'args.gn'), 'r').readlines()
-                l = [x.strip('\r\n') for x in l]
-                print('\n'.join(l))
-            result = subprocess.call(['ninja', '-C', x_p])
+                arg_lines = sorted(
+                    open(os.path.join(dir_path, x, 'args.gn'), 'r').readlines())
+                arg_lines = [x.strip('\r\n') for x in arg_lines]
+                max_len = max(map(lambda x: len(x), arg_lines))
+                augmented_arg_lines = []
+                for l in arg_lines:
+                    if last_args_gn and l not in last_args_gn:
+                        augmented_arg_lines.append(
+                            l + '  <-' + '-' * (max_len - len(l)))
+                    else:
+                        augmented_arg_lines.append(l)
+                last_args_gn = arg_lines
+                print('\n'.join(augmented_arg_lines))
+            result = subprocess.call([ninja_exec, '-C', x_p])
             if result != 0:
                 err_count += 1
                 if script_arg.stop_on_error:
@@ -202,7 +215,6 @@ def detect_compilers(vcvarsall=None):
                 params, stderr=subprocess.STDOUT, shell=True)
             m = re.search(
                 r'Compiler Version[^\n\d]+(\d+)\.(\d+)\.(\d+)', output)
-            # for x86 could be parsed
             return {'type': 'msvc', 'version': tuple(int(v) for v in m.groups()), 'vcvarsall': vcvarsall}
 
         def has_string_view(ver):
@@ -253,26 +265,31 @@ if __name__ == '__main__':
     assert(os.getcwd().endswith('jasl'))
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--matepek', action='store_true')
     parser.add_argument('--quick-ninja', '-q', action='store_true')
     parser.add_argument('--clean', '-c', action='store_true')
     parser.add_argument('--install', '-i', action='store_true')
     parser.add_argument('--stop-on-error', '-e', '-s', action='store_true')
     parser.add_argument('--gen', '--gn', '-g', action='store_true')
     parser.add_argument('--ninja', '-n', action='store_true')
-    parser.add_argument('--travis-ci', action='store_true')
-    parser.add_argument('--appveyor', action='store_true')
+    parser.add_argument('--msvc-vcvarsall-path')
     parser.add_argument('--compiler-type',
                         choices=['msvc', 'clang', 'gcc'])
     parser.add_argument('--compiler-exec-like', nargs='+')
-    parser.add_argument('--msvc-vcvarsall-path')
+    parser.add_argument('--sanitizer', choices=['yes', 'no'])
+    parser.add_argument('--debug', choices=['yes', 'no'])
+    parser.add_argument('--target-cpu', choices=['x86', 'x64'])
+    parser.add_argument('--travis-ci', action='store_true')
+    parser.add_argument('--appveyor', action='store_true')
+    parser.add_argument('--matepek', action='store_true')
     script_arg = parser.parse_args()
+
+    is_ci = script_arg.travis_ci or script_arg.appveyor
 
     if script_arg.quick_ninja:
         ninja_all_in_dir('./out', script_arg)
         sys.exit(0)
 
-    gn = GN()
+    gn = Args()
     gn.add(BooleanArg('is_debug', 'd'))
     gn.add(BooleanArg('is_run_tests', 't'))
     gn.add(BooleanArg('is_run_performance_tests', 'p'))
@@ -303,6 +320,8 @@ if __name__ == '__main__':
     gn.add(BooleanArg('is_defined_JASL_FORCE_USE_MURMURHASH_HASH', 'mur'))
     gn.add(BooleanArg('is_defined_JASL_USE_JASL_STRING_VIEW_AS_BASE', 'jsv'))
     gn.add(BooleanArg('is_defined_JASL_USE_STD_STRING_VIEW_AS_BASE', 'ssv'))
+    gn.add(BooleanArg('is_defined_JASL_SUPPORT_STD_TO_JASL', 's2j'))
+    gn.add(BooleanArg('is_defined_JASL_SUPPORT_JASL_TO_STD', 'j2s'))
 
     # These filters exclude illegal variations
     gn.filter_out(lambda x: is_sanitizer(
@@ -321,8 +340,8 @@ if __name__ == '__main__':
                   gn.compiler_type.msvc and x.std_version == gn.std_version.cpp11)
     gn.filter_out(lambda x: x.compiler_type !=
                   gn.compiler_type.msvc and x.std_version == gn.std_version.cpplatest)
-    gn.filter_out(lambda x: x.target_cpu ==
-                  gn.target_cpu.x86 and x.compiler_type != gn.compiler_type.msvc)
+    gn.filter_out(lambda x: is_mac and x.target_cpu ==
+                  gn.target_cpu.x86 and x.compiler_type == gn.compiler_type.clang)
     gn.filter_out(
         lambda x: x.is_defined_JASL_TERMINATE_ON_EXCEPTION_ON and x.is_run_tests)
     gn.filter_out(
@@ -332,11 +351,6 @@ if __name__ == '__main__':
 
     assert(not script_arg.appveyor or is_win)
     assert(not script_arg.travis_ci or is_mac or is_linux)
-    if script_arg.travis_ci or script_arg.appveyor:
-        script_arg.install = True
-        script_arg.gen = True
-        script_arg.ninja = True
-        script_arg.stop_on_error = True
 
     # remark: vswhere.exe somehow not working on appveyor
     local_compilers = detect_compilers(
@@ -391,26 +405,37 @@ if __name__ == '__main__':
     del comp_exec
     del local_compilers
 
-    # compiler-exec-like
-    if script_arg.compiler_exec_like:
-        gn.filter(lambda x, likes=script_arg.compiler_exec_like: any(
-            l in x.compiler_exec.value for l in likes))
-
     # clean
     if script_arg.clean:
         for item in filter(lambda x: x not in ['.clang-format', '.bin'], os.listdir('out')):
             shutil.rmtree(os.path.join('out', item), ignore_errors=True)
 
     # install
-    if script_arg.install:
+    if script_arg.install or is_ci:
         download_ninja_and_gn('out/.bin')
 
     variants = gn.variants()
 
-    #
+    # filtered by arguments
     if script_arg.compiler_type:
         ct = getattr(gn.compiler_type, script_arg.compiler_type)
         variants.filter(lambda x: x.compiler_type == ct)
+    if script_arg.compiler_exec_like:
+        variants.filter(lambda x, likes=script_arg.compiler_exec_like: any(
+            l in x.compiler_exec.value for l in likes))
+    if script_arg.sanitizer:
+        variants.filter(lambda x: is_sanitizer(
+            x) == (script_arg.sanitizer == 'yes'))
+    if script_arg.debug:
+        variants.filter(lambda x: x.is_debug == (script_arg.debug == 'yes'))
+    if script_arg.target_cpu:
+        variants.filter(lambda x: x.target_cpu == (
+            gn.target_cpu.x86 if script_arg.target_cpu == 'x86' else gn.target_cpu.x64))
+
+    # gn gen is slow with msvc so we are filtering before gn gen
+    if script_arg.appveyor:
+        variants.filter(lambda x: x.is_run_tests)
+        variants.filter_out(lambda x: x.is_run_performance_tests)
 
     # matepek: for testing
     if script_arg.matepek:
@@ -436,16 +461,17 @@ if __name__ == '__main__':
     variants.filter(lambda x: x.is_run_tests)
     variants.filter_out(lambda x: x.is_run_performance_tests)
 
-    if script_arg.travis_ci:
+    if is_ci:
         if is_mac:
             variants.filter_out(lambda x: is_sanitizer(x))
         if is_linux:
-            # clang: error: unsupported argument 'nullability' to option 'fsanitize='
-            variants.filter_out(lambda x: is_sanitizer(x) and x.compiler_type == gn.compiler_type.clang and (not x.is_debug or
-                                                                                                             x.compiler_exec.data['version'][0] < 6))
+            variants.filter_out(lambda x: is_sanitizer(
+                x) and x.std_version != gn.std_version.cpp17)
             # LeakSanitizer does not work under ptrace (strace, gdb, etc)
             variants.filter_out(lambda x: x.is_lsan or x.is_asan)
         variants.filter(lambda x: not x.is_generate_test_coverage)
+        variants.filter_out(lambda x: x.target_cpu ==
+            gn.target_cpu.x86 and x.compiler_type != gn.compiler_type.msvc)
 
     #
     variants_to_ninja = list(variants)
@@ -456,22 +482,22 @@ if __name__ == '__main__':
     print('# ninja: ' + str(len(variants_to_ninja)) + ' variants to build.')
 
     # gen
-    if script_arg.gen:
-        gn_exec = 'gn' + ('.exe' if is_win else '')
+    if script_arg.gen or is_ci:
         succ_count = 0
         fail_count = 0
         for v in variants_to_gn:
             out_dir = os.path.join('out', v.as_dir())
             command = [gn_exec, 'gen', out_dir, '--args=' + v.as_args()]
-            print(str(succ_count + fail_count) + ': ' + ' '.join(command))
             sys.stdout.flush()
             try:
                 return_code = subprocess.call(command)
             except KeyboardInterrupt:
                 sys.exit(1)
             if return_code != 0:
+                print(str(succ_count + fail_count) + ': ' + ' '.join(command))
+                sys.stdout.flush()
                 fail_count += 1
-                if script_arg.stop_on_error:
+                if script_arg.stop_on_error or is_ci:
                     raise Exception('stop-on-error', return_code, succ_count)
                 print('Error: ' + str(return_code))
             else:
@@ -481,29 +507,31 @@ if __name__ == '__main__':
             raise Exception()
 
     # ninja
-    if script_arg.ninja:
-        ninja_exec = 'ninja' + ('.exe' if is_win else '')
+    if script_arg.ninja or is_ci:
         succ_count = 0
         fail_count = 0
         for v in variants_to_ninja:
             out_dir = os.path.join('out', v.as_dir())
-            print('# ' + str(succ_count + fail_count) + '. gn args:')
-            args = v.as_dict()
-            for arg in sorted(args):
-                print('#   ' + arg + ' = ' + args[arg])
             command = [ninja_exec, '-C', out_dir]
-            sys.stdout.flush()
             try:
                 return_code = subprocess.call(command)
             except KeyboardInterrupt:
                 sys.exit(1)
             if return_code != 0:
+                print('# ' + str(succ_count + fail_count) + '. gn args:')
+                args = v.as_dict()
+                for arg in sorted(args):
+                    print('#   ' + arg + ' = ' + args[arg])
+                sys.stdout.flush()
                 fail_count += 1
-                if script_arg.stop_on_error:
+                if script_arg.stop_on_error or is_ci:
                     raise Exception('stop-on-error', return_code, succ_count)
                 print('Error: ' + str(return_code))
             else:
                 succ_count += 1
+                # appveyor complains about quota
+                if is_ci:
+                    shutil.rmtree(out_dir, ignore_errors=True)
         print('ok(' + str(succ_count) + '), failed(' + str(fail_count) + ')')
         if fail_count:
             raise Exception()
