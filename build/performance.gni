@@ -8,10 +8,8 @@ template("performance") {
     ]
 
     public_deps = [
-      "//include",
+      "//:include",
     ]
-
-    defines = [ "JASL_USE_JASL_STRING_VIEW_AS_BASE" ]
   }
 
   if (is_run_performance_tests) {

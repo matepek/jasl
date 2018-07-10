@@ -130,6 +130,14 @@ __Note__: If this is defined, the tests will terminate when they test the except
 
 This macro is recommended to be defined during development and testing. It helps identify unproper use of the library.
 
+#### ```JASL_DISABLE_JASL_STRING_VIEW_HASH```
+
+If this macro is provided, then jasl::string_view has no std::hash specialization. The user can manually add one.
+
+#### ```JASL_FORCE_USE_MURMURHASH_HASH```
+
+In case of this macro if the std::string_view is provided jasl::string_view still will use murmurhash.
+
 # Changelog
 
 [Here: CHANGELOG.md](CHANGELOG.md)
@@ -288,14 +296,9 @@ JASL library uses the [MIT](LICENSE) license.
  * https://github.com/Microsoft/vswhere
 
 # TODOs
- * consider replacing _inheritance_ to _operator string_view_
- * lsan, msan
- * better hash for jasl::string_view
  * jasl::string_view could have more methods like [find_first, etc..](http://en.cppreference.com/w/cpp/header/string_view)
- * smart_string(shared_ptr and appending)
  * support for [literals](http://en.cppreference.com/w/cpp/language/user_literal)
- * std_string support (to_std_string, ?)
- * gn x86 toolchain and testing
- * string allocator template parameter (ngg)
- * dyn_type maybe std::string?
- * declaration - definition separation?
+ * std_string support (to_std_string, jasl string view compare operator std, ?)
+ * Documentation.md <- doxygen
+ * restructure project
+ * refresh readme, new defines and build helper install flag.

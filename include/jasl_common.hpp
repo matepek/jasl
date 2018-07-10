@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "jasl_feature_test_macro.hpp"
+
 #define JASL_INNER_STR(x) #x
 #define JASL_STR(x) JASL_INNER_STR(x)
 
@@ -21,7 +23,9 @@ static_assert(JASL_VERSION_MAJOR < 100, "JASL_VERSION error");
 static_assert(JASL_VERSION_MINOR < 100, "JASL_VERSION error");
 static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
 
-// for example version 1.2.3 is: 10020003
+/*
+ * for example version 1.2.3 is: 10020003
+ */
 #define JASL_VERSION_NUMBER                         \
   (JASL_VERSION_PATCH + JASL_VERSION_MINOR * 1000 + \
    JASL_VERSION_MAJOR * 1000 * 100)
@@ -31,43 +35,9 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
   "." JASL_STR(JASL_VERSION_MINOR) "." JASL_STR( \
       JASL_VERSION_PATCH) " (" JASL_VERSION_DATE ")"
 
-#include "jasl_feature_test_macro.hpp"
-
 /*
- * http://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
- * http://en.cppreference.com/w/cpp/language/constexpr
+ * JASL_TERMINATE_ON_EXCEPTION_ON
  */
-#ifdef JASL_cpp_constexpr
-#if JASL_cpp_constexpr >= 201304L
-#define JASL_CONSTEXPR_FROM_14 constexpr
-#define JASL_CONSTEXPR_FROM_11 constexpr
-#elif JASL_cpp_constexpr >= 200704L
-#define JASL_CONSTEXPR_FROM_14
-#define JASL_CONSTEXPR_FROM_11 constexpr
-#else
-// JASL_cpp_constexpr should not be defined.
-static_assert(false, "Something wrong with the defines.");
-#endif
-#else   // ifdef JASL_cpp_constexpr
-// There is no reason to support it without supporting noexcept.
-static_assert(false, "Unsupported C++ standard!");
-#endif  // ifdef JASL_cpp_constexpr
-
-#if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
-    defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
-static_assert(false, "Both defines cannot be used at the same time.");
-#endif
-
-// fallback logic
-#if !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
-    !defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
-#if defined(JASL_cpp_lib_string_view)
-#define JASL_USE_STD_STRING_VIEW_AS_BASE
-#else
-#define JASL_USE_JASL_STRING_VIEW_AS_BASE
-#endif
-#endif
-
 #ifdef JASL_TERMINATE_ON_EXCEPTION_ON
 #include <exception>
 #define JASL_THROW(exception) ::std::terminate()
@@ -75,6 +45,9 @@ static_assert(false, "Both defines cannot be used at the same time.");
 #define JASL_THROW(exception) throw(exception)
 #endif
 
+/*
+ * JASL_ASSERT_ON
+ */
 #if defined(JASL_ASSERT_ON) && JASL_cpp_constexpr >= 201304L
 #include <cstdlib>
 #include <iostream>
@@ -87,4 +60,18 @@ static_assert(false, "Both defines cannot be used at the same time.");
   } while (false)
 #else
 #define JASL_ASSERT(...)
+#endif
+
+/*
+ * JASL_TESTIFY_STD_STRING_VIEW_EXISTS
+ * This macro can be useful, if the compiler couldn't recognise the the existing
+ * std::string_view. Remarks: This macro defines JASL_cpp_lib_string_view to
+ * 201606. This result can be achieved with defining JASL_cpp_lib_string_view
+ * manually.
+ */
+#if defined(JASL_TESTIFY_STD_STRING_VIEW_EXISTS)
+#if !defined(JASL_cpp_lib_string_view)
+#define JASL_cpp_lib_string_view 201606L
+#include <string_view>
+#endif
 #endif

@@ -6,80 +6,99 @@
 
 #pragma once
 
-#include "jasl_common.hpp"
-
 #include <string>
+
+#include "jasl_common.hpp"
+#include "jasl_feature_test_macro.hpp"
 #include "jasl_string_view.hpp"
+#include "jasl_string_view_bridge.hpp"
 
 namespace jasl {
 
-template <typename CharT, class Traits = std::char_traits<CharT> >
-class basic_static_string : public basic_string_view<CharT, Traits> {
+template <typename CharT, class Traits = std::char_traits<CharT>>
+class basic_static_string
+    : public inner::string_view_bridge<basic_string_view<CharT, Traits>> {
  public:
-  typedef basic_string_view<CharT, Traits> base_type;
+  typedef inner::string_view_bridge<basic_string_view<CharT, Traits>>
+      bridge_type;
+  typedef typename bridge_type::bridge_to_type base_type;
 
  private:
-  static const CharT empty_string[1];
-
- private:
-  constexpr basic_static_string(const base_type& other) noexcept(
-      std::is_nothrow_constructible<base_type, const base_type&>::value)
-      : base_type(other) {}
+  constexpr basic_static_string(const bridge_type& other) noexcept(
+      std::is_nothrow_constructible<bridge_type, const bridge_type&>::value)
+      : bridge_type(other) {}
 
  public:
-  JASL_CONSTEXPR_FROM_14 basic_static_string() noexcept(
-      std::is_nothrow_constructible<base_type, const CharT*, size_t>::value)
-      : base_type(empty_string, 0) {}
+  JASL_CONSTEXPR_CXX14 basic_static_string() noexcept(
+      std::is_nothrow_constructible<bridge_type>::value)
+      : bridge_type() {}
 
-  template <std::size_t N>
+  template <size_t N>
   constexpr basic_static_string(const CharT (&str)[N]) noexcept(
-      std::is_nothrow_constructible<base_type, const CharT*, std::size_t>::
-          value)
-      : base_type(str, str[N - 1] == 0 ? N - 1 : N) {}
+      std::is_nothrow_constructible<bridge_type, const CharT*, size_t>::value)
+      : bridge_type(str, str[N - 1] == 0 ? N - 1 : N) {}
 
   constexpr basic_static_string(const basic_static_string& other) noexcept(
-      std::is_nothrow_constructible<base_type, const base_type&>::value)
-      : base_type(static_cast<const base_type&>(other)) {}
+      std::is_nothrow_constructible<bridge_type, const bridge_type&>::value)
+      : bridge_type(static_cast<const bridge_type&>(other)) {}
 
   ~basic_static_string() noexcept(
-      std::is_nothrow_destructible<base_type>::value) = default;
+      std::is_nothrow_destructible<bridge_type>::value) = default;
 
-  template <std::size_t N>
-  JASL_CONSTEXPR_FROM_14 basic_static_string&
-  operator=(const CharT (&str)[N]) noexcept(
-      std::is_nothrow_assignable<base_type, base_type>::value) {
-    base_type::operator=(base_type(str, str[N - 1] == 0 ? N - 1 : N));
+  template <size_t N>
+  JASL_CONSTEXPR_CXX14 basic_static_string& operator=(
+      const CharT (&str)[N]) noexcept(bridge_type::is_nothrow_settable) {
+    bridge_type::set(str, str[N - 1] == 0 ? N - 1 : N);
     return *this;
   }
 
-  JASL_CONSTEXPR_FROM_14 basic_static_string&
+  JASL_CONSTEXPR_CXX14 basic_static_string&
   operator=(const basic_static_string& other) noexcept(
-      std::is_nothrow_assignable<base_type, const base_type&>::value) {
-    base_type::operator=(static_cast<const base_type&>(other));
+      std::is_nothrow_assignable<bridge_type, const bridge_type&>::value) {
+    bridge_type::operator=(static_cast<const bridge_type&>(other));
     return *this;
   }
 
-  JASL_CONSTEXPR_FROM_14 void swap(basic_static_string& other) noexcept(
-#ifdef __cpp_lib_is_swappable
-      std::is_nothrow_swappable<base_type>::value
+#if defined(JASL_SUPPORT_JASL_TO_STD)
+#if defined(JASL_cpp_lib_string_view)
+  operator std::basic_string_view<CharT, Traits>() const noexcept(
+      std::is_nothrow_constructible<std::basic_string_view<CharT, Traits>,
+                                    const CharT*,
+                                    size_t>::value) {
+    return std::basic_string_view<CharT, Traits>(bridge_type::data(),
+                                                 bridge_type::size());
+  }
 #else
-      // http://en.cppreference.com/w/cpp/algorithm/swap
-      std::is_nothrow_move_constructible<base_type>::value&&
-          std::is_nothrow_move_assignable<base_type>::value
+  template <typename AllocatorT>
+  operator std::basic_string<CharT, Traits, AllocatorT>() const
+      noexcept(std::is_nothrow_constructible<
+               std::basic_string<CharT, Traits, AllocatorT>,
+               const CharT*,
+               size_t>::value) {
+    return std::basic_string<CharT, Traits, AllocatorT>(bridge_type::data(),
+                                                        bridge_type::size());
+  }
 #endif
-  ) {
-    std::swap<base_type>(*this, other);
+#endif
+
+  JASL_CONSTEXPR_CXX14 void swap(basic_static_string& other) noexcept(
+      JASL_is_nothrow_swappable_value(bridge_type)) {
+    bridge_type::swap(other);
   }
 
   constexpr basic_static_string substr(
-      typename base_type::size_type pos,
-      typename base_type::size_type count = base_type::npos) const {
-    return basic_static_string(base_type::substr(pos, count));
+      typename bridge_type::size_type pos,
+      typename bridge_type::size_type count = bridge_type::npos) const {
+    return basic_static_string(bridge_type::substr(pos, count));
   }
 };
 
 template <typename CharT, typename Traits>
-const CharT basic_static_string<CharT, Traits>::empty_string[1] = {0};
+void swap(
+    basic_static_string<CharT, Traits>& lhs,
+    basic_static_string<CharT, Traits>& rhs) noexcept(noexcept(lhs.swap(rhs))) {
+  lhs.swap(rhs);
+}
 
 typedef basic_static_string<char> static_string;
 typedef basic_static_string<wchar_t> static_wstring;

@@ -1,8 +1,30 @@
 config("default") {
   cflags = []
   configs = []
-  defines = [] + define_macros
+  defines = []
 
+  if (is_defined_JASL_ASSERT_ON) {
+    defines += [ "JASL_ASSERT_ON" ]
+  }
+  if (is_defined_JASL_TERMINATE_ON_EXCEPTION_ON) {
+    defines += [ "JASL_TERMINATE_ON_EXCEPTION_ON" ]
+  }
+  if (is_defined_JASL_FORCE_USE_MURMURHASH_HASH) {
+    defines += [ "JASL_FORCE_USE_MURMURHASH_HASH" ]
+  }
+  if(is_defined_JASL_USE_JASL_STRING_VIEW_AS_BASE) {
+    defines += [ "JASL_USE_JASL_STRING_VIEW_AS_BASE" ]
+  }
+  if(is_defined_JASL_USE_STD_STRING_VIEW_AS_BASE) {
+    defines += [ "JASL_USE_STD_STRING_VIEW_AS_BASE" ]
+  }
+  if(is_defined_JASL_SUPPORT_STD_TO_JASL) {
+    defines += [ "JASL_SUPPORT_STD_TO_JASL" ]
+  }
+  if(is_defined_JASL_SUPPORT_JASL_TO_STD) {
+    defines += [ "JASL_SUPPORT_JASL_TO_STD" ]
+  }
+  
   configs += [ ":compiler_$compiler_type" ]
 
   if (is_debug) {
@@ -27,43 +49,45 @@ config("compiler_clang") {
   }
 
   cflags = common_flags + [
-             "-fcolor-diagnostics",
-             "-ferror-limit=100",
-             "-Wall",
-             "-Werror",
-             "-Weverything",
-             "-Wno-c++98-compat",
              "-Wno-c++98-compat-pedantic",
              "-Wno-missing-prototypes",
              "-Wno-padded",
            ]
   ldflags = common_flags + []
 
+  # This distinguish between c and c++ files.
+  # And c files used to test build errors.
+  cflags_cc = [
+             "-fcolor-diagnostics",
+             "-ferror-limit=10",
+             "-Wall",
+             "-Werror",
+             "-Weverything",
+             "-Wno-c++98-compat",
+  ]
+
   #https://github.com/google/sanitizers
 
   #https://clang.llvm.org/docs/AddressSanitizer.html
-  if (is_asan) {
-    cflags += [
-      "-fsanitize=address",
-      "-fno-omit-frame-pointer",
-    ]
-    ldflags += [ "-fsanitize=address" ]
-  }
-
   #https://clang.llvm.org/docs/LeakSanitizer.html
-  if (is_lsan) {
-    ldflags += [ "-fsanitize=leak" ]
+  if (is_asan) {
+    common_flags_asan = [ "-fsanitize=address" ]
+    cflags += common_flags_asan + [ "-fno-omit-frame-pointer" ]
+    ldflags += common_flags_asan
   }
 
   #https://clang.llvm.org/docs/MemorySanitizer.html
   if (is_msan) {
-    cflags += [
-      "-fsanitize-memory-track-origins=1",
+    assert(is_debug)  #less than -O1
+    common_flags_msan = [
+      "-fno-optimize-sibling-calls",
       "-fno-omit-frame-pointer",
-
-      #"-fsanitize-memory-use-after-dtor", #experimental
+      "-fsanitize=memory",
+      "-fsanitize-memory-track-origins=1",
+      "-fsanitize-memory-use-after-dtor",  #experimental
     ]
-    ldflags += [ "-fsanitize=memory" ]
+    cflags += common_flags_msan
+    ldflags += common_flags_msan
   }
 
   #https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
@@ -72,6 +96,8 @@ config("compiler_clang") {
       "-fsanitize=undefined",
       "-fsanitize=integer",
       "-fsanitize=nullability",
+      "-g",
+      "-fno-omit-frame-pointer",
     ]
     cflags += common_flags_usan
     ldflags += common_flags_usan
@@ -88,10 +114,6 @@ config("compiler_clang") {
 config("compiler_gcc") {
   common_flags = [
     "-std=" + std_version,
-    "-Wall",
-    "-Werror",
-    "-Wextra",
-    "-Wpedantic",
   ]
 
   if (host_cpu == "x64" && current_cpu == "x86") {
@@ -113,17 +135,22 @@ config("compiler_gcc") {
   }
 
   cflags = common_flags + []
+  cflags_cc = [
+    "-Wall",
+    "-Werror",
+    "-Wextra",
+    "-Wpedantic",
+  ]
   ldflags = common_flags + []
 }
 
 config("compiler_msvc") {
-  common_flags = []
-  cflags = common_flags + [
+  cflags = [
              "/std:" + std_version,
              "/TP",  # https://msdn.microsoft.com/en-us/library/032xwy55.aspx
              "/EHsc",
            ]
-  ldflags = common_flags
+  ldflags = []
 }
 
 config("debug") {

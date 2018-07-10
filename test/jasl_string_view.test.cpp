@@ -5,6 +5,7 @@
 // This code is licensed under the MIT License (MIT).
 
 #include <set>
+#include <string>
 
 #include "jasl_string_view.hpp"
 #include "test_helper.hpp"
@@ -52,10 +53,15 @@ int main() {
   {
     jasl::string_view x("a", 1), y("bb", 2);
     x.swap(y);
-    ASSERT_TRUE(*x.data() == 'b');
     ASSERT_TRUE(x.size() == 2);
-    ASSERT_TRUE(*y.data() == 'a');
+    ASSERT_TRUE(*x.data() == 'b');
     ASSERT_TRUE(y.size() == 1);
+    ASSERT_TRUE(*y.data() == 'a');
+    swap(x, y);
+    ASSERT_TRUE(y.size() == 2);
+    ASSERT_TRUE(*y.data() == 'b');
+    ASSERT_TRUE(x.size() == 1);
+    ASSERT_TRUE(*x.data() == 'a');
   }
   {
     jasl::string_view x("apble", 5), y;
@@ -153,7 +159,40 @@ int main() {
   // test only syntax
   std::hash<jasl::string_view>{}(jasl::string_view("", 0));
 
-  std::set<jasl::string_view>().size();
+  {
+    auto test_with_set = [] {
+      std::set<jasl::string_view> s;
+      jasl::string_view empty("", 0);
+      jasl::string_view small("small", 5);
+      char array[1024]{};
+      jasl::string_view longg(array, 1024);
+      ASSERT_TRUE(s.empty());
+      s.insert(empty);
+      ASSERT_TRUE(s.count(empty) == 1);
+      ASSERT_TRUE(s.count(small) == 0);
+      ASSERT_TRUE(s.count(longg) == 0);
+      s.insert(small);
+      ASSERT_TRUE(s.count(empty) == 1);
+      ASSERT_TRUE(s.count(small) == 1);
+      ASSERT_TRUE(s.count(longg) == 0);
+      s.insert(longg);
+      ASSERT_TRUE(s.count(empty) == 1);
+      ASSERT_TRUE(s.count(small) == 1);
+      ASSERT_TRUE(s.count(longg) == 1);
+
+      ASSERT_TRUE(s.size() == 3);
+      return 0;
+    };
+#if defined(__has_feature)
+#if __has_feature(memory_sanitizer)
+    ASSERT_TRUE(test_with_set != nullptr);
+#else
+    ASSERT_TRUE(test_with_set() == 0);
+#endif
+#else
+    ASSERT_TRUE(test_with_set() == 0);
+#endif
+  }
 
   {
     jasl::string_view one("one", 3);
@@ -232,6 +271,68 @@ int main() {
     ASSERT_TRUE(y.find(jasl::string_view("threeX", 6)) ==
                 jasl::string_view::npos);
   }
+
+#if defined(JASL_SUPPORT_STD_TO_JASL)
+#if defined(JASL_cpp_lib_string_view)
+  {
+    std::string_view ssv("apple", 5);
+    jasl::nonstd::string_view jsv(ssv);
+    ASSERT_TRUE(jsv.size() == 5);
+    ASSERT_TRUE(*jsv.data() == 'a');
+  }
+  {
+    std::string_view ssv("apple", 5);
+    jasl::nonstd::string_view jsv;
+    jsv = ssv;
+    ASSERT_TRUE(jsv.size() == 5);
+    ASSERT_TRUE(*jsv.data() == 'a');
+  }
+#endif
+  {
+    std::string ss("apple");
+    jasl::nonstd::string_view jsv(ss);
+    ASSERT_TRUE(jsv.size() == 5);
+    ASSERT_TRUE(*jsv.data() == 'a');
+  }
+  {
+    std::string ss("apple", 5);
+    jasl::nonstd::string_view jsv;
+    jsv = ss;
+    ASSERT_TRUE(jsv.size() == 5);
+    ASSERT_TRUE(*jsv.data() == 'a');
+  }
+#endif
+
+#if defined(JASL_SUPPORT_JASL_TO_STD)
+#if defined(JASL_cpp_lib_string_view)
+  {
+    jasl::nonstd::string_view jsv("apple", 5);
+    std::string_view ssv(jsv);
+    ASSERT_TRUE(ssv.size() == 5);
+    ASSERT_TRUE(*ssv.data() == 'a');
+  }
+  {
+    jasl::nonstd::string_view jsv("apple", 5);
+    std::string_view ssv;
+    ssv = jsv;
+    ASSERT_TRUE(ssv.size() == 5);
+    ASSERT_TRUE(*ssv.data() == 'a');
+  }
+#endif
+  {
+    jasl::nonstd::string_view jsv("apple", 5);
+    std::string ss(jsv);
+    ASSERT_TRUE(ss.size() == 5);
+    ASSERT_TRUE(*ss.data() == 'a');
+  }
+  {
+    jasl::nonstd::string_view jsv("apple", 5);
+    std::string ss;
+    ss = jsv;
+    ASSERT_TRUE(ss.size() == 5);
+    ASSERT_TRUE(*ss.data() == 'a');
+  }
+#endif
 
   return 0;
 }

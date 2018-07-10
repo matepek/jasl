@@ -18,7 +18,7 @@ def version_consistency(args):
     }
 
     with open(args.changelog, 'r') as f:
-        changelog_lines = '\n'.join(f.readlines())
+        changelog_lines = ''.join(f.readlines())
 
     # example:## [0.1.0] - 2018-04-12
     match = re.search(
@@ -31,11 +31,26 @@ def version_consistency(args):
         'date': match.group(4)
     }
 
+    with open(args.doxygen_config, 'r') as f:
+        doxygen_lines = ''.join(f.readlines())
+
+    # example:PROJECT_NUMBER         = [0.1.1] - 2018-05-27
+    match = re.search(
+        r'PROJECT_NUMBER\s*=\s*\[([0-9]+)\.([0-9]+)\.([0-9]+)\] - (\S+)', doxygen_lines)
+
+    doxygen_version = {
+        'major': int(match.group(1)),
+        'minor': int(match.group(2)),
+        'patch': int(match.group(3)),
+        'date': match.group(4)
+    }
+
     assert(len(jasl_common_version) == len(changelog_version))
+    assert(len(jasl_common_version) == len(doxygen_version))
     for k in jasl_common_version.keys():
-        if jasl_common_version[k] != changelog_version[k]:
+        if jasl_common_version[k] != changelog_version[k] or jasl_common_version[k] != doxygen_version[k]:
             raise Exception("Version mismatch!", k,
-                            jasl_common_version, changelog_version)
+                            jasl_common_version, changelog_version, doxygen_version)
 
     # touch
     open(args.output, 'w').close()
@@ -48,6 +63,7 @@ if __name__ == '__main__':
     vc_parser = subparsers.add_parser("version-consistency")
     vc_parser.add_argument("--changelog", required=True)
     vc_parser.add_argument("--jasl_common", required=True)
+    vc_parser.add_argument("--doxygen_config", required=True)
     vc_parser.add_argument("--output", required=True)
     vc_parser.set_defaults(func=version_consistency)
 

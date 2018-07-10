@@ -9,16 +9,10 @@
 #include "jasl_static_string.hpp"
 #include "test_helper.hpp"
 
-template <size_t N1, size_t N2>
-int eq_helper(const char (&left)[N1], const char (&right)[N2]) {
-  return jasl::static_string(left) == jasl::static_string(right);
-}
-
 int main() {
   {
     jasl::static_string x;
-    ASSERT_TRUE(x.data() != nullptr);
-    ASSERT_TRUE(*x.data() == 0);
+    ASSERT_TRUE(x.data() == nullptr);
     ASSERT_TRUE(x.size() == 0);
   }
   {
@@ -94,10 +88,15 @@ int main() {
   {
     jasl::static_string x("a"), y("bb");
     x.swap(y);
-    ASSERT_TRUE(*x.data() == 'b');
     ASSERT_TRUE(x.size() == 2);
-    ASSERT_TRUE(*y.data() == 'a');
+    ASSERT_TRUE(*x.data() == 'b');
     ASSERT_TRUE(y.size() == 1);
+    ASSERT_TRUE(*y.data() == 'a');
+    swap(x, y);
+    ASSERT_TRUE(y.size() == 2);
+    ASSERT_TRUE(*y.data() == 'b');
+    ASSERT_TRUE(x.size() == 1);
+    ASSERT_TRUE(*x.data() == 'a');
   }
   {
     jasl::static_string x("apble"), y;
@@ -120,52 +119,6 @@ int main() {
     [](const jasl::static_string::base_type&) {}(x);
   }
 
-  ASSERT_TRUE(jasl::static_string("") == jasl::static_string(""));
-  ASSERT_FALSE(jasl::static_string("") != jasl::static_string(""));
-  ASSERT_FALSE(jasl::static_string("") < jasl::static_string(""));
-  ASSERT_TRUE(jasl::static_string("") <= jasl::static_string(""));
-  ASSERT_FALSE(jasl::static_string("") > jasl::static_string(""));
-  ASSERT_TRUE(jasl::static_string("") >= jasl::static_string(""));
-
-  ASSERT_TRUE(jasl::static_string("a") == jasl::static_string("a"));
-  ASSERT_FALSE(jasl::static_string("a") != jasl::static_string("a"));
-  ASSERT_FALSE(jasl::static_string("a") < jasl::static_string("a"));
-  ASSERT_TRUE(jasl::static_string("a") <= jasl::static_string("a"));
-  ASSERT_FALSE(jasl::static_string("a") > jasl::static_string("a"));
-  ASSERT_TRUE(jasl::static_string("a") >= jasl::static_string("a"));
-
-  ASSERT_TRUE(jasl::static_string("ab") == jasl::static_string("ab"));
-  ASSERT_FALSE(jasl::static_string("ab") != jasl::static_string("ab"));
-  ASSERT_FALSE(jasl::static_string("ab") < jasl::static_string("ab"));
-  ASSERT_TRUE(jasl::static_string("ab") <= jasl::static_string("ab"));
-  ASSERT_FALSE(jasl::static_string("ab") > jasl::static_string("ab"));
-  ASSERT_TRUE(jasl::static_string("ab") >= jasl::static_string("ab"));
-
-  ASSERT_FALSE(jasl::static_string("a") == jasl::static_string("b"));
-  ASSERT_TRUE(jasl::static_string("a") != jasl::static_string("b"));
-  ASSERT_TRUE(jasl::static_string("a") < jasl::static_string("b"));
-  ASSERT_TRUE(jasl::static_string("a") <= jasl::static_string("b"));
-  ASSERT_FALSE(jasl::static_string("a") > jasl::static_string("b"));
-  ASSERT_FALSE(jasl::static_string("a") >= jasl::static_string("b"));
-
-  // Becasue of constexpr the coverage reports it uncovered if the values are
-  // directly used in the expression.
-  ASSERT_FALSE(eq_helper("a", "ab"));
-
-  ASSERT_FALSE(jasl::static_string("a") == jasl::static_string("ab"));
-  ASSERT_TRUE(jasl::static_string("a") != jasl::static_string("ab"));
-  ASSERT_TRUE(jasl::static_string("a") < jasl::static_string("ab"));
-  ASSERT_TRUE(jasl::static_string("a") <= jasl::static_string("ab"));
-  ASSERT_FALSE(jasl::static_string("a") > jasl::static_string("ab"));
-  ASSERT_FALSE(jasl::static_string("a") >= jasl::static_string("ab"));
-
-  ASSERT_FALSE(jasl::static_string("ab") == jasl::static_string("a"));
-  ASSERT_TRUE(jasl::static_string("ab") != jasl::static_string("a"));
-  ASSERT_FALSE(jasl::static_string("ab") < jasl::static_string("a"));
-  ASSERT_FALSE(jasl::static_string("ab") <= jasl::static_string("a"));
-  ASSERT_TRUE(jasl::static_string("ab") > jasl::static_string("a"));
-  ASSERT_TRUE(jasl::static_string("ab") >= jasl::static_string("a"));
-
   // test only syntax
   std::cout << jasl::static_string("");
 
@@ -173,7 +126,38 @@ int main() {
   std::hash<jasl::static_string::base_type>{}(jasl::static_string(""));
 
   // test only hash
-  std::set<jasl::static_string>().size();
+  ASSERT_TRUE(std::set<jasl::static_string>().size() == 0);
+
+#if defined(JASL_SUPPORT_JASL_TO_STD)
+#if defined(JASL_cpp_lib_string_view)
+  {
+    jasl::static_string jss("apple");
+    std::string_view ssv(jss);
+    ASSERT_TRUE(ssv.size() == 5);
+    ASSERT_TRUE(*ssv.data() == 'a');
+  }
+  {
+    jasl::static_string jss("apple");
+    std::string_view ssv;
+    ssv = jss;
+    ASSERT_TRUE(ssv.size() == 5);
+    ASSERT_TRUE(*ssv.data() == 'a');
+  }
+#endif
+  {
+    jasl::static_string jss("apple");
+    std::string ss(jss);
+    ASSERT_TRUE(ss.size() == 5);
+    ASSERT_TRUE(*ss.data() == 'a');
+  }
+  {
+    jasl::static_string jss("apple");
+    std::string ss;
+    ss = jss;
+    ASSERT_TRUE(ss.size() == 5);
+    ASSERT_TRUE(*ss.data() == 'a');
+  }
+#endif
 
   return 0;
 }

@@ -1,26 +1,45 @@
 # https://www.appveyor.com/docs/lang/cpp/
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    - JASL_DEBUG: yes
+      JASL_TARGET_CPU: x86
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    - JASL_DEBUG: no
+      JASL_TARGET_CPU: x86
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
+    - JASL_DEBUG: yes
+      JASL_TARGET_CPU: x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
+    - JASL_DEBUG: no
+      JASL_TARGET_CPU: x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
+    - JASL_DEBUG: yes
+      JASL_TARGET_CPU: x86
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
+    - JASL_DEBUG: no
+      JASL_TARGET_CPU: x86
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
+    - JASL_DEBUG: yes
+      JASL_TARGET_CPU: x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
+    - JASL_DEBUG: no
+      JASL_TARGET_CPU: x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       JASL_VS: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
 
 install:
-  - mkdir bin
-  - cd bin
-  - ps: Invoke-WebRequest https://storage.googleapis.com/chromium-gn/e93779cab57d5f36100faa4d88524a1e33be7b0f -OutFile gn.exe
-  - ps: Invoke-WebRequest https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-win.zip -OutFile ninja.zip
-  - ps: Expand-Archive ninja.zip -DestinationPath .
-  - ps: $env:Path += ";" + $pwd
-  - cd ..
-  - ps: $env:Path
-  - gn.exe --version
-  - ninja.exe --version
-  - python.exe --version
   - cinst python2
+  - python.exe --version
+  - python -m pip install six
 
 build: off
 
 test_script:
-  - python .\build\build_helper.py --appveyor --msvc-vcvarsall-path "%JASL_VS%"
+  - python .\build\build_helper.py --appveyor --msvc-vcvarsall-path "%JASL_VS%" --debug "%JASL_DEBUG%" --target-cpu "%JASL_TARGET_CPU%"
