@@ -12,6 +12,9 @@ test("jasl_static_string") {
 test("jasl_string") {
 }
 
+performance("comparison_with_std_string") {
+}
+
 test_build_err("jasl_string_view_constructor1") {
   if(is_clang) {
     error_regex = ":13:41: error: no matching constructor for initialization of 'jasl::nonstd::basic_string_view<char>'"
