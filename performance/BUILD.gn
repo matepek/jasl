@@ -1,5 +1,0 @@
-group("performance") {
-}
-
-performance("comparison_with_std_string") {
-}
