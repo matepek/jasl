@@ -4,6 +4,8 @@
 //
 // This code is licensed under the MIT License (MIT).
 
+/** @file */
+
 #pragma once
 
 #include <functional>
@@ -17,6 +19,15 @@
 #include "jasl_string_view.hpp"
 
 namespace jasl {
+
+/**
+ * This class derives from [std::string_view] (or optionally from
+ * [jasl::string_view]). What is special about it is that if you assign (or
+ * construct with) character array to it, it won't allocate, copy and
+ * deallocate. In other cases it will allocate, copy and deallocate.
+ *
+ * It has the functionality of its base class ([std::string_view]) only.
+ */
 
 template <typename CharT,
           typename Traits = std::char_traits<CharT>,

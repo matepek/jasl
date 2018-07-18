@@ -101,7 +101,7 @@ int main(int, char* argv[]) {
     << sizeof(short_string_array) << ", " << sizeof(long_string_array) << " )"
     << endl
     << endl
-    << "   **Remarks**: The results depend on the size of the character array "
+    << "**Remarks**: The results depend on the size of the character array "
        "given to the std::string's constructor."
     << endl
     << endl
@@ -110,12 +110,10 @@ int main(int, char* argv[]) {
     << " - Memory: TODO" << endl
     << " - Operating System: TODO" << endl
     << endl
-    << "**NOTE**: Base type of the [jasl::static_string] and [jasl::string] is "
-#ifdef JASL_USE_JASL_STRING_VIEW_AS_BASE
-    << "[jasl::string_view]."
-#else
-    << "[std::string_view]."
-#endif
+    << "**NOTE**: Base type of the [jasl::static_string] and [jasl::string] "
+       "is "
+    << (JASL_INNER_USE_STD_STRING_VIEW_AS_BASE ? "[std::string_view]."
+                                               : "[jasl::string_view].")
     << endl
     << endl;
 

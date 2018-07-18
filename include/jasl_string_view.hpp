@@ -4,6 +4,8 @@
 //
 // This code is licensed under the MIT License (MIT).
 
+/** @file */
+
 #pragma once
 
 #include <algorithm>
@@ -29,36 +31,26 @@ typedef basic_string_view<char32_t> u32string_view;
 }  // namespace nonstd
 }  // namespace jasl
 
-/*
- * JASL_USE_JASL_STRING_VIEW_AS_BASE
- * jasl::nonstd::string_view vill be used as jasl::string_view
- * The result of this that jasl::static_string and jasl::string will use it.
- */
-
-/*
- * JASL_USE_STD_STRING_VIEW_AS_BASE
- * std::string_view vill be used as jasl::string_view
- * The result of this that jasl::static_string and jasl::string will use it.
- */
-
 #if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
     defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
 static_assert(false, "Both defines cannot be used at the same time.");
-#endif
-
-/*
- * fallback logic
- */
-#if !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
+#elif defined(JASL_USE_JASL_STRING_VIEW_AS_BASE)
+#define JASL_INNER_USE_STD_STRING_VIEW_AS_BASE 0
+#elif defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
+#define JASL_INNER_USE_STD_STRING_VIEW_AS_BASE 1
+#elif !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
     !defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
+/* fallback logic */
 #if defined(JASL_cpp_lib_string_view)
-#define JASL_USE_STD_STRING_VIEW_AS_BASE
+#define JASL_INNER_USE_STD_STRING_VIEW_AS_BASE 1
 #else
-#define JASL_USE_JASL_STRING_VIEW_AS_BASE
+#define JASL_INNER_USE_STD_STRING_VIEW_AS_BASE 0
 #endif
+#else
+static_assert(false, "Something is really wrong.");
 #endif
 
-#if defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
+#if JASL_INNER_USE_STD_STRING_VIEW_AS_BASE
 
 #include <string_view>
 
@@ -67,14 +59,24 @@ template <typename CharT, typename Traits = std::char_traits<CharT>>
 using basic_string_view = std::basic_string_view<CharT, Traits>;
 }  // namespace jasl
 
-#else  // defined(JASL_USE_JASL_STRING_VIEW_AS_BASE)
+#else  // JASL_INNER_USE_STD_STRING_VIEW_AS_BASE
 
 namespace jasl {
+/**
+ * If JASL_USE_STD_STRING_VIEW_AS_BASE is defined: it is std::basic_string_view
+ *
+ * If JASL_USE_JASL_STRING_VIEW_AS_BASE is defined it is
+ *   jasl::nonstd::basic_string_view.
+ *
+ * If none if them are defined and there is
+ *   std::basic_string_view it is std::basic_string_view else
+ *   jasl::nonstd::basic_string_view.
+ */
 template <typename CharT, typename Traits = std::char_traits<CharT>>
 using basic_string_view = nonstd::basic_string_view<CharT, Traits>;
 }  // namespace jasl
 
-#endif  // JASL_USE_STD_STRING_VIEW_AS_BASE
+#endif  // JASL_INNER_USE_STD_STRING_VIEW_AS_BASE
 
 namespace jasl {
 typedef basic_string_view<char> string_view;
@@ -85,6 +87,14 @@ typedef basic_string_view<char32_t> u32string_view;
 
 namespace jasl {
 namespace nonstd {
+
+/**
+ * This class is an optinal substitution of the [std::string_view]
+ * for those who have no C++17. To use this as the base class, define
+ * JASL_USE_JASL_STRING_VIEW_AS_BASE. The class only has basic
+ * functionality. (Please open an issue or endorse an existing if you would like
+ * to add some functionality.)
+ */
 
 template <typename CharT, typename Traits>
 class basic_string_view {
@@ -363,18 +373,6 @@ void swap(
 
 }  // namespace nonstd
 }  // namespace jasl
-
-/*
- * JASL_DISABLE_JASL_STRING_VIEW_HASH
- * If this macro is provided, then jasl::nonstd::string_view has no std::hash
- * specialization. The user can manually add one.
- */
-
-/*
- * JASL_FORCE_USE_MURMURHASH_HASH
- * In case of this macro if the std::string_view is provided jasl::string_view
- * still will use murmurhash.
- */
 
 #if defined(JASL_FORCE_USE_MURMURHASH_HASH) && \
     defined(JASL_DISABLE_JASL_STRING_VIEW_HASH)

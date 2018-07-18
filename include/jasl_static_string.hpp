@@ -4,6 +4,8 @@
 //
 // This code is licensed under the MIT License (MIT).
 
+/** @file */
+
 #pragma once
 
 #include <string>
@@ -14,6 +16,21 @@
 #include "jasl_string_view.hpp"
 
 namespace jasl {
+
+/**
+ * This class derives from [std::string_view] (or optionally from
+ * [jasl::string_view]). What is special about it is that you can only assign
+ * (or construct with) character arrays to it but not pointers. This makes it
+ * safer and faster comparing to string_view-s.
+ *
+ * Remarks:
+ * Why is there no c_str method? While jasl::static_string("one") is null
+ * terminated, jasl::static_string({'t', 'w', 'o'}) is not. In both cases
+ * the size()/length() of them will be 3, so the terminating null character will
+ * be here in the first case but it won't be counted. If you want the null
+ * terminator as a part of it, write jasl::static_string("one\0") or
+ * jasl::static_string({'t', 'w', 'o', '\0', '\0'}).
+ */
 
 template <typename CharT, class Traits = std::char_traits<CharT>>
 class basic_static_string
