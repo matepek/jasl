@@ -191,7 +191,7 @@ Source location: ```performance/*.performance.cpp```
 
 ##### ./comparison_with_std_string.performance
 
-JASL version: 0.1.1 (2018-05-27)
+JASL version: 1.0.0-beta (2018-07-19)
 
 This performance test compares construction and destruction of
 the jasl::static_string and the [jasl::string] to [std::string].

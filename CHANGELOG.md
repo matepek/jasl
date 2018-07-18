@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.0.0-beta] - 2018-07-19
+
 ## [0.1.1] - 2018-05-27
 ### Added
  - A lot of things happened, but this version update is becasue I added a performance measurements to README.md.
