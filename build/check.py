@@ -7,28 +7,45 @@ import argparse
 
 
 def version_consistency(args):
+    def compare(v1, v2):
+        version_keys = ('major', 'minor', 'patch', 'label', 'date')
+        assert(len(v1) == len(version_keys))
+        assert(len(v2) == len(version_keys))
+        for k in version_keys:
+            assert(v1[k] is not None)
+            assert(v2[k] is not None)
+            if v1[k] != v2[k]:
+                raise Exception("Version mismatch!", k, v1, v2)
+
     with open(args.jasl_common, 'r') as f:
         jasl_common_lines = '\n'.join(f.readlines())
 
     jasl_common_version = {
-        'major': int(re.search(r'#define\s+JASL_VERSION_MAJOR\s+([0-9]+)', jasl_common_lines).group(1)),
-        'minor': int(re.search(r'#define\s+JASL_VERSION_MINOR\s+([0-9]+)', jasl_common_lines).group(1)),
-        'patch': int(re.search(r'#define\s+JASL_VERSION_PATCH\s+([0-9]+)', jasl_common_lines).group(1)),
-        'date': re.search(r'#define\s+JASL_VERSION_DATE\s+"([^"]+)"', jasl_common_lines).group(1)
-    }
+        'major': int(re.search(
+            r'#define\s+JASL_VERSION_MAJOR\s+([0-9]+)', jasl_common_lines).group(1)),
+        'minor': int(re.search(
+            r'#define\s+JASL_VERSION_MINOR\s+([0-9]+)', jasl_common_lines).group(1)),
+        'patch': int(re.search(
+            r'#define\s+JASL_VERSION_PATCH\s+([0-9]+)', jasl_common_lines).group(1)),
+        'label': re.search(
+            r'#define\s+JASL_VERSION_LABEL\s+"(|(?:-[^"]+))"', jasl_common_lines).group(1),
+        'date': re.search(
+            r'#define\s+JASL_VERSION_DATE\s+"([^"]+)"', jasl_common_lines).group(1)
+       }
 
     with open(args.changelog, 'r') as f:
         changelog_lines = ''.join(f.readlines())
 
-    # example:## [0.1.0] - 2018-04-12
+    # example:## [0.1.0-beta] - 2018-04-12
     match = re.search(
-        r'## \[([0-9]+)\.([0-9]+)\.([0-9]+)\] - (\S+)', changelog_lines)
+        r'## \[([0-9]+)\.([0-9]+)\.([0-9]+)(|(?:-[^\]]+))\] - (\S+)', changelog_lines)
 
     changelog_version = {
         'major': int(match.group(1)),
         'minor': int(match.group(2)),
         'patch': int(match.group(3)),
-        'date': match.group(4)
+        'label': match.group(4),
+        'date': match.group(5)
     }
 
     with open(args.doxygen_config, 'r') as f:
@@ -36,21 +53,19 @@ def version_consistency(args):
 
     # example:PROJECT_NUMBER         = [0.1.1] - 2018-05-27
     match = re.search(
-        r'PROJECT_NUMBER\s*=\s*\[([0-9]+)\.([0-9]+)\.([0-9]+)\] - (\S+)', doxygen_lines)
+        r'PROJECT_NUMBER\s*=\s*\[([0-9]+)\.([0-9]+)\.([0-9]+)(|(?:-[^\]]+))\] - (\S+)', doxygen_lines)
+    assert(match)
 
     doxygen_version = {
         'major': int(match.group(1)),
         'minor': int(match.group(2)),
         'patch': int(match.group(3)),
-        'date': match.group(4)
+        'label': match.group(4),
+        'date': match.group(5)
     }
 
-    assert(len(jasl_common_version) == len(changelog_version))
-    assert(len(jasl_common_version) == len(doxygen_version))
-    for k in jasl_common_version.keys():
-        if jasl_common_version[k] != changelog_version[k] or jasl_common_version[k] != doxygen_version[k]:
-            raise Exception("Version mismatch!", k,
-                            jasl_common_version, changelog_version, doxygen_version)
+    compare(jasl_common_version, changelog_version)
+    compare(jasl_common_version, doxygen_version)
 
     # touch
     open(args.output, 'w').close()

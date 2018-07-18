@@ -16,10 +16,11 @@
 /*
  * Same as the first item of the CHANGELOG.md file
  */
-#define JASL_VERSION_MAJOR 0
-#define JASL_VERSION_MINOR 1
-#define JASL_VERSION_PATCH 1
-#define JASL_VERSION_DATE "2018-05-27"
+#define JASL_VERSION_MAJOR 1
+#define JASL_VERSION_MINOR 0
+#define JASL_VERSION_PATCH 0
+#define JASL_VERSION_LABEL "-beta"
+#define JASL_VERSION_DATE "2018-07-19"
 
 static_assert(JASL_VERSION_MAJOR < 100, "JASL_VERSION error");
 static_assert(JASL_VERSION_MINOR < 100, "JASL_VERSION error");
@@ -32,10 +33,10 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
   (JASL_VERSION_PATCH + JASL_VERSION_MINOR * 1000 + \
    JASL_VERSION_MAJOR * 1000 * 100)
 
-#define JASL_VERSION_STR                         \
-  JASL_STR(JASL_VERSION_MAJOR)                   \
-  "." JASL_STR(JASL_VERSION_MINOR) "." JASL_STR( \
-      JASL_VERSION_PATCH) " (" JASL_VERSION_DATE ")"
+#define JASL_VERSION_STR                                            \
+  JASL_STR(JASL_VERSION_MAJOR)                                      \
+  "." JASL_STR(JASL_VERSION_MINOR) "." JASL_STR(JASL_VERSION_PATCH) \
+      JASL_VERSION_LABEL " (" JASL_VERSION_DATE ")"
 
 #ifdef JASL_TERMINATE_ON_EXCEPTION_ON
 #include <exception>
