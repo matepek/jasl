@@ -44,7 +44,7 @@ def ninja_all_in_dir(dir_path, script_arg):
                 for l in arg_lines:
                     if last_args_gn and l not in last_args_gn:
                         augmented_arg_lines.append(
-                            l + '  <-' + '-' * (max_len - len(l)))
+                            l + '  #<-' + '-' * (max_len - len(l)))
                     else:
                         augmented_arg_lines.append(l)
                 last_args_gn = arg_lines

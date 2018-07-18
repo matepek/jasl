@@ -11,11 +11,13 @@
 #include <stdexcept>
 #include <string>
 #include <type_traits>
-#include "jasl_common.hpp"
-#include "jasl_feature_test_macro.hpp"
+
+#include "jasl_inner/jasl_common.hpp"
+#include "jasl_inner/jasl_feature_test_macro.hpp"
 
 namespace jasl {
 namespace nonstd {
+
 template <typename CharT, typename Traits = std::char_traits<CharT>>
 class basic_string_view;
 
@@ -23,6 +25,7 @@ typedef basic_string_view<char> string_view;
 typedef basic_string_view<wchar_t> wstring_view;
 typedef basic_string_view<char16_t> u16string_view;
 typedef basic_string_view<char32_t> u32string_view;
+
 }  // namespace nonstd
 }  // namespace jasl
 
@@ -396,7 +399,7 @@ struct hash<jasl::nonstd::basic_string_view<CharT, Traits>> {
 };
 }  // namespace std
 #else
-#include "jasl_murmurhash3.hpp"
+#include "jasl_inner/jasl_murmurhash3.hpp"
 namespace std {
 template <typename CharT, typename Traits>
 struct hash<jasl::nonstd::basic_string_view<CharT, Traits>> {
