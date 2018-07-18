@@ -59,7 +59,7 @@ This is a header-only library. Add the ```include``` directory to your include d
 
 Note: For building and running tests see [Tests, Test Coverage and Performance Tests](#tests-test-coverage-and-performance-tests)
 
-# [Documentation](https://matepek.github.io/jasl)
+# [Documentation](https://matepek.github.io/jasl/index.html)
 
 This is a header-only library containing
  * [jasl::string_view],
@@ -70,7 +70,7 @@ classes.
 
 Location: ```include``` directory.
 
-## For documentation go [HERE](https://matepek.github.io/jasl)
+## For documentation go [HERE](https://matepek.github.io/jasl/index.html)
 
 ### Pros and Cons comparing to [std::string]
 
