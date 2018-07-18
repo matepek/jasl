@@ -59,7 +59,7 @@ This is a header-only library. Add the ```include``` directory to your include d
 
 Note: For building and running tests see [Tests, Test Coverage and Performance Tests](#tests-test-coverage-and-performance-tests)
 
-# Documentation
+# [Documentation](https://matepek.github.io/jasl)
 
 This is a header-only library containing
  * [jasl::string_view],
@@ -70,30 +70,7 @@ classes.
 
 Location: ```include``` directory.
 
-C++17 introduced [std::string_view], and this library uses it as a public base class of the [jasl::static_string] and the [jasl::string] classes. In this way all the methods are accessible. Some of the methods are special and because of this they are overwritten.
-
-## Class [jasl::string_view]
-
-This class is an optinal substitution of the [std::string_view] for those who have no C++17. To use this as the base class, define ```JASL_USE_JASL_STRING_VIEW_AS_BASE```.
-
-The class only has basic functionality. (Please open an issue or endorse an existing if you would like to add some functionality.)
-
-## Class [jasl::static_string]
-
-This class derives from [std::string_view] (or optionally from [jasl::string_view]). What is special about it is that you can only assign (or construct with) character arrays to it but not pointers. This makes it safer comparing to string_view-s.
-See [Motivation](#motivation) section for examples.
-See [Configuration](#configuration) section for more details.
-
-Remarks:
-Why is there no c_str method? While ```jasl::static_string("one")``` is null terminated, ```jasl::static_string({'t', 'w', 'o'})``` is not. In both cases the size()/length() of them will be 3, so the terminating null character will be here in the first case but it won't be counted. If you want the null terminator as a part of it, write ```jasl::static_string("one\0")``` or ```jasl::static_string({'t', 'w', 'o', '\0', '\0'})```.
-
-## Class [jasl::string]
-
-This class derives from [std::string_view] (or optionally from [jasl::string_view]). What is special about it is that if you assign (or construct with) character array to it, it won't allocate, copy and deallocate. In other cases it will allocate, copy and deallocate.
-See [Motivation](#motivation) section for examples.
-See [Configuration](#configuration) section for more details.
-
-It has the functionality of its base class ([std::string_view]) only.
+## For documentation go [HERE](https://matepek.github.io/jasl)
 
 ### Pros and Cons comparing to [std::string]
 
@@ -105,38 +82,10 @@ Pros:
 
 Cons:
  * Only the underlying (string view) type's functionality can be used.
- * Hashing without C++17 or newer is really bad now. It is a [TODO](#todos).
 
 # Configuration
 
-#### ```JASL_USE_JASL_STRING_VIEW_AS_BASE``` and ```JASL_USE_STD_STRING_VIEW_AS_BASE```
-
-**None of them are defined**: If you have no [std::string_view], ```JASL_USE_JASL_STRING_VIEW_AS_BASE``` will be defined automatically and [jasl::string_view] will be used. If it is C++17 and there is [std::string], it will be used as the base class and [jasl::string_view] will be a typedef to [std::string_view].
-
-__```#define JASL_USE_JASL_STRING_VIEW_AS_BASE```__: [jasl::string_view] will be used even if [std::string_view] is possible to use (C++17).
-
-__```#define JASL_USE_STD_STRING_VIEW_AS_BASE```__: [std::string_view] will be used. If it is not possible, the source won't fallback to [jasl::string_view].
-
-__Note__: Deriving from a __std__ class is not the _best practice_. In case of [std::string_view] it maybe OK.
-
-#### ```JASL_TERMINATE_ON_EXCEPTION_ON```
-
-There are a few functions which can throw. (The design reason is the similarity to __std__.)
-The exceptions are easily avoidable. Defining this macro will result of a call of [std::terminate](http://en.cppreference.com/w/cpp/error/terminate) instead of throwing an exception.
-
-__Note__: If this is defined, the tests will terminate when they test the exceptions.
-
-#### ```JASL_ASSERT_ON```
-
-This macro is recommended to be defined during development and testing. It helps identify unproper use of the library.
-
-#### ```JASL_DISABLE_JASL_STRING_VIEW_HASH```
-
-If this macro is provided, then jasl::string_view has no std::hash specialization. The user can manually add one.
-
-#### ```JASL_FORCE_USE_MURMURHASH_HASH```
-
-In case of this macro if the std::string_view is provided jasl::string_view still will use murmurhash.
+[See documentation.](https://matepek.github.io/jasl)
 
 # Changelog
 
@@ -156,6 +105,8 @@ Note: [cppreference - literal types](http://en.cppreference.com/w/cpp/concept/Li
  * [gn]: This tool is developed by the chromium project. [Download it!](https://refi64.com/gn-builds/) or build yourself.
  * [ninja]: A pretty fast build tool. [Install it](https://github.com/ninja-build/ninja/wiki/Pre-built-Ninja-packages) or [download](https://github.com/ninja-build/ninja/releases)
  * [python](https://www.python.org/downloads/): It is required by [gn]. Note: Make sure your python directory is contained by the ```PATH``` environment variable.
+
+There is a ```build/build_helper.py``` script. If it is called with --install parameter, it will download the gn and ninja.
 
 Once again: One doesn't have to deal with this. It is only for those who would like to see the test results themselves. (I've chosen [gn] because I wanted to understand and learn the technology a bit.)
 
@@ -299,6 +250,3 @@ JASL library uses the [MIT](LICENSE) license.
  * jasl::string_view could have more methods like [find_first, etc..](http://en.cppreference.com/w/cpp/header/string_view)
  * support for [literals](http://en.cppreference.com/w/cpp/language/user_literal)
  * std_string support (to_std_string, jasl string view compare operator std, ?)
- * Documentation.md <- doxygen
- * restructure project
- * refresh readme, new defines and build helper install flag.
