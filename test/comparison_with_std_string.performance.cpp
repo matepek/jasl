@@ -59,8 +59,8 @@ std::pair<std::string, double> measure(
 
 void print_compare(const std::pair<std::string, double>& left,
                    const std::pair<std::string, double>& right) {
-  std::cout << " - " << right.first << " / " << left.first << " = "
-            << static_cast<int>(100 * right.second / left.second) << " %"
+  std::cout << " - " << right.first << " / " << left.first << " = **"
+            << static_cast<int>(100 * right.second / left.second) << " %**"
             << std::endl
             << "   - " << left.first << ": " << left.second << " sec / unit"
             << std::endl

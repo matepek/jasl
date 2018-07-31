@@ -73,48 +73,51 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
 #error "Should not be defined!"
 
 /**
- * using jasl::string_view = jasl::nonstd::string_view;
- * The result of this that jasl::static_string and jasl::string will use it its
- * funtionality. jasl::nonstd::string_view will be used even if std::string_view
- * is possible to use (C++17).
+ * using _jasl::string_view_ = _jasl::nonstd::string_view_;
  *
- * Remarks:
- *  If none of JASL_USE_JASL_STRING_VIEW_AS_BASE and
- * JASL_USE_STD_STRING_VIEW_AS_BASE are defined: If you have no
- * std::string_view, JASL_USE_JASL_STRING_VIEW_AS_BASE will be defined
- * automatically.
+ * The result of this that jasl::static_string and jasl::string will use it its
+ * funtionality. _jasl::nonstd::string_view_ will be used even if
+ * _std::string_view_ is possible to use (C++17).
+ *
+ * __Remarks:__
+ *  If none of _JASL_USE_JASL_STRING_VIEW_AS_BASE_ and
+ * _JASL_USE_STD_STRING_VIEW_AS_BASE_ are defined: If you have no
+ * [std::string_view](http://en.cppreference.com/w/cpp/string/basic_string_view),
+ * _JASL_USE_JASL_STRING_VIEW_AS_BASE_ will be defined automatically.
  */
 #define JASL_USE_JASL_STRING_VIEW_AS_BASE
 
 /**
- * using jasl::string_view = std::string_view;
+ * using _jasl::string_view_ =
+ * [std::string_view](http://en.cppreference.com/w/cpp/string/basic_string_view);
+ *
  * The result of this that jasl::static_string and jasl::string will use it its
  * funtionality If it is not possible, the source won't fallback to
- * jasl::nonstd::string_view.
+ * _jasl::nonstd::string_view_.
  *
- * Remarks:
- *  If none of JASL_USE_JASL_STRING_VIEW_AS_BASE and
- * JASL_USE_STD_STRING_VIEW_AS_BASE are defined: If you have no
- * std::string_view, JASL_USE_JASL_STRING_VIEW_AS_BASE will be defined
- * automatically.
+ * __Remarks:__
+ *  If none of _JASL_USE_JASL_STRING_VIEW_AS_BASE_ and
+ * _JASL_USE_STD_STRING_VIEW_AS_BASE_ are defined: If you have no
+ * [std::string_view](http://en.cppreference.com/w/cpp/string/basic_string_view),
+ * _JASL_USE_JASL_STRING_VIEW_AS_BASE_ will be defined automatically.
  */
 #define JASL_USE_STD_STRING_VIEW_AS_BASE
 
 /**
- * If this macro is provided, jasl classes will support construction and assign
- * operations from std classes.
+ * If this macro is provided, _JASL_ classes will support construction and
+ * assign operations from _STD_ classes.
  */
 #define JASL_SUPPORT_STD_TO_JASL
 
 /**
- * If this macro is provided, jasl classes will support conversion to std
+ * If this macro is provided, _JASL_ classes will support conversion to _STD_
  * classes.
  */
 #define JASL_SUPPORT_JASL_TO_STD
 
 /**
  * There are a few functions which can throw. (The design reason is the
- * similarity to __std__.) The exceptions are easily avoidable. Defining this
+ * similarity to _STD_.) The exceptions are easily avoidable. Defining this
  * macro will result of a call of
  * [std::terminate](http://en.cppreference.com/w/cpp/error/terminate) instead of
  * throwing an exception.
@@ -131,22 +134,26 @@ static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
 #define JASL_ASSERT_ON
 
 /**
- * This macro can be useful, if the compiler couldn't recognise the the existing
- *  std::string_view.
- * Remarks: This macro defines JASL_cpp_lib_string_view to 201606.
- *  This result can be achieved with defining JASL_cpp_lib_string_view manually.
+ * This macro can be useful, if the JASL library couldn't recognise the the
+ * existing
+ * [std::string_view](http://en.cppreference.com/w/cpp/string/basic_string_view).
+ *
+ * __Remarks:__ This macro defines
+ * _JASL_cpp_lib_string_view_ to 201606. This result can be achieved with
+ * defining _JASL_cpp_lib_string_view_ manually.
  */
 #define JASL_TESTIFY_STD_STRING_VIEW_EXISTS
 
 /**
- * If this macro is provided, then jasl::nonstd::string_view has no std::hash
+ * If this macro is provided, then _jasl::nonstd::string_view_ has no std::hash
  * specialization. The user can manually add one.
  */
 #define JASL_DISABLE_JASL_STRING_VIEW_HASH
 
 /**
- * In case of this macro if the std::string_view is provided
- * jasl::nonstd::string_view still will use murmurhash.
+ * In case of this macro if the
+ * [std::string_view](http://en.cppreference.com/w/cpp/string/basic_string_view)
+ * is provided _jasl::nonstd::string_view_ still will use murmurhash.
  */
 #define JASL_FORCE_USE_MURMURHASH_HASH
 
