@@ -85,7 +85,9 @@ Cons:
 
 # Configuration
 
-[See documentation.](https://matepek.github.io/jasl)
+[See documentation here!](https://matepek.github.io/jasl)
+
+[And here!](https://matepek.github.io/jasl/globals.html)
 
 # Changelog
 
@@ -106,9 +108,9 @@ Note: [cppreference - literal types](http://en.cppreference.com/w/cpp/concept/Li
  * [ninja]: A pretty fast build tool. [Install it](https://github.com/ninja-build/ninja/wiki/Pre-built-Ninja-packages) or [download](https://github.com/ninja-build/ninja/releases)
  * [python](https://www.python.org/downloads/): It is required by [gn]. Note: Make sure your python directory is contained by the ```PATH``` environment variable.
 
-There is a ```build/build_helper.py``` script. If it is called with --install parameter, it will download the gn and ninja.
+There is a ```build/build_helper.py``` script. If it is called with ```--install``` parameter, it will download the gn and ninja.
 
-Once again: One doesn't have to deal with this. It is only for those who would like to see the test results themselves. (I've chosen [gn] because I wanted to understand and learn the technology a bit.)
+**Once again**: One doesn't have to deal with this. It is only for those who would like to see the test results themselves. (I've chosen [gn] because I wanted to understand and learn the technology a bit.)
 
 ## Building, testing and generating coverage report
 
@@ -209,23 +211,23 @@ Hardware:
 
 **NOTE**: Base type of the [jasl::static_string] and [jasl::string] is [jasl::string_view].
 
- - short [std::string] / short [jasl::static_string] = 208 %
+ - short [std::string] / short [jasl::static_string] = **208 %**
    - short [jasl::static_string]: 1.54476e-08 sec / unit
    - short [std::string]: 3.22507e-08 sec / unit
 
- - short [std::string] / short static [jasl::string] = 186 %
+ - short [std::string] / short static [jasl::string] = **186 %**
    - short static [jasl::string]: 1.7339e-08 sec / unit
    - short [std::string]: 3.22507e-08 sec / unit
 
- - long [std::string] / long [jasl::static_string] = 4083 %
+ - long [std::string] / long [jasl::static_string] = **4083 %**
    - long [jasl::static_string]: 1.29123e-08 sec / unit
    - long [std::string]: 5.27216e-07 sec / unit
 
- - long [std::string] / long static [jasl::string] = 3480 %
+ - long [std::string] / long static [jasl::string] = **3480 %**
    - long static [jasl::string]: 1.5146e-08 sec / unit
    - long [std::string]: 5.27216e-07 sec / unit
 
- - long [std::string] / long dynamic [jasl::string] = 199 %
+ - long [std::string] / long dynamic [jasl::string] = **199 %**
    - long dynamic [jasl::string]: 2.63628e-07 sec / unit
    - long [std::string]: 5.27216e-07 sec / unit
 
