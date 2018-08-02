@@ -240,6 +240,7 @@ Hardware:
  * Ubuntu 16.04 - g++ (Ubuntu 5.4.0-6ubuntu1~16.04.9) 5.4.0 20160609
  * Ubuntu 16.04 - clang version 6.0.1-svn329487-1~exp1~20180408093033.68 (branches/release_60)
  * MS Windows 10 - Microsoft (R) C/C++ Optimizing Compiler Version 19.13.26132 for x64
+ * MS Windows 10 - clang version 6.0.1 & Microsoft (R) C/C++ Optimizing Compiler Version 19.13.26132 for x64
 
 # Licence and third-parties
 

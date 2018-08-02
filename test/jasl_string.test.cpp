@@ -332,7 +332,7 @@ int main(int, char* argv[]) {
   std::cout << jasl::string("");
 
   // test only syntax
-  std::hash<jasl::string::base_type>{}(jasl::string(""));
+  unused_variable(std::hash<jasl::string::base_type>{}(jasl::string("")));
 
   // test only hash
   ASSERT_TRUE(std::set<jasl::string>().size() == 0);

@@ -31,3 +31,6 @@
       ASSERT_FALSE(wrong_exception_has_been_caught); \
     }                                                \
   } while (false)
+
+template<typename T>
+void unused_variable(T&&) {}
