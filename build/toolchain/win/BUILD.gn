@@ -107,14 +107,12 @@ if (is_msvc) {
 
   msvc_toolchain("x86msvc") {
   }
-}
-
-if (is_clang) {
+} else if (is_clang) {
   import("//build/toolchain/clang_gcc_toolchain.gni")
 
   clang_gcc_toolchain("x64clang") {
-    #tool_prefix = "xcrun -sdk " + sdk_name + sdk_version + " "
-    #cxx = tool_prefix + "c++"
     current_compiler_exec = compiler_exec
   }
+} else {
+  assert(false)
 }

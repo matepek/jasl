@@ -9,9 +9,15 @@ matrix:
     - os: osx
       compiler: clang
       env: 
-        - N=osx-clang
+        - N=osx-clang-debug-yes
       script:
-        - python ./build/build_helper.py --travis-ci --compiler-type clang
+        - python ./build/build_helper.py --travis-ci --compiler-type clang --debug yes
+    - os: osx
+      compiler: clang
+      env: 
+        - N=osx-clang-debug-no
+      script:
+        - python ./build/build_helper.py --travis-ci --compiler-type clang --debug no
     - os: linux
       compiler: clang
       dist: precise
