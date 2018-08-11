@@ -21,11 +21,15 @@ Sometimes we would like to use hardwired text resources. For example throwing an
 
 Creating your own exception and using this library's [jasl::static_string] class will eliminate the unnecessary copy in a type-safe way. For example the compiler will generate an error in case of the following situation:
 ```c++
+jasl::static_string s("Bear trap was activated!"); // ok
+s = "Bear trap was activated!"; // ok
+
+// this is ok too, becasue []
 const char exception_message[] = "Bear trap was activated!";
 jasl::static_string s(exception_message); // ok
 s = exception_message; // ok
 
-const char* exception_message_ptr = exception_message;
+const char* exception_message_ptr = "Bear trap was activated!";
 jasl::static_string s(exception_message_ptr); // compilation error!!
 s = exception_message_ptr;  // compilation error!!
 ```
