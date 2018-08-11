@@ -183,11 +183,11 @@ __Note__: Generating coverage report with gcc is also works, but it only generat
 
 ### Performance Tests
 
-Performance tests are compiled by the building process, but it won't run them. Those results would be irrelevant anyway because the building uses a lot of resources.
+Performance tests are compiled by the building process, but it won't run them.
 
-After building, the performance binaries are in the out directory and they are ready to run.
+After building, the performance binaries are in the out directory and they are ready to be run.
 
-Source location: ```performance/*.performance.cpp```
+Source location: ```test/*.performance.cpp```
 
 #### (Generated) Performance Test Results
 
@@ -253,3 +253,4 @@ JASL library uses the [MIT](LICENSE) license.
  * jasl::string_view could have more methods like [find_first, etc..](http://en.cppreference.com/w/cpp/header/string_view)
  * support for [literals](http://en.cppreference.com/w/cpp/language/user_literal)
  * std_string support (to_std_string, jasl string view compare operator std, ?)
+ * constexpr hash
