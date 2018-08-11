@@ -20,37 +20,7 @@
  * JASL_cpp_lib_string_view also can be manually defined.
  */
 
-#ifdef _MSC_VER  // msvc
-/*
- * https://msdn.microsoft.com/en-us/library/b0084kay.aspx
- * https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
- * https://docs.microsoft.com/en-us/cpp/visual-cpp-language-conformance
- */
-
-#ifndef JASL_cpp_constexpr
-#ifndef __cpp_constexpr
-#define JASL_cpp_constexpr                           \
-  (_MSC_VER >= 1911L && _MSVC_LANG >= 201703L        \
-       ? 201603L                                     \
-       : (_MSC_VER >= 1910L && _MSVC_LANG >= 201402L \
-              ? 201304L                              \
-              : (_MSC_VER >= 1900L ? 200704L : 0L)))
-#else
-static_assert(false, "Compiler behaviour has been changed. Review the change!");
-#endif  // __cpp_constexpr
-#endif  // JASL_cpp_constexpr
-#ifndef JASL_cpp_lib_string_view
-#ifndef __cpp_lib_string_view
-#define JASL_cpp_lib_string_view                                       \
-  (__cplusplus >= 201703 && _MSC_VER >= 1910L && _MSVC_LANG >= 201703L \
-       ? 201606L                                                       \
-       : 0L)
-#else
-static_assert(false, "Compiler behaviour has been changed. Review the change!");
-#endif  // __cpp_lib_string_view
-#endif  // JASL_cpp_lib_string_view
-
-#elif defined(__GNUG__) && !defined(__clang__)  // gcc
+#if defined(__GNUG__) && !defined(__clang__)  // gcc
 /*
  * https://gcc.gnu.org/projects/cxx-status.html
  * https://gcc.gnu.org/onlinedocs/libstdc++/manual/status.html
@@ -98,6 +68,36 @@ static_assert(false, "Probably unsupported compiler version!");
 #else
 #define JASL_cpp_lib_string_view 0L
 #endif
+#endif  // JASL_cpp_lib_string_view
+
+#elif defined(_MSC_VER)  // msvc
+/*
+ * https://msdn.microsoft.com/en-us/library/b0084kay.aspx
+ * https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+ * https://docs.microsoft.com/en-us/cpp/visual-cpp-language-conformance
+ */
+
+#ifndef JASL_cpp_constexpr
+#ifndef __cpp_constexpr
+#define JASL_cpp_constexpr                           \
+  (_MSC_VER >= 1911L && _MSVC_LANG >= 201703L        \
+       ? 201603L                                     \
+       : (_MSC_VER >= 1910L && _MSVC_LANG >= 201402L \
+              ? 201304L                              \
+              : (_MSC_VER >= 1900L ? 200704L : 0L)))
+#else
+static_assert(false, "Compiler behaviour has been changed. Review the change!");
+#endif  // __cpp_constexpr
+#endif  // JASL_cpp_constexpr
+#ifndef JASL_cpp_lib_string_view
+#ifndef __cpp_lib_string_view
+#define JASL_cpp_lib_string_view                                       \
+  (__cplusplus >= 201703 && _MSC_VER >= 1910L && _MSVC_LANG >= 201703L \
+       ? 201606L                                                       \
+       : 0L)
+#else
+static_assert(false, "Compiler behaviour has been changed. Review the change!");
+#endif  // __cpp_lib_string_view
 #endif  // JASL_cpp_lib_string_view
 
 #else

@@ -59,22 +59,31 @@ declare_args() {
 
 declare_args() {
   if (host_os == "win") {
-    # Windows only.
-    #   We are looking for the "vcvarsall.bat" file.
-    #   It really depends on the VS version.
-    visual_studio_path = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat"
+    if (compiler_type == "msvc") {
+      # Windows only.
+      #   We are looking for the "vcvarsall.bat" file.
+      #   It really depends on the VS version.
+      visual_studio_path = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat"
+   
+      # C++ version. :std=<std_version> for compiler.
+      std_version = "c++latest"
 
-    # C++ version. :std=<std_version> for compiler.
-    std_version = "c++latest"
+    } else if (compiler_type == "clang") {
+      # In case of clang.
+      compiler_exec = "clang++.exe"
+
+      # C++ version. -std=<std_version> for compiler.
+      std_version = "c++17"
+    } else {
+      assert(false)
+    }
   } else {
     if (compiler_type == "clang") {
-      # Unix only.
-      #   Other versions can be set with this.
+      # Other versions can be set with this.
       #   Analoge to make's CXX.
       compiler_exec = "clang++"
     } else if (compiler_type == "gcc") {
-      # Unix only.
-      #   Other versions can be set with this.
+      # Other versions can be set with this.
       #   Analoge to make's CXX.
       compiler_exec = "g++"
     } else {

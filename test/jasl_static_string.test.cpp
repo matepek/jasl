@@ -123,7 +123,7 @@ int main() {
   std::cout << jasl::static_string("");
 
   // test only syntax
-  std::hash<jasl::static_string::base_type>{}(jasl::static_string(""));
+  unused_variable(std::hash<jasl::static_string::base_type>{}(jasl::static_string("")));
 
   // test only hash
   ASSERT_TRUE(std::set<jasl::static_string>().size() == 0);

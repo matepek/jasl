@@ -8,25 +8,7 @@
 
 #include "jasl_common.hpp"
 
-#ifdef _MSC_VER  // msvc
-
-// https://msdn.microsoft.com/en-us/library/d9x1s805.aspx
-#define JASL_DIAGNOSTIC_PUSH() __pragma(warning(push))
-#define JASL_DIAGNOSTIC_POP() __pragma(warning(pop))
-
-#define JASL_DIAGNOSTIC_IGNORED_MSVC(id) __pragma(warning(disable : id))
-#define JASL_DIAGNOSTIC_IGNORED_GCC(id)
-#define JASL_DIAGNOSTIC_IGNORED_GCC_SINCE7(id)
-#define JASL_DIAGNOSTIC_IGNORED_CLANG(id)
-
-#define JASL_DIAGNOSTIC_IGNORED(id) JASL_DIAGNOSTIC_IGNORED_MSVC(id)
-
-#define JASL_WARNING_OLD_STYLE_CAST
-#define JASL_WARNING_SIGN_CONVERSION
-#define JASL_WARNING_IMPLICIT_FALLTHROUGH
-#define JAS_WARNING_CAST_ALING
-
-#elif defined(__GNUG__) && !defined(__clang__)  // gcc
+#if defined(__GNUG__) && !defined(__clang__)  // gcc
 
 #define JASL_DIAGNOSTIC_PUSH() _Pragma("GCC diagnostic push")
 #define JASL_DIAGNOSTIC_POP() _Pragma("GCC diagnostic pop")
@@ -67,8 +49,39 @@
 #define JASL_WARNING_IMPLICIT_FALLTHROUGH "-Wimplicit-fallthrough"
 #define JAS_WARNING_CAST_ALING "-Wcast-align"
 
+#elif defined(_MSC_VER)  // msvc
+
+// https://msdn.microsoft.com/en-us/library/d9x1s805.aspx
+#define JASL_DIAGNOSTIC_PUSH() __pragma(warning(push))
+#define JASL_DIAGNOSTIC_POP() __pragma(warning(pop))
+
+#define JASL_DIAGNOSTIC_IGNORED_MSVC(id) __pragma(warning(disable : id))
+#define JASL_DIAGNOSTIC_IGNORED_GCC(id)
+#define JASL_DIAGNOSTIC_IGNORED_GCC_SINCE7(id)
+#define JASL_DIAGNOSTIC_IGNORED_CLANG(id)
+
+#define JASL_DIAGNOSTIC_IGNORED(id) JASL_DIAGNOSTIC_IGNORED_MSVC(id)
+
+#define JASL_WARNING_OLD_STYLE_CAST
+#define JASL_WARNING_SIGN_CONVERSION
+#define JASL_WARNING_IMPLICIT_FALLTHROUGH
+#define JAS_WARNING_CAST_ALING
+
 #else
 
-static_assert(false, "Unsupported compiler!");
+#define JASL_DIAGNOSTIC_PUSH()
+#define JASL_DIAGNOSTIC_POP()
+
+#define JASL_DIAGNOSTIC_IGNORED_MSVC(id)
+#define JASL_DIAGNOSTIC_IGNORED_GCC(id)
+#define JASL_DIAGNOSTIC_IGNORED_GCC_SINCE7(id)
+#define JASL_DIAGNOSTIC_IGNORED_CLANG(id)
+
+#define JASL_DIAGNOSTIC_IGNORED(id)
+
+#define JASL_WARNING_OLD_STYLE_CAST
+#define JASL_WARNING_SIGN_CONVERSION
+#define JASL_WARNING_IMPLICIT_FALLTHROUGH
+#define JAS_WARNING_CAST_ALING
 
 #endif

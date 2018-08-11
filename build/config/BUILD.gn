@@ -40,6 +40,14 @@ config("default") {
 config("compiler_clang") {
   common_flags = [ "-std=" + std_version ]
 
+  # https://stackoverflow.com/questions/42545078/clang-version-5-and-lnk4217-warning
+  if (host_os == "win") {
+    common_flags += [
+      "-Xclang",
+      "-flto-visibility-public-std",
+    ]
+  }
+
   if (host_cpu == "x64" && current_cpu == "x86") {
     common_flags += [ "-m32" ]
   } else if (host_cpu == "x86" && current_cpu == "x64") {

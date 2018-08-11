@@ -80,7 +80,7 @@ int main() {
 
     y = x.substr(x.size());
     ASSERT_TRUE(y.size() == 0);
-    ASSERT_EXCEPTION(x.substr(x.size() + 1), std::out_of_range);
+    ASSERT_EXCEPTION(unused_variable(x.substr(x.size() + 1)), std::out_of_range);
   }
 
   // Becasue of constexpr the coverage reports it uncovered if the values are
@@ -157,7 +157,7 @@ int main() {
   std::cout << jasl::string_view("", 0);
 
   // test only syntax
-  std::hash<jasl::string_view>{}(jasl::string_view("", 0));
+  unused_variable(std::hash<jasl::string_view>{}(jasl::string_view("", 0)));
 
   {
     auto test_with_set = [] {
@@ -225,7 +225,7 @@ int main() {
     ASSERT_TRUE(one.at(0) == 'o');
     ASSERT_TRUE(one.at(1) == 'n');
     ASSERT_TRUE(one.at(2) == 'e');
-    ASSERT_EXCEPTION(one.at(3), std::out_of_range);
+    ASSERT_EXCEPTION(unused_variable(one.at(3)), std::out_of_range);
 
     ASSERT_TRUE(one.front() == 'o');
     ASSERT_TRUE(one.back() == 'e');
