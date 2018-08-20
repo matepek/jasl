@@ -18,20 +18,13 @@
  */
 #define JASL_VERSION_MAJOR 1
 #define JASL_VERSION_MINOR 0
-#define JASL_VERSION_PATCH 0
+#define JASL_VERSION_PATCH 1
 #define JASL_VERSION_LABEL "-beta"
-#define JASL_VERSION_DATE "2018-07-19"
+#define JASL_VERSION_DATE "2018-08-20"
 
 static_assert(JASL_VERSION_MAJOR < 100, "JASL_VERSION error");
 static_assert(JASL_VERSION_MINOR < 100, "JASL_VERSION error");
 static_assert(JASL_VERSION_PATCH < 1000, "JASL_VERSION error");
-
-/*
- * for example version 1.2.3 is: 10020003
- */
-#define JASL_VERSION_NUMBER                         \
-  (JASL_VERSION_PATCH + JASL_VERSION_MINOR * 1000 + \
-   JASL_VERSION_MAJOR * 1000 * 100)
 
 #define JASL_VERSION_STR                                            \
   JASL_STR(JASL_VERSION_MAJOR)                                      \

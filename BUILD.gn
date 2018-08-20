@@ -7,14 +7,14 @@ group("all") {
 
 source_set("include") {
   sources = [
-    "jasl_inner/jasl_common.hpp",
-    "jasl_inner/jasl_diagnostic.hpp",
-    "jasl_inner/jasl_feature_test_macro.hpp",
-    "jasl_inner/jasl_murmurhash3.hpp",
-    "jasl_inner/jasl_string_view_bridge.hpp",
-    "jasl_static_string.hpp",
-    "jasl_string.hpp",
-    "jasl_string_view.hpp",
+    "//include/jasl_inner/jasl_common.hpp",
+    "//include/jasl_inner/jasl_diagnostic.hpp",
+    "//include/jasl_inner/jasl_feature_test_macro.hpp",
+    "//include/jasl_inner/jasl_murmurhash3.hpp",
+    "//include/jasl_inner/jasl_string_view_bridge.hpp",
+    "//include/jasl_static_string.hpp",
+    "//include/jasl_string.hpp",
+    "//include/jasl_string_view.hpp",
   ]
 
   public_configs = [ ":public_config" ]
