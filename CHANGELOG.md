@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.2.0] - 2018-09-11
+
 ## [1.1.0-beta] - 2018-09-10
 ### Changed
  - The include directory structure was refactored. User should just include `include`

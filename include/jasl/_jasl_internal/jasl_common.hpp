@@ -17,10 +17,10 @@
  * Same as the first item of the CHANGELOG.md file
  */
 #define JASL_VERSION_MAJOR 1
-#define JASL_VERSION_MINOR 1
+#define JASL_VERSION_MINOR 2
 #define JASL_VERSION_PATCH 0
-#define JASL_VERSION_LABEL "-beta"
-#define JASL_VERSION_DATE "2018-09-10"
+#define JASL_VERSION_LABEL ""
+#define JASL_VERSION_DATE "2018-09-11"
 
 static_assert(JASL_VERSION_MAJOR < 100, "JASL_VERSION error");
 static_assert(JASL_VERSION_MINOR < 100, "JASL_VERSION error");
