@@ -86,9 +86,8 @@
              : (_MSC_VER >= 1910L && _MSVC_LANG >= 201402L \
                     ? 201304L                              \
                     : (_MSC_VER >= 1900L ? 200704L : 0L)))
-#    else
-#      error \
-          "Compiler behaviour has been changed. Review the change! " ## #_MSC_VER
+#    else // it works from 1915L
+#      define JASL_cpp_constexpr __cpp_constexpr
 #    endif  // __cpp_constexpr
 #  endif    // JASL_cpp_constexpr
 #  ifndef JASL_cpp_lib_string_view
@@ -98,8 +97,7 @@
              ? 201606L                                                       \
              : 0L)
 #    else
-#      error \
-          "Compiler behaviour has been changed. Review the change! " ## #_MSC_VER
+#      define JASL_cpp_lib_string_view __cpp_lib_string_view
 #    endif  // __cpp_lib_string_view
 #  endif    // JASL_cpp_lib_string_view
 
