@@ -77,7 +77,7 @@ class basic_static_string
   }
 
 #if defined(JASL_SUPPORT_JASL_TO_STD)
-#if defined(JASL_cpp_lib_string_view)
+#  if defined(JASL_cpp_lib_string_view)
   operator std::basic_string_view<CharT, Traits>() const noexcept(
       std::is_nothrow_constructible<std::basic_string_view<CharT, Traits>,
                                     const CharT*,
@@ -85,7 +85,7 @@ class basic_static_string
     return std::basic_string_view<CharT, Traits>(bridge_type::data(),
                                                  bridge_type::size());
   }
-#else
+#  else
   template <typename AllocatorT>
   operator std::basic_string<CharT, Traits, AllocatorT>() const
       noexcept(std::is_nothrow_constructible<
@@ -95,7 +95,7 @@ class basic_static_string
     return std::basic_string<CharT, Traits, AllocatorT>(bridge_type::data(),
                                                         bridge_type::size());
   }
-#endif
+#  endif
 #endif
 
   JASL_CONSTEXPR_CXX14 void swap(basic_static_string& other) noexcept(

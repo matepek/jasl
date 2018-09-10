@@ -62,9 +62,9 @@ class basic_string
 // char_traits:
 // https://docs.microsoft.com/en-us/cpp/visual-cpp-language-conformance
 #ifdef _MSC_VER
-#define JASL_TEMP_CONSTEXPR_FOR_PW
+#  define JASL_TEMP_CONSTEXPR_FOR_PW
 #else
-#define JASL_TEMP_CONSTEXPR_FOR_PW constexpr
+#  define JASL_TEMP_CONSTEXPR_FOR_PW constexpr
 #endif
     JASL_TEMP_CONSTEXPR_FOR_PW CStr(const CharT* p) noexcept
         : size(Traits::length(p)), ptr(p) {}
@@ -194,7 +194,7 @@ class basic_string
       : bridge_type(ss.data(), ss.size()), _alloc(alloc), _cap(0) {}
 
 #if defined(JASL_SUPPORT_STD_TO_JASL)
-#if defined(JASL_cpp_lib_string_view)
+#  if defined(JASL_cpp_lib_string_view)
   template <
       typename T,
       typename = typename std::enable_if<
@@ -219,7 +219,7 @@ class basic_string
     init(sv.data(), sv.size());
     return *this;
   }
-#else
+#  else
   template <
       typename T,
       typename = typename std::enable_if<std::is_same<
@@ -240,11 +240,11 @@ class basic_string
     init(s.data(), s.size());
     return *this;
   }
-#endif
+#  endif
 #endif
 
 #if defined(JASL_SUPPORT_JASL_TO_STD)
-#if defined(JASL_cpp_lib_string_view)
+#  if defined(JASL_cpp_lib_string_view)
   operator std::basic_string_view<CharT, Traits>() const noexcept(
       std::is_nothrow_constructible<std::basic_string_view<CharT, Traits>,
                                     const CharT*,
@@ -252,7 +252,7 @@ class basic_string
     return std::basic_string_view<CharT, Traits>(bridge_type::data(),
                                                  bridge_type::size());
   }
-#else
+#  else
   operator std::basic_string<CharT, Traits, AllocatorT>() const
       noexcept(std::is_nothrow_constructible<
                std::basic_string<CharT, Traits, AllocatorT>,
@@ -261,7 +261,7 @@ class basic_string
     return std::basic_string<CharT, Traits, AllocatorT>(bridge_type::data(),
                                                         bridge_type::size());
   }
-#endif
+#  endif
 #endif
 
   template <size_t N>

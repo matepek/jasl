@@ -33,26 +33,26 @@ typedef basic_string_view<char32_t> u32string_view;
 
 #if defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
     defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
-static_assert(false, "Both defines cannot be used at the same time.");
+#  error "Both defines cannot be used at the same time."
 #elif defined(JASL_USE_JASL_STRING_VIEW_AS_BASE)
-#define JASL_INNER_USE_STD_STRING_VIEW_AS_BASE 0
+#  define JASL_INNER_USE_STD_STRING_VIEW_AS_BASE 0
 #elif defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
-#define JASL_INNER_USE_STD_STRING_VIEW_AS_BASE 1
+#  define JASL_INNER_USE_STD_STRING_VIEW_AS_BASE 1
 #elif !defined(JASL_USE_JASL_STRING_VIEW_AS_BASE) && \
     !defined(JASL_USE_STD_STRING_VIEW_AS_BASE)
 /* fallback logic */
-#if defined(JASL_cpp_lib_string_view)
-#define JASL_INNER_USE_STD_STRING_VIEW_AS_BASE 1
+#  if defined(JASL_cpp_lib_string_view)
+#    define JASL_INNER_USE_STD_STRING_VIEW_AS_BASE 1
+#  else
+#    define JASL_INNER_USE_STD_STRING_VIEW_AS_BASE 0
+#  endif
 #else
-#define JASL_INNER_USE_STD_STRING_VIEW_AS_BASE 0
-#endif
-#else
-static_assert(false, "Something is really wrong.");
+#  error "Something is really wrong."
 #endif
 
 #if JASL_INNER_USE_STD_STRING_VIEW_AS_BASE
 
-#include <string_view>
+#  include <string_view>
 
 namespace jasl {
 template <typename CharT, typename Traits = std::char_traits<CharT>>
@@ -136,7 +136,7 @@ class basic_string_view {
   ~basic_string_view() noexcept = default;
 
 #if defined(JASL_SUPPORT_STD_TO_JASL)
-#if defined(JASL_cpp_lib_string_view)
+#  if defined(JASL_cpp_lib_string_view)
   template <
       typename T,
       typename = typename std::enable_if<
@@ -157,7 +157,7 @@ class basic_string_view {
     _size = s.size();
     return *this;
   }
-#else
+#  else
   template <typename AllocatorT>
   constexpr basic_string_view(
       const std::basic_string<CharT, Traits, AllocatorT>&
@@ -172,18 +172,18 @@ class basic_string_view {
     _size = s.size();
     return *this;
   }
-#endif
+#  endif
 #endif
 
 #if defined(JASL_SUPPORT_JASL_TO_STD)
-#if defined(JASL_cpp_lib_string_view)
+#  if defined(JASL_cpp_lib_string_view)
   operator std::basic_string_view<CharT, Traits>() const noexcept(
       std::is_nothrow_constructible<std::basic_string_view<CharT, Traits>,
                                     const CharT*,
                                     size_t>::value) {
     return std::basic_string_view<CharT, Traits>(_ptr, _size);
   }
-#else
+#  else
   template <typename AllocatorT>
   operator std::basic_string<CharT, Traits, AllocatorT>() const
       noexcept(std::is_nothrow_constructible<
@@ -192,7 +192,7 @@ class basic_string_view {
                size_t>::value) {
     return std::basic_string<CharT, Traits, AllocatorT>(_ptr, _size);
   }
-#endif
+#  endif
 #endif
 
   constexpr const_iterator begin() const noexcept { return cbegin(); }
@@ -376,16 +376,16 @@ void swap(
 
 #if defined(JASL_FORCE_USE_MURMURHASH_HASH) && \
     defined(JASL_DISABLE_JASL_STRING_VIEW_HASH)
-static_assert(false, "Illegal configration!");
+#  error "Illegal configration!"
 #endif
 
 /*
  * http://en.cppreference.com/w/cpp/utility/hash
  */
 #if !defined(JASL_DISABLE_JASL_STRING_VIEW_HASH)
-#if defined(JASL_cpp_lib_string_view) && \
-    !defined(JASL_FORCE_USE_MURMURHASH_HASH)
-#include <string_view>
+#  if defined(JASL_cpp_lib_string_view) && \
+      !defined(JASL_FORCE_USE_MURMURHASH_HASH)
+#    include <string_view>
 namespace std {
 template <typename CharT, typename Traits>
 struct hash<jasl::nonstd::basic_string_view<CharT, Traits>> {
@@ -396,8 +396,8 @@ struct hash<jasl::nonstd::basic_string_view<CharT, Traits>> {
   }
 };
 }  // namespace std
-#else
-#include "jasl/_jasl_internal/jasl_murmurhash3.hpp"
+#  else
+#    include "jasl/_jasl_internal/jasl_murmurhash3.hpp"
 namespace std {
 template <typename CharT, typename Traits>
 struct hash<jasl::nonstd::basic_string_view<CharT, Traits>> {
@@ -417,5 +417,5 @@ struct hash<jasl::nonstd::basic_string_view<CharT, Traits>> {
   }
 };
 }  // namespace std
-#endif  // JASL_cpp_lib_string_view
-#endif  // JASL_DISABLE_JASL_STRING_VIEW_HASH
+#  endif  // JASL_cpp_lib_string_view
+#endif    // JASL_DISABLE_JASL_STRING_VIEW_HASH
