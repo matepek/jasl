@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "jasl_feature_test_macro.hpp"
+#include "jasl/_jasl_internal/jasl_feature_test_macro.hpp"
 
 #define JASL_INNER_STR(x) #x
 #define JASL_STR(x) JASL_INNER_STR(x)

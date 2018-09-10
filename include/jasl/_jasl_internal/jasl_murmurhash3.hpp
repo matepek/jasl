@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "jasl_diagnostic.hpp"
+#include "jasl/_jasl_internal/jasl_diagnostic.hpp"
 
 // https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.h
 // https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp

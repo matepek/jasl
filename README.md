@@ -7,9 +7,9 @@ JASL (Just Another String Library)
 
 [std::string_view]: http://en.cppreference.com/w/cpp/string/basic_string_view
 [std::string]: http://en.cppreference.com/w/cpp/string/basic_string
-[jasl::string]: include/jasl_string.hpp
-[jasl::string_view]: include/jasl_string_view.hpp
-[jasl::static_string]: include/jasl_static_string.hpp
+[jasl::string]: include/string.hpp
+[jasl::string_view]: include/string_view.hpp
+[jasl::static_string]: include/static_string.hpp
 [ninja]: https://github.com/ninja-build/ninja
 [gn]: https://chromium.googlesource.com/chromium/src/+/master/tools/gn/README.md
 

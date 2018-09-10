@@ -12,11 +12,11 @@
 #include <memory>
 #include <string>
 
-#include "jasl_inner/jasl_common.hpp"
-#include "jasl_inner/jasl_feature_test_macro.hpp"
-#include "jasl_inner/jasl_string_view_bridge.hpp"
-#include "jasl_static_string.hpp"
-#include "jasl_string_view.hpp"
+#include "jasl/_jasl_internal/jasl_common.hpp"
+#include "jasl/_jasl_internal/jasl_feature_test_macro.hpp"
+#include "jasl/_jasl_internal/jasl_string_view_bridge.hpp"
+#include "jasl/static_string.hpp"
+#include "jasl/string_view.hpp"
 
 namespace jasl {
 
