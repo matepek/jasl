@@ -11,8 +11,8 @@
 #include <string>
 #include <thread>
 
-#include "jasl/static_string.hpp"
-#include "jasl/string.hpp"
+#include "jasl/jasl_static_string.hpp"
+#include "jasl/jasl_string.hpp"
 
 constexpr static size_t ItemCount = 100000;
 constexpr static size_t IterCount = 5;

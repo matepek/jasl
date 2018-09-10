@@ -4,7 +4,7 @@
 //
 // This code is licensed under the MIT License (MIT).
 
-#include "jasl/string_view.hpp"
+#include "jasl/jasl_string_view.hpp"
 #include "test_helper.hpp"
 
 int main() {

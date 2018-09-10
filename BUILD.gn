@@ -12,9 +12,9 @@ source_set("include") {
     "//include/jasl/_jasl_internal/jasl_feature_test_macro.hpp",
     "//include/jasl/_jasl_internal/jasl_murmurhash3.hpp",
     "//include/jasl/_jasl_internal/jasl_string_view_bridge.hpp",
-    "//include/jasl/static_string.hpp",
-    "//include/jasl/string.hpp",
-    "//include/jasl/string_view.hpp",
+    "//include/jasl/jasl_static_string.hpp",
+    "//include/jasl/jasl_string.hpp",
+    "//include/jasl/jasl_string_view.hpp",
   ]
 
   public_configs = [ ":public_config" ]

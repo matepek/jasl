@@ -6,8 +6,8 @@
 
 #include <set>
 
-#include "jasl/static_string.hpp"
-#include "jasl/string_view.hpp"
+#include "jasl/jasl_static_string.hpp"
+#include "jasl/jasl_string_view.hpp"
 #include "test_helper.hpp"
 
 // Becasue of constexpr the coverage reports it uncovered if the values are

@@ -6,7 +6,7 @@
 
 #include <set>
 
-#include "jasl/static_string.hpp"
+#include "jasl/jasl_static_string.hpp"
 #include "test_helper.hpp"
 
 int main() {
