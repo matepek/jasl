@@ -34,19 +34,6 @@ matrix:
         - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-3.7
     - os: linux
       compiler: clang
-      dist: precise
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
-      env: 
-        - N=clang-3.8
-      script:
-        - sudo -E apt-get -yq --allow-unauthenticated --no-install-suggests --no-install-recommends $TRAVIS_APT_OPTS install clang-3.8
-        - python ./build/build_helper.py --travis-ci --compiler-exec-like clang++-3.8
-    - os: linux
-      compiler: clang
       dist: trusty
       addons:
         apt:
