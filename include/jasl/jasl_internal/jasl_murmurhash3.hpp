@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "jasl_diagnostic.hpp"
+#include "jasl/jasl_internal/jasl_diagnostic.hpp"
 
 // https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.h
 // https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp
@@ -35,7 +35,7 @@ typedef unsigned __int64 uint64_t;
 
 #else  // defined(_MSC_VER)
 
-#include <stdint.h>
+#  include <stdint.h>
 
 #endif  // !defined(_MSC_VER)
 
@@ -43,20 +43,20 @@ typedef unsigned __int64 uint64_t;
 
 #if defined(_MSC_VER)
 
-#define FORCE_INLINE __forceinline
+#  define FORCE_INLINE __forceinline
 
-#include <stdlib.h>
+#  include <stdlib.h>
 
-#define ROTL32(x, y) _rotl(x, y)
-#define ROTL64(x, y) _rotl64(x, y)
+#  define ROTL32(x, y) _rotl(x, y)
+#  define ROTL64(x, y) _rotl64(x, y)
 
-#define BIG_CONSTANT(x) (x)
+#  define BIG_CONSTANT(x) (x)
 
 // Other compilers
 
 #else  // defined(_MSC_VER)
 
-#define FORCE_INLINE inline __attribute__((always_inline))
+#  define FORCE_INLINE inline __attribute__((always_inline))
 
 namespace jasl {
 namespace murmurhash3 {
@@ -72,10 +72,10 @@ inline uint64_t rotl64(uint64_t x, int8_t r) {
 }  // namespace murmurhash3
 }  // namespace jasl
 
-#define ROTL32(x, y) rotl32(x, y)
-#define ROTL64(x, y) rotl64(x, y)
+#  define ROTL32(x, y) rotl32(x, y)
+#  define ROTL64(x, y) rotl64(x, y)
 
-#define BIG_CONSTANT(x) (x##LLU)
+#  define BIG_CONSTANT(x) (x##LLU)
 
 #endif  // !defined(_MSC_VER)
 
@@ -90,13 +90,13 @@ JASL_DIAGNOSTIC_IGNORED_GCC_SINCE7(JASL_WARNING_IMPLICIT_FALLTHROUGH)
 JASL_DIAGNOSTIC_IGNORED_CLANG(JAS_WARNING_CAST_ALING)
 
 #if defined(__clang__)
-#if __has_attribute(no_sanitize)
-#define JASL_USAN_IGNORE(type) __attribute__((no_sanitize(#type)))
+#  if __has_attribute(no_sanitize)
+#    define JASL_USAN_IGNORE(type) __attribute__((no_sanitize(#    type)))
+#  else
+#    define JASL_USAN_IGNORE(type)
+#  endif
 #else
-#define JASL_USAN_IGNORE(type)
-#endif
-#else
-#define JASL_USAN_IGNORE(type)
+#  define JASL_USAN_IGNORE(type)
 #endif
 
 //-----------------------------------------------------------------------------

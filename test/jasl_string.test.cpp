@@ -6,7 +6,7 @@
 
 #include <set>
 
-#include "jasl_string.hpp"
+#include "jasl/jasl_string.hpp"
 #include "test_helper.hpp"
 
 struct different_alloc : public std::allocator<char> {
