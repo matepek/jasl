@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "jasl/_jasl_internal/jasl_common.hpp"
+#include "jasl/jasl_internal/jasl_common.hpp"
 
 #if defined(__GNUG__) && !defined(__clang__)  // gcc
 

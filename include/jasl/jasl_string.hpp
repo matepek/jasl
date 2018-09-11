@@ -12,9 +12,9 @@
 #include <memory>
 #include <string>
 
-#include "jasl/_jasl_internal/jasl_common.hpp"
-#include "jasl/_jasl_internal/jasl_feature_test_macro.hpp"
-#include "jasl/_jasl_internal/jasl_string_view_bridge.hpp"
+#include "jasl/jasl_internal/jasl_common.hpp"
+#include "jasl/jasl_internal/jasl_feature_test_macro.hpp"
+#include "jasl/jasl_internal/jasl_string_view_bridge.hpp"
 #include "jasl/jasl_static_string.hpp"
 #include "jasl/jasl_string_view.hpp"
 

@@ -7,7 +7,7 @@
 #include <cstring>
 #include <iostream>
 
-#include "jasl/_jasl_internal/jasl_murmurhash3.hpp"
+#include "jasl/jasl_internal/jasl_murmurhash3.hpp"
 #include "test_helper.hpp"
 
 static const size_t res_size = 16;

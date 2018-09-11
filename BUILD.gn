@@ -7,11 +7,11 @@ group("all") {
 
 source_set("include") {
   sources = [
-    "//include/jasl/_jasl_internal/jasl_common.hpp",
-    "//include/jasl/_jasl_internal/jasl_diagnostic.hpp",
-    "//include/jasl/_jasl_internal/jasl_feature_test_macro.hpp",
-    "//include/jasl/_jasl_internal/jasl_murmurhash3.hpp",
-    "//include/jasl/_jasl_internal/jasl_string_view_bridge.hpp",
+    "//include/jasl/jasl_internal/jasl_common.hpp",
+    "//include/jasl/jasl_internal/jasl_diagnostic.hpp",
+    "//include/jasl/jasl_internal/jasl_feature_test_macro.hpp",
+    "//include/jasl/jasl_internal/jasl_murmurhash3.hpp",
+    "//include/jasl/jasl_internal/jasl_string_view_bridge.hpp",
     "//include/jasl/jasl_static_string.hpp",
     "//include/jasl/jasl_string.hpp",
     "//include/jasl/jasl_string_view.hpp",
@@ -32,7 +32,7 @@ action("version-consistency.check") {
     "--changelog",
     rebase_path("//CHANGELOG.md"),
     "--jasl_common",
-    rebase_path("//include/jasl/_jasl_internal/jasl_common.hpp"),
+    rebase_path("//include/jasl/jasl_internal/jasl_common.hpp"),
     "--doxygen_config",
     rebase_path("//doxygen.cfg"),
     "--output",

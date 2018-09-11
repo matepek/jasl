@@ -14,8 +14,8 @@
 #include <string>
 #include <type_traits>
 
-#include "jasl/_jasl_internal/jasl_common.hpp"
-#include "jasl/_jasl_internal/jasl_feature_test_macro.hpp"
+#include "jasl/jasl_internal/jasl_common.hpp"
+#include "jasl/jasl_internal/jasl_feature_test_macro.hpp"
 
 namespace jasl {
 namespace nonstd {
@@ -397,7 +397,7 @@ struct hash<jasl::nonstd::basic_string_view<CharT, Traits>> {
 };
 }  // namespace std
 #  else
-#    include "jasl/_jasl_internal/jasl_murmurhash3.hpp"
+#    include "jasl/jasl_internal/jasl_murmurhash3.hpp"
 namespace std {
 template <typename CharT, typename Traits>
 struct hash<jasl::nonstd::basic_string_view<CharT, Traits>> {
