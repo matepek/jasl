@@ -45,7 +45,7 @@ class string_view_bridge {
   constexpr static bool is_nothrow_move_assignable =
       std::is_nothrow_move_assignable<string_viewT>::value;
   constexpr static bool is_nothrow_swappable =
-      noexcept(std::declval<string_viewT>().swap(std::declval<string_viewT>()));
+      JASL_is_nothrow_swappable_value(string_viewT);
   constexpr static bool is_nothrow_destructible =
       std::is_nothrow_destructible<string_viewT>::value;
 
