@@ -17,7 +17,7 @@
  * Same as the first item of the CHANGELOG.md file
  */
 #define JASL_VERSION_MAJOR 1
-#define JASL_VERSION_MINOR 2
+#define JASL_VERSION_MINOR 3
 #define JASL_VERSION_PATCH 0
 #define JASL_VERSION_LABEL ""
 #define JASL_VERSION_DATE "2018-09-11"

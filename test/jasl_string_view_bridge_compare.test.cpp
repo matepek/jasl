@@ -10,6 +10,15 @@
 #include "jasl/jasl_string_view.hpp"
 #include "test_helper.hpp"
 
+static_assert(jasl::inner::string_view_bridge<jasl::string_view>::is_nothrow_constructible, "!");
+static_assert(jasl::inner::string_view_bridge<jasl::string_view>::is_nothrow_default_constructible, "!");
+static_assert(jasl::inner::string_view_bridge<jasl::string_view>::is_nothrow_copy_constructible, "!");
+static_assert(jasl::inner::string_view_bridge<jasl::string_view>::is_nothrow_move_constructible, "!");
+static_assert(jasl::inner::string_view_bridge<jasl::string_view>::is_nothrow_copy_assignable, "!");
+static_assert(jasl::inner::string_view_bridge<jasl::string_view>::is_nothrow_move_assignable, "!");
+static_assert(jasl::inner::string_view_bridge<jasl::string_view>::is_nothrow_swappable, "!");
+static_assert(jasl::inner::string_view_bridge<jasl::string_view>::is_nothrow_destructible, "!");
+
 // Becasue of constexpr the coverage reports it uncovered if the values are
 // directly used in the expression.
 

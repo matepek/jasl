@@ -10,6 +10,16 @@
 #include "jasl/jasl_string_view.hpp"
 #include "test_helper.hpp"
 
+static_assert(std::is_nothrow_constructible<jasl::string_view>::value, "!");
+static_assert(std::is_nothrow_default_constructible<jasl::string_view>::value, "!");
+static_assert(std::is_nothrow_copy_constructible<jasl::string_view>::value, "!");
+static_assert(std::is_nothrow_move_constructible<jasl::string_view>::value, "!");
+static_assert(std::is_nothrow_copy_assignable<jasl::string_view>::value, "!");
+static_assert(std::is_nothrow_move_assignable<jasl::string_view>::value, "!");
+//static_assert(std::is_nothrow_swappable<jasl::string_view>::value, "!"); c++ >= 17
+static_assert(JASL_is_nothrow_swappable_value(jasl::string_view), "!");
+static_assert(std::is_nothrow_destructible<jasl::string_view>::value, "!");
+
 int main() {
   {
     jasl::string_view x;

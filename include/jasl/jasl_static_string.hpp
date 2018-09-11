@@ -47,20 +47,24 @@ class basic_static_string
 
  public:
   JASL_CONSTEXPR_CXX14 basic_static_string() noexcept(
-      std::is_nothrow_constructible<bridge_type>::value)
+      bridge_type::is_nothrow_constructible)
       : bridge_type() {}
 
   template <size_t N>
   constexpr basic_static_string(const CharT (&str)[N]) noexcept(
-      std::is_nothrow_constructible<bridge_type, const CharT*, size_t>::value)
+      bridge_type::is_nothrow_constructible_with_ptr_and_size)
       : bridge_type(str, str[N - 1] == 0 ? N - 1 : N) {}
 
   constexpr basic_static_string(const basic_static_string& other) noexcept(
-      std::is_nothrow_constructible<bridge_type, const bridge_type&>::value)
+      bridge_type::is_nothrow_copy_constructible)
       : bridge_type(static_cast<const bridge_type&>(other)) {}
 
-  ~basic_static_string() noexcept(
-      std::is_nothrow_destructible<bridge_type>::value) = default;
+  constexpr basic_static_string(basic_static_string&& other) noexcept(
+      bridge_type::is_nothrow_move_constructible)
+      : bridge_type(static_cast<bridge_type&&>(other)) {}
+
+  ~basic_static_string() noexcept(bridge_type::is_nothrow_destructible) =
+      default;
 
   template <size_t N>
   JASL_CONSTEXPR_CXX14 basic_static_string& operator=(
@@ -71,8 +75,15 @@ class basic_static_string
 
   JASL_CONSTEXPR_CXX14 basic_static_string&
   operator=(const basic_static_string& other) noexcept(
-      std::is_nothrow_assignable<bridge_type, const bridge_type&>::value) {
+      bridge_type::is_nothrow_copy_assignable) {
     bridge_type::operator=(static_cast<const bridge_type&>(other));
+    return *this;
+  }
+
+  JASL_CONSTEXPR_CXX14 basic_static_string&
+  operator=(basic_static_string&& other) noexcept(
+      bridge_type::is_nothrow_move_assignable) {
+    bridge_type::operator=(static_cast<bridge_type&&>(other));
     return *this;
   }
 
@@ -99,7 +110,7 @@ class basic_static_string
 #endif
 
   JASL_CONSTEXPR_CXX14 void swap(basic_static_string& other) noexcept(
-      JASL_is_nothrow_swappable_value(bridge_type)) {
+      bridge_type::is_nothrow_swappable) {
     bridge_type::swap(other);
   }
 

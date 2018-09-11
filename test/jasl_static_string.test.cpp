@@ -9,6 +9,16 @@
 #include "jasl/jasl_static_string.hpp"
 #include "test_helper.hpp"
 
+static_assert(std::is_nothrow_constructible<jasl::static_string>::value, "!");
+static_assert(std::is_nothrow_default_constructible<jasl::static_string>::value, "!");
+static_assert(std::is_nothrow_copy_constructible<jasl::static_string>::value, "!");
+static_assert(std::is_nothrow_move_constructible<jasl::static_string>::value, "!");
+static_assert(std::is_nothrow_copy_assignable<jasl::static_string>::value, "!");
+static_assert(std::is_nothrow_move_assignable<jasl::static_string>::value, "!");
+//static_assert(std::is_nothrow_swappable<jasl::static_string>::value, "!"); c++ >= 17
+static_assert(JASL_is_nothrow_swappable_value(jasl::static_string), "!");
+static_assert(std::is_nothrow_destructible<jasl::static_string>::value, "!");
+
 int main() {
   {
     jasl::static_string x;

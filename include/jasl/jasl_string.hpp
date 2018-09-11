@@ -112,12 +112,12 @@ class basic_string
   }
 
   basic_string() noexcept(
-      std::is_nothrow_constructible<bridge_type>::value&&
+      bridge_type::is_nothrow_default_constructible&&
           std::is_nothrow_default_constructible<AllocatorT>::value)
       : basic_string(AllocatorT()) {}
 
   basic_string(const AllocatorT& a) noexcept(
-      std::is_nothrow_constructible<bridge_type>::value&&
+      bridge_type::is_nothrow_default_constructible&&
           std::is_nothrow_copy_constructible<AllocatorT>::value)
       : bridge_type(), _alloc(a), _cap(0) {}
 
@@ -137,13 +137,13 @@ class basic_string
 
   template <size_t N>
   basic_string(const CharT (&str)[N]) noexcept(
-      std::is_nothrow_constructible<bridge_type, const CharT*, size_t>::value&&
+      bridge_type::is_nothrow_constructible_with_ptr_and_size&&
           std::is_nothrow_default_constructible<AllocatorT>::value)
       : bridge_type(str, str[N - 1] == 0 ? N - 1 : N), _alloc(), _cap(0) {}
 
   template <size_t N>
   basic_string(const CharT (&str)[N], const AllocatorT& alloc) noexcept(
-      std::is_nothrow_constructible<bridge_type, const CharT*, size_t>::value&&
+      bridge_type::is_nothrow_constructible_with_ptr_and_size&&
           std::is_nothrow_copy_constructible<AllocatorT>::value)
       : bridge_type(str, str[N - 1] == 0 ? N - 1 : N), _alloc(alloc), _cap(0) {}
 
@@ -161,7 +161,7 @@ class basic_string
   }
 
   basic_string(basic_string&& other) noexcept(
-      std::is_nothrow_move_constructible<bridge_type>::value&&
+      bridge_type::is_nothrow_move_constructible&&
           std::is_nothrow_move_constructible<AllocatorT>::value)
       : bridge_type(std::move(other)),
         _alloc(std::move(other._alloc)),
@@ -180,17 +180,17 @@ class basic_string
   }
 
   basic_string(const basic_static_string<CharT, Traits>& ss) noexcept(
-      std::is_nothrow_constructible<bridge_type, const CharT*, size_t>::value&&
+      bridge_type::is_nothrow_constructible_with_ptr_and_size&&
           std::is_nothrow_default_constructible<AllocatorT>::value)
       : bridge_type(ss.data(), ss.size()), _alloc(), _cap(0) {}
 
   basic_string(
       const basic_static_string<CharT, Traits>& ss,
       const AllocatorT&
-          alloc) noexcept(std::is_nothrow_constructible<bridge_type,
-                                                        const CharT*,
-                                                        size_t>::value&& std::
-                              is_nothrow_copy_constructible<AllocatorT>::value)
+          alloc) noexcept(bridge_type::
+                              is_nothrow_constructible_with_ptr_and_size&&
+                                  std::is_nothrow_copy_constructible<
+                                      AllocatorT>::value)
       : bridge_type(ss.data(), ss.size()), _alloc(alloc), _cap(0) {}
 
 #if defined(JASL_SUPPORT_STD_TO_JASL)
@@ -337,7 +337,8 @@ class basic_string
   }
 
   template <size_t N>
-  basic_string& operator=(const CharT (&str)[N]) noexcept {
+  basic_string& operator=(const CharT (&str)[N]) noexcept(
+      bridge_type::is_nothrow_settable) {
     return assign<N>(str);
   }
 
