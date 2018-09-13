@@ -29,38 +29,62 @@ class string_view_bridge {
   typedef typename string_viewT::reverse_iterator reverse_iterator;
   typedef typename string_viewT::size_type size_type;
   typedef typename string_viewT::difference_type difference_type;
-  static constexpr size_type npos = string_viewT::npos;
+  constexpr static size_type npos = string_viewT::npos;
 
- protected:
-  constexpr string_view_bridge() noexcept(
-      std::is_nothrow_constructible<string_viewT>::value) {}
-  constexpr explicit string_view_bridge(string_viewT s) noexcept(
-      std::is_nothrow_constructible<string_viewT, string_viewT>::value)
-      : _sv(s) {}
-  constexpr string_view_bridge(const string_view_bridge& s) noexcept(
-      std::is_nothrow_copy_constructible<string_viewT>::value) = default;
-  constexpr explicit string_view_bridge(const value_type* str) noexcept(
-      std::is_nothrow_constructible<string_viewT, const value_type*>::value)
-      : _sv(str) {}
-  constexpr string_view_bridge(const value_type* str, size_type len) noexcept(
+  // This was necessary, compiler couldn't recognise in noexcept
+  constexpr static bool is_nothrow_constructible =
+      std::is_nothrow_constructible<string_viewT>::value;
+  constexpr static bool is_nothrow_default_constructible =
+      std::is_nothrow_default_constructible<string_viewT>::value;
+  constexpr static bool is_nothrow_copy_constructible =
+      std::is_nothrow_copy_constructible<string_viewT>::value;
+  constexpr static bool is_nothrow_move_constructible =
+      std::is_nothrow_move_constructible<string_viewT>::value;
+  constexpr static bool is_nothrow_copy_assignable =
+      std::is_nothrow_copy_assignable<string_viewT>::value;
+  constexpr static bool is_nothrow_move_assignable =
+      std::is_nothrow_move_assignable<string_viewT>::value;
+  constexpr static bool is_nothrow_swappable =
+      JASL_is_nothrow_swappable_value(string_viewT);
+  constexpr static bool is_nothrow_destructible =
+      std::is_nothrow_destructible<string_viewT>::value;
+
+  constexpr static bool is_nothrow_constructible_with_ptr_and_size =
       std::is_nothrow_constructible<string_viewT,
                                     const value_type*,
-                                    size_type>::value)
-      : _sv(str, len) {}
-
-  string_view_bridge& operator=(const string_view_bridge&) noexcept(
-      std::is_nothrow_copy_assignable<string_viewT>::value) = default;
-
-  JASL_CONSTEXPR_CXX14 void swap(string_view_bridge& s) noexcept(
-      noexcept(std::declval<string_viewT>().swap(s._sv))) {
-    _sv.swap(s._sv);
-  }
-
+                                    size_type>::value;
   constexpr static bool is_nothrow_settable =
       std::is_nothrow_assignable<string_viewT, string_viewT>::value &&
       std::is_nothrow_constructible<string_viewT,
                                     const value_type*,
                                     size_type>::value;
+
+ protected:
+  constexpr string_view_bridge() noexcept(is_nothrow_default_constructible) {}
+  constexpr explicit string_view_bridge(string_viewT s) noexcept(
+      is_nothrow_copy_constructible)
+      : _sv(s) {}
+  constexpr string_view_bridge(const string_view_bridge& s) noexcept(
+      is_nothrow_copy_constructible) = default;
+  constexpr string_view_bridge(string_view_bridge&& s) noexcept(
+      is_nothrow_move_constructible) = default;
+  constexpr explicit string_view_bridge(const value_type* str) noexcept(
+      std::is_nothrow_constructible<string_viewT, const value_type*>::value)
+      : _sv(str) {}
+  constexpr string_view_bridge(const value_type* str, size_type len) noexcept(
+      is_nothrow_constructible_with_ptr_and_size)
+      : _sv(str, len) {}
+
+  string_view_bridge& operator=(const string_view_bridge&) noexcept(
+      is_nothrow_copy_assignable) = default;
+
+  string_view_bridge& operator=(string_view_bridge&&) noexcept(
+      is_nothrow_move_assignable) = default;
+
+  JASL_CONSTEXPR_CXX14 void swap(string_view_bridge& s) noexcept(
+      is_nothrow_swappable) {
+    _sv.swap(s._sv);
+  }
 
   JASL_CONSTEXPR_CXX14 void set(const value_type* str,
                                 size_type len) noexcept(is_nothrow_settable) {

@@ -9,6 +9,15 @@
 #include "jasl/jasl_string.hpp"
 #include "test_helper.hpp"
 
+static_assert(std::is_nothrow_constructible<jasl::string>::value, "!");
+static_assert(std::is_nothrow_default_constructible<jasl::string>::value, "!");
+static_assert(std::is_nothrow_move_constructible<jasl::string>::value, "!");
+//static_assert(std::is_nothrow_copy_assignable<jasl::string>::value, "!");
+//static_assert(std::is_nothrow_move_assignable<jasl::string>::value, "!");
+//static_assert(std::is_nothrow_swappable<jasl::string>::value, "!"); //c++ >= 17
+//static_assert(JASL_is_nothrow_swappable_value(jasl::string), "!");
+static_assert(std::is_nothrow_destructible<jasl::string>::value, "!");
+
 struct different_alloc : public std::allocator<char> {
   typedef std::false_type propagate_on_container_move_assignment;
 };

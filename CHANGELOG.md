@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.3.0] - 2018-09-11
+## Changed
+ - ## Workaround has been added to jasl::inner::string_view_bridge type's noexcept specifiers. They didn't work well.
+
 ## [1.2.0] - 2018-09-11
 
 ## [1.1.0-beta] - 2018-09-10
